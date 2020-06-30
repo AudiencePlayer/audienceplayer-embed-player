@@ -1,4 +1,4 @@
-# Audienceplayer Embeddable Player
+# Audienceplayer Embed Player
 
 This library allows to play your videos asserts wherever you want on your website. The library is built on top of the Azure Media Player.
 
@@ -8,7 +8,7 @@ Embed the Azure Media Player and the library in your `index.html`
 
 ```html
 <script src="./azure-media-player/amp.min.js"></script>
-<script src="embeddable-player.js" type="module"></script>
+<script src="embed-player.js" type="module"></script>
 ```
 
 The Azure Media Player comes with default css:
@@ -26,13 +26,13 @@ For your project, use the absolute URLs of the hosted version, so you will benef
 Import embeddable-player in your javascript code
 
 ```javascript
-import EmbeddablePlayer from 'embeddable-player.js';
+import EmbedPlayer from 'embed-player.js';
 ```
 
 and create a new instance of embeddable player:
 
 ```javascript
-const player = new EmbeddablePlayer();
+const player = new EmbedPlayer();
 ```
 
 once created, you it's ready to be used on your website. To play an asset, just call
@@ -52,12 +52,12 @@ the `play()` method, and pass the following parameters:
 ## Example of usage
 
 ```javascript
-const player = new EmbeddablePlayer();
+const player = new EmbedPlayer();
 
 player
     .play({
         selector: '.video-wrapper',
-        apiBaseUrl: 'https://www.test.com/',
+        apiBaseUrl: 'https://<api-url-here>',
         projectId: 4,
         articleId: 1234,
         assetId: 4321,

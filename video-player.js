@@ -1,4 +1,4 @@
-import EmbeddablePlayer from './embeddable-player.js';
+import EmbedPlayer from './embed-player.js';
 (function() {
     const urlQueryString = window.location.search;
     const urlParams = new URLSearchParams(urlQueryString);
@@ -13,7 +13,7 @@ import EmbeddablePlayer from './embeddable-player.js';
     const tokenParameter = token ? {token} : {};
     const posterImageUrlParameter = posterImageUrl ? {posterImageUrl} : {};
 
-    const player = new EmbeddablePlayer();
+    const player = new EmbedPlayer();
 
     player
         .play({
