@@ -1,6 +1,23 @@
 # Audienceplayer Embed Player
 
-This library allows to play your videos assets via the `headless` solution of the [AudiencePlayer](https://www.audienceplayer.com) video platform on your website. 
+This library allows you to play your AudiencePlayer videos assets` on your website, via the `headless` solution of the [AudiencePlayer video platform](https://www.audienceplayer.com). 
+
+## Install
+`audienceplayer-embed-player` is an npm package that needs to be installed directly from github.
+
+First add it to your `package.json`:
+```json
+{
+    ...
+    "dependencies": {
+        ...
+        "audienceplayer-embed-player": "github:AudiencePlayer/audienceplayer-embed-player"
+    }
+}
+```
+
+After which you can run:
+```$ npm install```
 
 ## Dependencies in your HTML
 
@@ -20,34 +37,33 @@ The Azure Media Player comes with default css:
 
 ## Usage
 
-The basic usage of the player can be taken from the `index.html`. The above dependencies are visible in this file.
+The basic implementation is demonstrated in [index.html](index.html). The dependencies above are visible in this file.
 For your project, use the absolute URLs of the hosted version, so you will benefit from the latest version of the player and in case of Graph API changes, the player will not break.
 
-Import embeddable-player in your javascript code
+Import `embed-player` in your javascript code:
 
 ```javascript
 import EmbedPlayer from 'embed-player.js';
 ```
 
-and create a new instance of embeddable player:
+and create a new instance of the `embed-player`:
 
 ```javascript
 const player = new EmbedPlayer();
 ```
 
-once created, you it's ready to be used on your website. To play an asset, just call
-the `play()` method, and pass the following parameters:
+Once created it is ready for use on your website. To play an asset, just call the `play()` method, and pass the following parameters:
 
 -   **selector** - query selector of an element where you would like to embed your player
-    (e.g. `.video-wrapper`, `#video-wrapper`, etc)
--   **apiBaseUrl** - the url where your articles and assets are hosted on
--   **articleId** - the id of an article, your desired asset belongs to
--   **assetId** - the id of the asset, you want to play
--   **token (optional)** - your authentication token. It's needed only if you want to play
-    authentication protected assets
--   **posterImageUrl (optional)** - image that will be used as a initial player's background
-    The `play()` method mentioned before provides a promise that, in case of successful asset fetch will
-    return the player's config, otherwise - the error occurred.
+    (e.g. `.video-wrapper`, `#video-wrapper`, etc).
+-   **apiBaseUrl** - the url where your articles and assets are hosted on.
+-   **articleId** - the id of an article, to which your intended video asset belongs.
+-   **assetId** - the id of the video asset, you want to play.
+-   **token (optional)** - your authentication token (only necessary if you intend to embed
+    video assets that require authentication/authorization)
+-   **posterImageUrl (optional)** - image that will be used as the initial player background image.
+
+The `play()` method mentioned before provides a promise that, in case of successful asset fetch will return the player's config, otherwise - the error occurred.
 
 ## Example of usage
 
