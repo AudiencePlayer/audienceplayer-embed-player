@@ -6,7 +6,7 @@ This library allows you to play your AudiencePlayer videos assets` on your websi
 `audienceplayer-embed-player` is an npm package that needs to be installed directly from github.
 
 First add it to your `package.json`:
-```json
+```
 {
     ...
     "dependencies": {
@@ -37,7 +37,7 @@ The Azure Media Player comes with default css:
 
 ## Usage
 
-The basic implementation is demonstrated in [index.html](index.html). The dependencies above are visible in this file.
+The basic implementation is demonstrated in [index.html](src/index.html). The dependencies above are visible in this file.
 For your project, use the absolute URLs of the hosted version, so you will benefit from the latest version of the player and in case of Graph API changes, the player will not break.
 
 Import `embed-player` in your javascript code:
