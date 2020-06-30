@@ -2,26 +2,14 @@
 
 This library allows you to play your AudiencePlayer videos assets` on your website, via the `headless` solution of the [AudiencePlayer video platform](https://www.audienceplayer.com). 
 
-## Install
-`audienceplayer-embed-player` is an npm package that needs to be installed directly from github.
+## Hosted solution
 
-First add it to your `package.json`:
-```
-{
-    ...
-    "dependencies": {
-        ...
-        "audienceplayer-embed-player": "github:AudiencePlayer/audienceplayer-embed-player"
-    }
-}
-```
+There is no need to (npm) install anything into your project. It should be used as a remotely hosted solution, where you include the needed scripts and styles directly into your HTML.
 
-After which you can run:
-```$ npm install```
 
 ## Dependencies in your HTML
 
-Embed the Azure Media Player and the library in your `index.html`
+Embed the Azure Media Player and this library in your `index.html`, using the absolute URL's
 
 ```html
 <script src="https://static.audienceplayer.com/embed-player/azure-media-player/amp.min.js"></script>
@@ -37,7 +25,7 @@ The Azure Media Player comes with default css:
 
 ## Usage
 
-The basic implementation is demonstrated in [index.html](src/index.html). The dependencies above are visible in this file.
+The basic implementation is demonstrated in [index.html](src/index.html). The dependencies above are visible in this file (in this case with relative URL's).
 For your project, use the absolute URLs of the hosted version, so you will benefit from the latest version of the player and in case of Graph API changes, the player will not break.
 
 Import `embed-player` in your javascript code:
