@@ -1,26 +1,26 @@
 # Audienceplayer Embed Player
 
-This library allows to play your videos asserts wherever you want on your website. The library is built on top of the Azure Media Player.
+This library allows to play your videos assets via the `headless` solution of the [AudiencePlayer](https://www.audienceplayer.com) video platform on your website. 
 
 ## Dependencies in your HTML
 
 Embed the Azure Media Player and the library in your `index.html`
 
 ```html
-<script src="./azure-media-player/amp.min.js"></script>
-<script src="embed-player.js" type="module"></script>
+<script src="https://static.audienceplayer.com/embed-player/azure-media-player/amp.min.js"></script>
+<script src="https://static.audienceplayer.com/embed-player/embed-player.js" type="module"></script>
 ```
 
 The Azure Media Player comes with default css:
 
 ```html
-<link href="./azure-media-player/amp.min.css" rel="stylesheet" />
-<link href="./azure-media-player/amp-flush.min.css" rel="stylesheet" />
+<link href="https://static.audienceplayer.com/embed-player/azure-media-player/amp.min.css" rel="stylesheet" />
+<link href="https://static.audienceplayer.com/embed-player/azure-media-player/amp-flush.min.css" rel="stylesheet" />
 ```
 
 ## Usage
 
-The basic usage of the player can be taken from the `index.html` inside this folder. The above depedencies are visible in this file.
+The basic usage of the player can be taken from the `index.html`. The above dependencies are visible in this file.
 For your project, use the absolute URLs of the hosted version, so you will benefit from the latest version of the player and in case of Graph API changes, the player will not break.
 
 Import embeddable-player in your javascript code
@@ -57,7 +57,7 @@ const player = new EmbedPlayer();
 player
     .play({
         selector: '.video-wrapper',
-        apiBaseUrl: 'https://<api-url-here>',
+        apiBaseUrl: 'https://<your-audienceplayer-api-url-here>',
         projectId: 4,
         articleId: 1234,
         assetId: 4321,
