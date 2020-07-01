@@ -13,7 +13,7 @@ Embed the Azure Media Player and this library in your `index.html`, using the ab
 
 ```html
 <script src="https://static.audienceplayer.com/embed-player/azure-media-player/amp.min.js"></script>
-<script src="https://static.audienceplayer.com/embed-player/embed-player.js" type="module"></script>
+<script src="https://static.audienceplayer.com/embed-player/embed-player.min.js" type="module"></script>
 ```
 
 The Azure Media Player comes with default css:
