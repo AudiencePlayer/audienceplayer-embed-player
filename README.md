@@ -1,6 +1,6 @@
 # Audienceplayer Embed Player
 
-This library allows you to play your AudiencePlayer videos assets` on your website, via the `headless` solution of the [AudiencePlayer video platform](https://www.audienceplayer.com). 
+This library allows you to play your AudiencePlayer videos assets on your website, via the "headless" solution of the [AudiencePlayer video platform](https://www.audienceplayer.com). 
 
 ## Hosted solution
 
@@ -9,7 +9,7 @@ There is no need to (npm) install anything into your project. It should be used 
 
 ## Dependencies in your HTML
 
-Embed the Azure Media Player and this library in your `index.html`, using the absolute URL's
+Embed the Azure Media Player and this library in your `index.html`, using the absolute URL's:
 
 ```html
 <script src="https://static.audienceplayer.com/embed-player/azure-media-player/amp.min.js"></script>
