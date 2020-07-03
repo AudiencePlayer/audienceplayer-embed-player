@@ -1,4 +1,4 @@
-export default class EmbeddablePlayer {
+export default class EmbedPlayer {
     constructor() {
         this.isPlaying = false;
         this.isFirstPlay = true;
