@@ -248,7 +248,7 @@ export default class EmbedPlayer {
             article: article,
             assetType: asset.linked_type,
             asset: asset,
-            currentTime: 0,
+            currentTime: config.appa / asset.duration <= 0.98 ? config.appa : 0,
             heartBeatUrl: heartBeatUrl,
         };
     }
