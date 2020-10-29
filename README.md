@@ -50,8 +50,12 @@ Once created it is ready for use on your website. To play an asset, just call th
 -   **token (optional)** - your authentication token (only necessary if you intend to embed
     video assets that require authentication/authorization)
 -   **posterImageUrl (optional)** - image that will be used as the initial player background image.
+-   **autoplay (optional)** - if true, player will start playing once looaded (mobile devices may have this disabled to protect bandwidth)
 
 The `play()` method mentioned before provides a promise that, in case of successful asset fetch will return the player's config, otherwise - the error occurred.
+
+The `destroy()` method will clean-up the underlying Azure Media Player, so that you can safely remove the element referred by the `selctor` from the DOM.
+This is typically used when playing the video in a modal dialog or from a different element in the DOM.
 
 ## Example of usage
 
