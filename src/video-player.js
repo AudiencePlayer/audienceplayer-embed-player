@@ -9,7 +9,7 @@ import EmbedPlayer from './embed-player.js';
     const apiBaseUrl = urlParams.get('apiBaseUrl');
     const token = urlParams.get('token');
     const posterImageUrl = urlParams.get('posterImageUrl');
-    const autoplay = urlParams.get('autoplay') && urlParams.get('autoplay') === 'true';
+    const autoplay = urlParams.get('autoplay');
 
     const tokenParameter = token ? {token} : {};
     const posterImageUrlParameter = posterImageUrl ? {posterImageUrl} : {};
@@ -25,7 +25,7 @@ import EmbedPlayer from './embed-player.js';
             assetId,
             ...tokenParameter,
             ...posterImageUrlParameter,
-            autoplay,
+            autoplay: autoplay && autoplay === 'true',
         })
         .then(config => {
             console.log('Config', config);
