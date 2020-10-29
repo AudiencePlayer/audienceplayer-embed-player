@@ -9,7 +9,7 @@ import EmbedPlayer from './embed-player.js';
     const apiBaseUrl = urlParams.get('apiBaseUrl');
     const token = urlParams.get('token');
     const posterImageUrl = urlParams.get('posterImageUrl');
-    const autoplay = !!urlParams.get('autoplay');
+    const autoplay = urlParams.get('autoplay') && urlParams.get('autoplay') === 'true';
 
     const tokenParameter = token ? {token} : {};
     const posterImageUrlParameter = posterImageUrl ? {posterImageUrl} : {};

@@ -54,7 +54,7 @@ Once created it is ready for use on your website. To play an asset, just call th
 
 The `play()` method mentioned before provides a promise that, in case of successful asset fetch will return the player's config, otherwise - the error occurred.
 
-The `destroy()` method will clean-up the underlying Azure Media Player, so that you can safely remove the element referred by the `selctor` from the DOM.
+The `destroy()` method will clean-up the underlying Azure Media Player, so that you can safely remove the element referred by the `selector` from the DOM.
 This is typically used when playing the video in a modal dialog or from a different element in the DOM.
 
 ## Example of usage
@@ -82,3 +82,10 @@ player
 The `Promise` returns a `config` object that can be used for debugging purposes, but is not needed outside the player.
 
 When an error occurs, the `error` object will contain the message and error code returned by the API. If the `error` is not an object, the API was not reachable.   
+
+To destroy the player:
+
+````javascript
+player.destroy();
+// DOM element refered by the selector, e.g. `.video-wrapper` can now safely be removed. 
+````
