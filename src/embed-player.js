@@ -3,9 +3,11 @@ export default class EmbedPlayer {
         this.isPlaying = false;
         this.isFirstPlay = true;
         this.lastPlayTime = Date.now();
+        this.myPlayer = null;
     }
 
     initPlayer(selector) {
+        this.destroy();
         const videoContainer = document.querySelector(selector);
         const videoElement = document.createElement('video');
         videoElement.setAttribute('class', ['azuremediaplayer', 'amp-flush-skin', 'amp-big-play-centered'].join(' '));
@@ -16,7 +18,7 @@ export default class EmbedPlayer {
         videoContainer.appendChild(videoElement);
     }
 
-    play({selector, apiBaseUrl, projectId, articleId, assetId, token, posterImageUrl}) {
+    play({selector, apiBaseUrl, projectId, articleId, assetId, token, posterImageUrl, autoplay}) {
         if (!selector) {
             return Promise.reject('selector property is missing');
         }
@@ -36,15 +38,22 @@ export default class EmbedPlayer {
         const heartBeatUrl = `${apiBaseUrl}/service/analytics/stream/pulse/`;
         this.initPlayer(selector);
         return this.getPlayConfig(apiFetchUrl, articleId, assetId, heartBeatUrl, token).then(config => {
-            this.playVideo(config, posterImageUrl);
+            this.playVideo(config, posterImageUrl, !!autoplay);
             return config;
         });
     }
 
-    playVideo(configData, posterUrl) {
+    destroy() {
+        if (this.myPlayer) {
+            this.myPlayer.dispose();
+            this.myPlayer = null;
+        }
+    }
+
+    playVideo(configData, posterUrl, autoplay) {
         const videoElement = document.querySelector('video');
         var myOptions = {
-            autoplay: false,
+            autoplay,
             controls: true,
             fluid: true,
         };
