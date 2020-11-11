@@ -27,10 +27,7 @@ import EmbedPlayer from './embed-player.js';
             ...posterImageUrlParameter,
             autoplay: autoplay && autoplay === 'true',
         })
-        .then(config => {
-            console.log('Config', config);
-        })
         .catch(error => {
-            console.log('Error', error);
+            console.error(error);
         });
 })();
