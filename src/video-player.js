@@ -16,18 +16,20 @@ import EmbedPlayer from './embed-player.js';
 
     const player = new EmbedPlayer();
 
-    player
-        .play({
-            selector: '.video-wrapper',
-            apiBaseUrl,
-            articleId,
-            projectId,
-            assetId,
-            ...tokenParameter,
-            ...posterImageUrlParameter,
-            autoplay: autoplay && autoplay === 'true',
-        })
-        .catch(error => {
-            console.error(error);
-        });
+    player.setupChromecast(".video-wrapper", "DC14ABD6");
+
+    // player
+    //     .play({
+    //         selector: '.video-wrapper',
+    //         apiBaseUrl,
+    //         articleId,
+    //         projectId,
+    //         assetId,
+    //         ...tokenParameter,
+    //         ...posterImageUrlParameter,
+    //         autoplay: autoplay && autoplay === 'true',
+    //     })
+    //     .catch(error => {
+    //         console.error(error);
+    //     });
 })();
