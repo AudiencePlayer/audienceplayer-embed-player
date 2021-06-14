@@ -5,6 +5,7 @@ export default class EmbedPlayer {
     this.lastPlayTime = Date.now();
     this.myPlayer = null;
     this.castPlayer = null;
+    this.castContext = null;
     this.castPlayerController = null;
   }
 
@@ -216,6 +217,7 @@ export default class EmbedPlayer {
             query Article($articleId: Int!) {
                 Article(id: $articleId) {
                     id
+                    name
                     assets {
                         id
                         duration
@@ -370,31 +372,125 @@ export default class EmbedPlayer {
     return playerConfigs;
   }
 
-    setupChromecast(selector, chromecastReceiverAppId) {
-        if (chromecastReceiverAppId) {
-            window['__onGCastApiAvailable'] = isAvailable => {
-                if (isAvailable && cast && cast.framework) {
-                    this.initializeCastApi();
-                }
-            };
-
-            const scriptElement = document.createElement("script");
-            scriptElement.src =
-              "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
-            scriptElement.async = true;
-            document.head.appendChild(scriptElement);
+  setupChromecast(selector, chromecastReceiverAppId) {
+    const castButtonContaner = document.querySelector(selector);
+    const castButton = document.createElement("google-cast-launcher");
+    castButtonContaner.appendChild(castButton);
+    if (chromecastReceiverAppId) {
+      window["__onGCastApiAvailable"] = (isAvailable) => {
+        if (isAvailable && cast && cast.framework) {
+          this.initializeCastApi();
         }
+      };
+
+      const scriptElement = document.createElement("script");
+      scriptElement.src =
+        "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
+      scriptElement.async = true;
+      document.head.appendChild(scriptElement);
     }
-      
-    initializeCastApi() {
-        cast.framework.CastContext.getInstance().setOptions({
-            receiverApplicationId: this.environmentService.chromecastReceiverAppId,
-            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
-        });
-        this.context = cast.framework.CastContext.getInstance();
-        this.player = new cast.framework.RemotePlayer();
-        this.playerController = new cast.framework.RemotePlayerController(this.player);
+  }
+
+  initializeCastApi() {
+    cast.framework.CastContext.getInstance().setOptions({
+      receiverApplicationId: this.environmentService.chromecastReceiverAppId,
+      autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+    });
+    this.castContext = cast.framework.CastContext.getInstance();
+    this.player = new cast.framework.RemotePlayer();
+    this.playerController = new cast.framework.RemotePlayerController(
+      this.player
+    );
+  }
+
+  getCastMediaInfo = (articlePlayConfig) => {
+    if (
+      articlePlayConfig &&
+      articlePlayConfig.config &&
+      articlePlayConfig.config.player
+    ) {
+      const tracks = articlePlayConfig.config.options.map((option, index) => {
+        const trackId = index + 1;
+        const castTrack = new chrome.cast.media.Track(
+          trackId,
+          chrome.cast.media.TrackType.TEXT
+        );
+        castTrack.trackContentId = option.src;
+        castTrack.trackContentType = "text/vtt";
+        castTrack.subtype = chrome.cast.media.TextTrackType.SUBTITLES;
+        castTrack.name = option.label;
+        castTrack.language = option.srclang;
+        castTrack.customDate = null;
+        return castTrack;
+      });
+      const contentType = "application/vnd.ms-sstr+xml";
+      const entitlement = articlePlayConfig.config.player.find((item) => {
+        return item.type === contentType;
+      });
+      const protectionConfig = entitlement.protectionInfo.find((protection) => {
+        return protection.type === "PlayReady";
+      });
+      const token = protectionConfig
+        ? protectionConfig.authenticationToken
+        : null;
+      const mediaInfo = new chrome.cast.media.MediaInfo(
+        entitlement.src,
+        contentType
+      );
+      mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
+      mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+      mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
+      mediaInfo.metadata.title = articlePlayConfig.article.name;
+      mediaInfo.tracks = tracks;
+      mediaInfo.customData = {
+        ...this.getLicenseUrlFromSrc(entitlement.src, token),
+        pulseToken: articlePlayConfig.pulseToken,
+      };
+      mediaInfo.currentTime = articlePlayConfig.currentTime;
+      mediaInfo.autoplay = true;
+
+      return mediaInfo;
     }
+    return null;
+  };
+
+  getLicenseUrlFromSrc = (src, token) => {
+    if (token) {
+      const res1 = src.match(
+        /^https:\/\/([^.]+)\.streaming\.mediaservices\.windows\.net\/.*/i
+      );
+      const res2 = src.match(
+        /^https:\/\/([a-z0-9_]+)-euwe.streaming\.media\.azure\.net\/.*/i
+      );
+      const res = res1 ? res1 : res2;
+
+      if (res && res.length === 2) {
+        const licenseUrl =
+          "https://" +
+          res[1] +
+          ".keydelivery.westeurope.media.azure.net/PlayReady/?token=" +
+          encodeURIComponent(token);
+        return {
+          licenseUrl,
+          token,
+        };
+      }
+    }
+    return {};
+  };
+
+  castVideo(articlePlayConfig) {
+    const castSession = this.context.getCurrentSession();
+    const mediaInfo = this.getCastMediaInfo(articlePlayConfig);
+
+    if (mediaInfo) {
+      const request = new chrome.cast.media.LoadRequest(mediaInfo);
+      request.currentTime = articlePlayConfig.currentTime;
+      return castSession.loadMedia(request);
+    } else {
+      return Promise.reject("Unexpected manifest format in articlePlayConfig");
+    }
+  }
 }
 //*** Example of usage ***//
 
