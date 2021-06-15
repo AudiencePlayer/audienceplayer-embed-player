@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>AudiencePlayer Embed Player</title>
+        <link href="./azure-media-player/amp.min.css" rel="stylesheet" />
+        <link href="./azure-media-player/amp-flush.min.css" rel="stylesheet" />
+        <style>
+            .buttons-container {
+                display: flex;
+                justify-content: center;
+            }
+
+            .button {
+                margin: 20px;
+                height: 200px;
+                width: 200px;
+                cursor: pointer;
+            }
+
+            #cast-wrapper {
+                display: none;
+            }
+        </style>
+    </head>
+    <body style="margin: 0;">
+        <div class="video-wrapper"></div>
+        <div class="buttons-container">
+            <button class="button" id="cast-wrapper"></button>
+            <button class="button" id="video-button-start">Play video</button>
+            <button class="button" id="video-button-stop">Stop video</button>
+        </div>
+        <script src="./azure-media-player/amp.min.js"></script>
+        <script src="embed-player.js" type="module"></script>
+        <script src="video-cast.js" type="module"></script>
+    </body>
+</html>
