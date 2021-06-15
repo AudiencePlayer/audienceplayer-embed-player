@@ -25,14 +25,14 @@ export default class EmbedPlayer {
     }
 
     play({
-         selector,
-         apiBaseUrl,
-         projectId,
-         articleId,
-         assetId,
-         token,
-         posterImageUrl,
-         autoplay,
+             selector,
+             apiBaseUrl,
+             projectId,
+             articleId,
+             assetId,
+             token,
+             posterImageUrl,
+             autoplay,
          }) {
         if (!selector) {
             return Promise.reject("selector property is missing");
