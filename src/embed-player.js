@@ -379,27 +379,26 @@ export default class EmbedPlayer {
     if (chromecastReceiverAppId) {
       window["__onGCastApiAvailable"] = (isAvailable) => {
         if (isAvailable && cast && cast.framework) {
-          this.initializeCastApi();
+          this.initializeCastApi(chromecastReceiverAppId);
         }
       };
 
       const scriptElement = document.createElement("script");
       scriptElement.src =
         "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
-      scriptElement.async = true;
       document.head.appendChild(scriptElement);
     }
   }
 
-  initializeCastApi() {
+  initializeCastApi(chromecastReceiverAppId) {
     cast.framework.CastContext.getInstance().setOptions({
-      receiverApplicationId: this.environmentService.chromecastReceiverAppId,
+      receiverApplicationId: chromecastReceiverAppId,
       autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
     });
     this.castContext = cast.framework.CastContext.getInstance();
-    this.player = new cast.framework.RemotePlayer();
+    this.castPlayer = new cast.framework.RemotePlayer();
     this.playerController = new cast.framework.RemotePlayerController(
-      this.player
+      this.castPlayer
     );
   }
 
@@ -479,18 +478,51 @@ export default class EmbedPlayer {
     return {};
   };
 
-  castVideo(articlePlayConfig) {
-    const castSession = this.context.getCurrentSession();
-    const mediaInfo = this.getCastMediaInfo(articlePlayConfig);
-
-    if (mediaInfo) {
-      const request = new chrome.cast.media.LoadRequest(mediaInfo);
-      request.currentTime = articlePlayConfig.currentTime;
-      return castSession.loadMedia(request);
-    } else {
-      return Promise.reject("Unexpected manifest format in articlePlayConfig");
+  castVideo({ apiBaseUrl, projectId, articleId, assetId, token }) {
+    if (!apiBaseUrl) {
+      return Promise.reject("apiBaseUrl property is missing");
     }
+    if (!articleId) {
+      return Promise.reject("articleId property is missing");
+    }
+    if (!assetId) {
+      return Promise.reject("assetId property is missing");
+    }
+    if (!projectId) {
+      return Promise.reject("projectId property is missing");
+    }
+    const apiFetchUrl = `${apiBaseUrl}/graphql/${projectId}`;
+    return this.getPlayConfig(
+      apiFetchUrl,
+      articleId,
+      assetId,
+      null,
+      token
+    ).then((config) => {
+      if (this.isConnected()) {
+        const castSession = this.castContext.getCurrentSession();
+        const mediaInfo = this.getCastMediaInfo(config);
+
+        if (mediaInfo) {
+          const request = new chrome.cast.media.LoadRequest(mediaInfo);
+          request.currentTime = config.currentTime;
+          return castSession.loadMedia(request);
+        } else {
+          throw { message: "Unexpected manifest format in articlePlayConfig" };
+        }
+      }
+      return config;
+    });
   }
+
+  isConnected() {
+    return this.castPlayer && this.castPlayer.isConnected;
+  }
+
+  stopCasting() {
+    const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+    castSession.endSession(true);
+}
 }
 //*** Example of usage ***//
 
@@ -505,6 +537,27 @@ export default class EmbedPlayer {
 //         assetId: '',
 //         token: '',
 //         posterImageUrl: ''
+//     })
+//     .then(config => {
+//         console.log('Config', config);
+//     })
+//     .catch(error => {
+//         console.log('Error', error);
+//     });
+
+//*** Example of usage with chromecast ***//
+
+// const player = new EmbeddablePlayer();
+// player.setupChromecast("#cast-wrapper", CHROMECAST_RECEIVER_APP_ID);
+//
+// player
+//     .castVideo({
+//         selector: '.video-wrapper',
+//         apiBaseUrl: '',
+//         projectId: '',
+//         articleId: '',
+//         assetId: '',
+//         token: '',
 //     })
 //     .then(config => {
 //         console.log('Config', config);
