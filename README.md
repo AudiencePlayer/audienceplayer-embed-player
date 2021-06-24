@@ -50,7 +50,8 @@ Once created it is ready for use on your website. To play an asset, just call th
 -   **token (optional)** - your authentication token (only necessary if you intend to embed
     video assets that require authentication/authorization)
 -   **posterImageUrl (optional)** - image that will be used as the initial player background image.
--   **autoplay (optional)** - if true, player will start playing once looaded (mobile devices may have this disabled to protect bandwidth)
+-   **autoplay (optional)** - if true, player will start playing once loaded (mobile devices may have this disabled to protect bandwidth)
+-   **fullScreen (optional)** - if true, player will start in full screen once loaded
 
 The `play()` method mentioned before provides a promise that, in case of successful asset fetch will return the player's config, otherwise - the error occurred.
 
