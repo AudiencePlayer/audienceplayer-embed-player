@@ -1,5 +1,6 @@
 import EmbedPlayer from './embed-player.js';
-(function() {
+
+(function () {
     const urlQueryString = window.location.search;
     const urlParams = new URLSearchParams(urlQueryString);
 
@@ -27,7 +28,7 @@ import EmbedPlayer from './embed-player.js';
             ...posterImageUrlParameter,
             autoplay: autoplay && autoplay === 'true',
         })
-        .catch(error => {
+        .catch((error) => {
             console.error(error);
         });
 })();

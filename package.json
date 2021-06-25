@@ -1,0 +1,22 @@
+{
+  "name": "audienceplayer-embed-player",
+  "version": "1.0.0",
+  "description": "This library allows you to play your AudiencePlayer videos assets on your website, via the \"headless\" solution of the [AudiencePlayer video platform](https://www.audienceplayer.com).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AudiencePlayer/audienceplayer-embed-player.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AudiencePlayer/audienceplayer-embed-player/issues"
+  },
+  "homepage": "https://github.com/AudiencePlayer/audienceplayer-embed-player#readme",
+  "devDependencies": {
+    "eslint": "^7.28.0"
+  }
+}

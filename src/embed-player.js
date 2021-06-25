@@ -4,13 +4,19 @@ export default class EmbedPlayer {
         this.isFirstPlay = true;
         this.lastPlayTime = Date.now();
         this.myPlayer = null;
+        this.castPlayer = null;
+        this.castContext = null;
+        this.castPlayerController = null;
     }
 
     initPlayer(selector) {
         this.destroy();
         const videoContainer = document.querySelector(selector);
         const videoElement = document.createElement('video');
-        videoElement.setAttribute('class', ['azuremediaplayer', 'amp-flush-skin', 'amp-big-play-centered'].join(' '));
+        videoElement.setAttribute(
+            'class',
+            ['azuremediaplayer', 'amp-flush-skin', 'amp-big-play-centered'].join(' ')
+        );
         videoElement.setAttribute('tabIndex', '0');
         videoElement.setAttribute('width', '100%');
         videoElement.setAttribute('height', '100%');
@@ -18,7 +24,16 @@ export default class EmbedPlayer {
         videoContainer.appendChild(videoElement);
     }
 
-    play({selector, apiBaseUrl, projectId, articleId, assetId, token, posterImageUrl, autoplay}) {
+    play({
+             selector,
+             apiBaseUrl,
+             projectId,
+             articleId,
+             assetId,
+             token,
+             posterImageUrl,
+             autoplay,
+         }) {
         if (!selector) {
             return Promise.reject('selector property is missing');
         }
@@ -37,7 +52,13 @@ export default class EmbedPlayer {
         const apiFetchUrl = `${apiBaseUrl}/graphql/${projectId}`;
         const heartBeatUrl = `${apiBaseUrl}/service/analytics/stream/pulse/`;
         this.initPlayer(selector);
-        return this.getPlayConfig(apiFetchUrl, articleId, assetId, heartBeatUrl, token).then(config => {
+        return this.getPlayConfig(
+            apiFetchUrl,
+            articleId,
+            assetId,
+            heartBeatUrl,
+            token
+        ).then((config) => {
             this.playVideo(config, posterImageUrl, !!autoplay);
             return config;
         });
@@ -67,54 +88,72 @@ export default class EmbedPlayer {
 
     bindEvents(configData) {
         if (this.myPlayer) {
-            this.myPlayer.addEventListener('error', event => this.eventHandler(event, configData));
+            this.myPlayer.addEventListener('error', (event) =>
+                this.eventHandler(event, configData)
+            );
 
-            this.myPlayer.addEventListener('ended', event => this.eventHandler(event, configData));
+            this.myPlayer.addEventListener('ended', (event) =>
+                this.eventHandler(event, configData)
+            );
 
-            this.myPlayer.addEventListener('pause', event => this.eventHandler(event, configData));
+            this.myPlayer.addEventListener('pause', (event) =>
+                this.eventHandler(event, configData)
+            );
 
-            this.myPlayer.addEventListener('timeupdate', event => this.eventHandler(event, configData));
+            this.myPlayer.addEventListener('timeupdate', (event) =>
+                this.eventHandler(event, configData)
+            );
 
-            this.myPlayer.addEventListener('playing', event => this.eventHandler(event, configData));
+            this.myPlayer.addEventListener('playing', (event) =>
+                this.eventHandler(event, configData)
+            );
         }
     }
 
     eventHandler(event, config) {
         switch (event.type) {
-            case 'timeupdate':
-                {
-                    if (this.isPlaying) {
-                        if (Date.now() - this.lastPlayTime > 30000) {
-                            this.sendPulse(config.heartBeatUrl + 'update', this.getHeartBeatParams(config));
-                            this.lastPlayTime = Date.now();
-                        }
+            case 'timeupdate': {
+                if (this.isPlaying) {
+                    if (Date.now() - this.lastPlayTime > 30000) {
+                        this.sendPulse(
+                            config.heartBeatUrl + 'update',
+                            this.getHeartBeatParams(config)
+                        );
+                        this.lastPlayTime = Date.now();
                     }
                 }
+            }
                 break;
-            case 'playing':
-                {
-                    if (this.isFirstPlay) {
-                        this.isFirstPlay = false;
-                        this.myPlayer.currentTime(config.currentTime);
-                    }
-                    this.sendPulse(config.heartBeatUrl + 'init', this.getHeartBeatParams(config));
-                    this.lastPlayTime = Date.now();
-                    this.isPlaying = true;
+            case 'playing': {
+                if (this.isFirstPlay) {
+                    this.isFirstPlay = false;
+                    this.myPlayer.currentTime(config.currentTime);
                 }
+                this.sendPulse(
+                    config.heartBeatUrl + 'init',
+                    this.getHeartBeatParams(config)
+                );
+                this.lastPlayTime = Date.now();
+                this.isPlaying = true;
+            }
                 break;
-            case 'pause':
-                {
-                    this.sendPulse(config.heartBeatUrl + 'update', this.getHeartBeatParams(config));
-                    this.lastPlayTime = Date.now();
-                    this.isPlaying = false;
-                }
+            case 'pause': {
+                this.sendPulse(
+                    config.heartBeatUrl + 'update',
+                    this.getHeartBeatParams(config)
+                );
+                this.lastPlayTime = Date.now();
+                this.isPlaying = false;
+            }
                 break;
-            case 'ended':
-                {
-                    this.sendPulse(config.heartBeatUrl + 'finish', this.getHeartBeatParams(config));
-                    this.lastPlayTime = Date.now();
-                    this.isPlaying = false;
-                }
+            case 'ended': {
+                this.sendPulse(
+                    config.heartBeatUrl + 'finish',
+                    this.getHeartBeatParams(config)
+                );
+                this.lastPlayTime = Date.now();
+                this.isPlaying = false;
+            }
                 break;
         }
     }
@@ -122,7 +161,9 @@ export default class EmbedPlayer {
     getHeartBeatParams(config) {
         return {
             appa: '' + this.myPlayer.currentTime(),
-            appr: '' + Math.min(this.myPlayer.currentTime() / this.myPlayer.duration(), 1),
+            appr:
+                '' +
+                Math.min(this.myPlayer.currentTime() / this.myPlayer.duration(), 1),
             pulseToken: config.pulseToken,
         };
     }
@@ -137,22 +178,32 @@ export default class EmbedPlayer {
         let config = {};
 
         return this.getArticle(apiBaseUrl, articleId, token)
-            .then(response => response.json())
-            .then(articleData => {
+            .then((response) => response.json())
+            .then((articleData) => {
                 if (!articleData || !articleData.data || articleData.errors) {
                     const {message, code} = articleData.errors[0];
                     throw {message, code};
                 }
                 article = {...articleData.data.Article};
-                return this.getArticleAssetPlayConfig(apiBaseUrl, articleId, assetId, token);
+                return this.getArticleAssetPlayConfig(
+                    apiBaseUrl,
+                    articleId,
+                    assetId,
+                    token
+                );
             })
-            .then(response => response.json())
-            .then(configData => {
+            .then((response) => response.json())
+            .then((configData) => {
                 if (!configData || !configData.data || configData.errors) {
                     const {message, code} = configData.errors[0];
                     throw {message, code};
                 }
-                config = this.toPlayConfigConverter(article, assetId, configData.data.ArticleAssetPlay, heartBeatUrl);
+                config = this.toPlayConfigConverter(
+                    article,
+                    assetId,
+                    configData.data.ArticleAssetPlay,
+                    heartBeatUrl
+                );
                 return config;
             });
     }
@@ -162,6 +213,7 @@ export default class EmbedPlayer {
             query Article($articleId: Int!) {
                 Article(id: $articleId) {
                     id
+                    name
                     assets {
                         id
                         duration
@@ -238,8 +290,8 @@ export default class EmbedPlayer {
     }
 
     toPlayConfigConverter(article, assetId, config, heartBeatUrl) {
-        const asset = article.assets.find(item => item.id === assetId);
-        const options = config.subtitles_new.map(item => ({
+        const asset = article.assets.find((item) => item.id === assetId);
+        const options = config.subtitles_new.map((item) => ({
             src: item.url,
             srclang: item.locale,
             kind: 'subtitles',
@@ -273,14 +325,16 @@ export default class EmbedPlayer {
         const playerConfigs = [];
 
         // check if the entitlements contain FPS in order to know when to filter out aes
-        const filterAES = !!config.entitlements.find(entitlement => entitlement.encryption_type === 'fps');
+        const filterAES = !!config.entitlements.find(
+            (entitlement) => entitlement.encryption_type === 'fps'
+        );
         const entitlements = filterAES
-            ? config.entitlements.filter(entitlement => {
-                  return entitlement.encryption_type !== 'aes';
-              })
+            ? config.entitlements.filter((entitlement) => {
+                return entitlement.encryption_type !== 'aes';
+            })
             : config.entitlements;
 
-        entitlements.forEach(entitlement => {
+        entitlements.forEach((entitlement) => {
             const entitlementConfig = {
                 src: entitlement.manifest,
                 type: entitlement.mime_type,
@@ -313,6 +367,158 @@ export default class EmbedPlayer {
         });
         return playerConfigs;
     }
+
+    setupChromecast(selector, chromecastReceiverAppId) {
+        const castButtonContaner = document.querySelector(selector);
+        const castButton = document.createElement('google-cast-launcher');
+        castButtonContaner.appendChild(castButton);
+        if (chromecastReceiverAppId) {
+            window['__onGCastApiAvailable'] = (isAvailable) => {
+                if (isAvailable && cast && cast.framework) {
+                    this.initializeCastApi(chromecastReceiverAppId);
+                }
+            };
+
+            const scriptElement = document.createElement('script');
+            scriptElement.src =
+                'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
+            document.head.appendChild(scriptElement);
+        }
+    }
+
+    initializeCastApi(chromecastReceiverAppId) {
+        cast.framework.CastContext.getInstance().setOptions({
+            receiverApplicationId: chromecastReceiverAppId,
+            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+        });
+        this.castContext = cast.framework.CastContext.getInstance();
+        this.castPlayer = new cast.framework.RemotePlayer();
+        this.playerController = new cast.framework.RemotePlayerController(
+            this.castPlayer
+        );
+    }
+
+    getCastMediaInfo(articlePlayConfig) {
+        if (
+            articlePlayConfig &&
+            articlePlayConfig.config &&
+            articlePlayConfig.config.player
+        ) {
+            const tracks = articlePlayConfig.config.options.map((option, index) => {
+                const trackId = index + 1;
+                const castTrack = new chrome.cast.media.Track(
+                    trackId,
+                    chrome.cast.media.TrackType.TEXT
+                );
+                castTrack.trackContentId = option.src;
+                castTrack.trackContentType = 'text/vtt';
+                castTrack.subtype = chrome.cast.media.TextTrackType.SUBTITLES;
+                castTrack.name = option.label;
+                castTrack.language = option.srclang;
+                castTrack.customDate = null;
+                return castTrack;
+            });
+            const contentType = 'application/vnd.ms-sstr+xml';
+            const entitlement = articlePlayConfig.config.player.find((item) => {
+                return item.type === contentType;
+            });
+            const protectionConfig = entitlement.protectionInfo.find((protection) => {
+                return protection.type === 'PlayReady';
+            });
+            const token = protectionConfig
+                ? protectionConfig.authenticationToken
+                : null;
+            const mediaInfo = new chrome.cast.media.MediaInfo(
+                entitlement.src,
+                contentType
+            );
+            mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
+            mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+            mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
+            mediaInfo.metadata.title = articlePlayConfig.article.name;
+            mediaInfo.tracks = tracks;
+            mediaInfo.customData = {
+                ...this.getLicenseUrlFromSrc(entitlement.src, token),
+                pulseToken: articlePlayConfig.pulseToken,
+            };
+            mediaInfo.currentTime = articlePlayConfig.currentTime;
+            mediaInfo.autoplay = true;
+
+            return mediaInfo;
+        }
+        return null;
+    }
+
+    getLicenseUrlFromSrc (src, token) {
+        if (token) {
+            const res1 = src.match(
+                /^https:\/\/([^.]+)\.streaming\.mediaservices\.windows\.net\/.*/i
+            );
+            const res2 = src.match(
+                /^https:\/\/([a-z0-9_]+)-euwe.streaming\.media\.azure\.net\/.*/i
+            );
+            const res = res1 ? res1 : res2;
+
+            if (res && res.length === 2) {
+                const licenseUrl =
+                    'https://' +
+                    res[1] +
+                    '.keydelivery.westeurope.media.azure.net/PlayReady/?token=' +
+                    encodeURIComponent(token);
+                return {
+                    licenseUrl,
+                    token,
+                };
+            }
+        }
+        return {};
+    }
+
+    castVideo({apiBaseUrl, projectId, articleId, assetId, token}) {
+        if (!apiBaseUrl) {
+            return Promise.reject('apiBaseUrl property is missing');
+        }
+        if (!articleId) {
+            return Promise.reject('articleId property is missing');
+        }
+        if (!assetId) {
+            return Promise.reject('assetId property is missing');
+        }
+        if (!projectId) {
+            return Promise.reject('projectId property is missing');
+        }
+        const apiFetchUrl = `${apiBaseUrl}/graphql/${projectId}`;
+        return this.getPlayConfig(
+            apiFetchUrl,
+            articleId,
+            assetId,
+            null,
+            token
+        ).then((config) => {
+            if (this.isConnected()) {
+                const castSession = this.castContext.getCurrentSession();
+                const mediaInfo = this.getCastMediaInfo(config);
+
+                if (mediaInfo) {
+                    const request = new chrome.cast.media.LoadRequest(mediaInfo);
+                    request.currentTime = config.currentTime;
+                    return castSession.loadMedia(request);
+                } else {
+                    throw {message: 'Unexpected manifest format in articlePlayConfig'};
+                }
+            }
+            return config;
+        });
+    }
+
+    isConnected() {
+        return this.castPlayer && this.castPlayer.isConnected;
+    }
+
+    stopCasting() {
+        const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+        castSession.endSession(true);
+    }
 }
 //*** Example of usage ***//
 
@@ -327,6 +533,26 @@ export default class EmbedPlayer {
 //         assetId: '',
 //         token: '',
 //         posterImageUrl: ''
+//     })
+//     .then(config => {
+//         console.log('Config', config);
+//     })
+//     .catch(error => {
+//         console.log('Error', error);
+//     });
+
+//*** Example of usage with chromecast ***//
+
+// const player = new EmbeddablePlayer();
+// player.setupChromecast("#cast-wrapper", CHROMECAST_RECEIVER_APP_ID);
+//
+// player
+//     .castVideo({
+//         apiBaseUrl: '',
+//         projectId: '',
+//         articleId: '',
+//         assetId: '',
+//         token: '',
 //     })
 //     .then(config => {
 //         console.log('Config', config);
