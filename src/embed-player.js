@@ -33,6 +33,7 @@ export default class EmbedPlayer {
              token,
              posterImageUrl,
              autoplay,
+             fullScreen
          }) {
         if (!selector) {
             return Promise.reject('selector property is missing');
@@ -59,7 +60,7 @@ export default class EmbedPlayer {
             heartBeatUrl,
             token
         ).then((config) => {
-            this.playVideo(config, posterImageUrl, !!autoplay);
+            this.playVideo(config, posterImageUrl, !!autoplay, fullScreen);
             return config;
         });
     }
@@ -71,7 +72,7 @@ export default class EmbedPlayer {
         }
     }
 
-    playVideo(configData, posterUrl, autoplay) {
+    playVideo(configData, posterUrl, autoplay, fullScreen) {
         const videoElement = document.querySelector('video');
         var myOptions = {
             autoplay,
@@ -84,6 +85,9 @@ export default class EmbedPlayer {
         this.myPlayer = amp(videoElement, myOptions);
         this.myPlayer.src(configData.config.player, configData.config.options);
         this.bindEvents(configData);
+        if(fullScreen) {
+            this.myPlayer.enterFullscreen();
+        }
     }
 
     bindEvents(configData) {
@@ -532,7 +536,8 @@ export default class EmbedPlayer {
 //         articleId: '',
 //         assetId: '',
 //         token: '',
-//         posterImageUrl: ''
+//         posterImageUrl: '',
+//         fullScreen: false
 //     })
 //     .then(config => {
 //         console.log('Config', config);
