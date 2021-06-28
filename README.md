@@ -60,6 +60,7 @@ This is typically used when playing the video in a modal dialog or from a differ
 
 ## Example of usage
 
+### Default usage with a video player
 ```javascript
 const player = new EmbedPlayer();
 
@@ -90,3 +91,57 @@ To destroy the player:
 player.destroy();
 // DOM element refered by the selector, e.g. `.video-wrapper` can now safely be removed. 
 ````
+
+An example of this can be found in `src/index.html`, where the queryString params can be used to set the needed variables.
+
+
+### Usage with ChromeCast option
+
+```javascript
+
+const chromecastReceiverAppId = `000000`; // replace with the custom receiver app id of the AudiencePlayer environment
+const player = new EmbedPlayer();
+// the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognizable spot next
+// to the play-button/thumbnail or in the menu.
+player.setupChromecast('#cast-wrapper', chromecastReceiverAppId);
+
+// call the playVideo function `onClick` of the play-button/thumbnail
+function playVideo() {
+    if (player.isConnected()) {
+        // there is a ChromeCast connection; cast the video
+        player
+            .castVideo({
+                apiBaseUrl,
+                articleId,
+                projectId,
+                assetId,
+                ...tokenParameter,
+            })
+            .catch((error) => console.error(error));
+    } else {
+        // ChromeCast is not connected; play the video directly
+        player
+            .play({
+                selector: '.video-wrapper',
+                apiBaseUrl,
+                articleId,
+                projectId,
+                assetId,
+                ...tokenParameter,
+                ...posterImageUrlParameter,
+                autoplay: autoplay && autoplay === 'true',
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+}
+
+// to stop casting
+function stopCastVideo() {
+    player.stopCasting();
+    player.destroy();
+}
+```
+
+An example of this can be found in `src/cast-index.html`, where the queryString params can be used to set the needed variables.
