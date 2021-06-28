@@ -144,3 +144,11 @@ function stopCastVideo() {
 ```
 
 An example of this can be found in `src/cast-index.html`, where the queryString params can be used to set the needed variables.
+
+
+### Supported browsers
+* EdgeIE 11
+* IE 11
+* Chrome 37+
+* Firefox 42+
+* Safari 6+
