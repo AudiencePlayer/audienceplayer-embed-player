@@ -1,4 +1,4 @@
-import EmbedPlayer from './embed-player.js';
+import EmbedPlayer from '../embed-player.js';
 
 (function () {
     const urlQueryString = window.location.search;
