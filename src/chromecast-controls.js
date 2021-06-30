@@ -12,6 +12,8 @@ export default class ChromecastControls {
         this.playerController.addEventListener(
             cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, () => {
                 this.setProgressBarValues(player);
+                this.renderTracks(player);
+                this.checkChromecastVisibility(player);
             });
 
         this.playerController.addEventListener(
@@ -25,6 +27,7 @@ export default class ChromecastControls {
             () => {
                 this.setProgressBarValues(player);
                 this.setPlayButtonClass(player);
+                this.checkChromecastVisibility(player);
             });
     };
 
@@ -61,7 +64,7 @@ export default class ChromecastControls {
                 </div>
         `);
         this.setTitle(player);
-        this.renderAudioTracksButton(player);
+        this.renderTracksButton(player);
         this.setProgressBarValues(player);
         document.getElementById('tracks-button').addEventListener('click', () => this.toggleTracksDialogue(player));
         document.getElementById('close-icon').addEventListener('click', () => this.toggleTracksDialogue(player));
@@ -86,7 +89,7 @@ export default class ChromecastControls {
         stopButton.addEventListener('click', () => this.stop(player));
     }
 
-    renderAudioTracksButton(player) {
+    renderTracksButton(player) {
         const tracksButtonContainerElement = document.getElementById('tracks-button-container');
         const sessionMediaInfo = cast.framework.CastContext.getInstance().getCurrentSession().getMediaSession();
         let audioTracks = [];
@@ -104,7 +107,8 @@ export default class ChromecastControls {
         }
     }
 
-    renderAudioTracks(player) {
+    renderTracks(player) {
+        this.removeTracks();
         const audioTracksContainerElement = document.getElementById('audio-tracks');
         const textTracksContainerElement = document.getElementById('text-tracks');
         const sessionMediaInfo = cast.framework.CastContext.getInstance().getCurrentSession().getMediaSession();
@@ -117,11 +121,11 @@ export default class ChromecastControls {
         }
 
         if(audioTracks.length) {
-            audioTracksContainerElement.appendChild(this.getTracksList(audioTracks, 'AUDIO'));
+            audioTracksContainerElement.appendChild(this.getTracksList(player, audioTracks, 'AUDIO'));
         }
 
         if(textTracks.length) {
-            textTracksContainerElement.appendChild(this.getTracksList(textTracks, 'TEXT'));
+            textTracksContainerElement.appendChild(this.getTracksList(player, textTracks, 'TEXT'));
         }
     }
 
@@ -137,7 +141,7 @@ export default class ChromecastControls {
     toggleTracksDialogue(player) {
         const tracksContainer = document.getElementById('tracks-container');
         if (tracksContainer.style.display === 'none') {
-            this.renderAudioTracks(player);
+            this.renderTracks(player);
             tracksContainer.style.display = 'unset';
         } else {
             tracksContainer.style.display = 'none';
@@ -145,10 +149,10 @@ export default class ChromecastControls {
         }
     }
 
-    getTracksList(tracks, type) {
+    getTracksList(player, tracks, type) {
         const tracksListElement = document.createElement('ul');
         tracksListElement.classList.add('list-container');
-        tracksListElement.addEventListener('click', type === 'AUDIO' ? this.setActiveAudioTrack : this.setActiveTextTrack);
+        tracksListElement.addEventListener('click', event => this.setActiveTrack(player, event, type === 'AUDIO' ? 'AUDIO' : 'TEXT') );
         tracks.forEach(track => {
             const listItemElement = document.createElement('li');
             listItemElement.classList.add('list-item');
@@ -164,20 +168,8 @@ export default class ChromecastControls {
         return tracksListElement;
     }
 
-    setActiveAudioTrack(event) {
-        event.stopPropagation();
-        if(event.target.nodeName === "LI") {
-            console.log('Selected track', event.target.value);
-            document.getElementById('tracks-container').style.display = 'none';
-        }
-    }
-
-    setActiveTextTrack(event) {
-        event.stopPropagation();
-        if(event.target.nodeName === "LI") {
-            console.log('Selected track', event.target.value);
-            document.getElementById('tracks-container').style.display = 'none';
-        }
+    getActiveTracksByType(player, type) {
+        return this.getTracksByType(player, type).filter(track => track.active).map(track => track.id)
     }
 
     getTracksByType(player, type) {
@@ -189,17 +181,12 @@ export default class ChromecastControls {
         }));
     }
 
-    updateTemplate(player) {
-        console.log('Player', player)
-    }
-
     setTitle(player) {
         const titleElement = document.getElementById('asset-title');
         titleElement.innerText = player.mediaInfo.metadata.title;
     }
 
     setProgressBarValues(player) {
-        console.log('Player', player);
         const currentTimeElement = document.getElementById('current-time');
         const totalTimeElement = document.getElementById('total-time');
         const progressBarElement = document.getElementById('progress-bar');
@@ -256,6 +243,30 @@ export default class ChromecastControls {
         if(player && player.isConnected) {
             this.playerController.stop();
             cast.framework.CastContext.getInstance().getCurrentSession().endSession(true);
+        }
+    }
+
+    setActiveTrack(player, event, type) {
+        if(event.target.nodeName === "LI") {
+            event.stopPropagation();
+            const selectedTrackId = event.target.value;
+            const activeTracks = this.getActiveTracksByType(player, type === 'AUDIO' ? 'TEXT' : 'AUDIO');
+            if (selectedTrackId > 0 && activeTracks.indexOf(selectedTrackId) === -1) {
+                activeTracks.push(selectedTrackId);
+            }
+            this.setActiveTracks(player, activeTracks);
+        }
+    }
+
+    setActiveTracks(player, trackIds) {
+        if(player && player.isConnected) {
+            const media = cast.framework.CastContext.getInstance().getCurrentSession().getMediaSession();
+            const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackIds);
+            media.editTracksInfo(tracksInfoRequest,
+                () => {
+                    this.toggleTracksDialogue(player);
+                },
+                (error) => console.error('ChromeCast', error))
         }
     }
 }
