@@ -1,9 +1,9 @@
 export default class ChromecastControls {
-    constructor(player, controller) {
+    constructor(player, controller, selector) {
         this.playerController = controller;
-        this.player = player;
+        this.rootElement = null;
+        this.createChromecastControlsTemplate(player, selector);
         this.bindEvents(player);
-        this.createTemplate(player);
         this.setPlayButtonClass(player);
         this.bindEventsToControls(player);
     }
@@ -11,68 +11,81 @@ export default class ChromecastControls {
     bindEvents(player) {
         this.playerController.addEventListener(
             cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, () => {
-                this.setProgressBarValues(player);
-                this.renderTracks(player);
-                this.checkChromecastVisibility(player);
+                if(this.rootElement) {
+                    this.setProgressBarValues(player);
+                    this.renderTracks(player);
+                    this.checkChromecastContainerVisibility(player);
+                }
             });
 
         this.playerController.addEventListener(
             cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED,
             () => {
-                this.setProgressBarValues(player);
+                if(this.rootElement) {
+                    this.setProgressBarValues(player);
+                }
             });
 
         this.playerController.addEventListener(
             cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED,
             () => {
-                this.setProgressBarValues(player);
-                this.setPlayButtonClass(player);
-                this.checkChromecastVisibility(player);
+                if(this.rootElement) {
+                    this.setProgressBarValues(player);
+                    this.setPlayButtonClass(player);
+                    this.checkChromecastContainerVisibility(player);
+                }
             });
     };
 
-    createTemplate(player) {
-        document.body.insertAdjacentHTML('beforeend',
-            `<div class="chromecast-controls" id="chromecast">
-               <div class="chromecast-controls__title" id="asset-title"></div>
+    createChromecastControlsTemplate(player, selector) {
+        const chromecastControlsTemplateString = `
+            <div class="chromecast-controls">
+               <div class="chromecast-controls__title"></div>
                <div class="chromecast-controls__progress-bar">
-                 <div class="chromecast-controls__progress-bar__current" id="current-time"></div>
+                 <div class="chromecast-controls__progress-bar__current"></div>
                  <input type="range"
-                        id="progress-bar"
                         value="0"
                         class="chromecast-controls__progress-bar__slider" 
                         min="0"
                         max="100"/>
-                 <div class="chromecast-controls__progress-bar__total" id="total-time"></div>
+                 <div class="chromecast-controls__progress-bar__total"></div>
                </div>
-                  <div class="chromecast-controls__buttons">
-                    <button class="control-button button__play" id="play-pause-button" type="button"></button>
-                    <button class="control-button button__stop" id="stop-button" type="button"></button>
-                    <div class="buttons-container" id="tracks-button-container" style="display: none">
-                      <button class="control-button button__audio-tracks" id="tracks-button" type="button"></button>
-                      <div class="chromecast-controls__subtitles" style="display: none" id="tracks-container">
-                          <div class="chromecast-controls__subtitles__close-icon" id="close-icon">&#215;</div>
-                          <div class="container-wrapper" id="audio-tracks">
-                            <div class="list-title">Audio tracks</div>
-                          </div>
-                          <div class="container-wrapper" id="text-tracks">
-                            <div class="list-title">Text tracks</div>
-                          </div>
+              <div class="chromecast-controls__buttons">
+                <button class="control-button button__play play-pause-button" type="button"></button>
+                <button class="control-button button__stop" type="button"></button>
+                <div class="buttons-container tracks-button-container" style="display: none">
+                  <button class="control-button button__audio-tracks" type="button"></button>
+                  <div class="chromecast-controls__subtitles" style="display: none">
+                      <div class="chromecast-controls__subtitles__close-icon">&#215;</div>
+                      <div class="container-wrapper container-wrapper_audio-tracks">
+                        <div class="list-title">Audio tracks</div>
                       </div>
-                    </div>
-                   </div>
+                      <div class="container-wrapper container-wrapper_text-tracks">
+                        <div class="list-title">Text tracks</div>
+                      </div>
+                  </div>
                 </div>
-        `);
+               </div>
+            </div>
+        `;
+
+        if(selector) {
+            const wrapperContainer = this.getElement(selector);
+            wrapperContainer.insertAdjacentHTML('beforeend', chromecastControlsTemplateString)
+        } else {
+            document.body.insertAdjacentHTML('beforeend', chromecastControlsTemplateString)
+        }
+        this.rootElement = this.getElement();
         this.setTitle(player);
         this.renderTracksButton(player);
         this.setProgressBarValues(player);
-        document.getElementById('tracks-button').addEventListener('click', () => this.toggleTracksDialogue(player));
-        document.getElementById('close-icon').addEventListener('click', () => this.toggleTracksDialogue(player));
-        document.getElementById('progress-bar').addEventListener('input', (event) => this.seek(player, event.target.value));
+        this.rootElement.querySelector('.button__audio-tracks').addEventListener('click', () => this.toggleTracksDialogue(player));
+        this.rootElement.querySelector('.chromecast-controls__subtitles__close-icon').addEventListener('click', () => this.toggleTracksDialogue(player));
+        this.rootElement.querySelector('.chromecast-controls__progress-bar__slider').addEventListener('input', (event) => this.seek(player, event.target.value));
     }
 
     setPlayButtonClass(player) {
-        const playAndPauseButton = document.getElementById('play-pause-button');
+        const playAndPauseButton = this.getElement('.play-pause-button');
 
         if(player.playerState === chrome.cast.media.PlayerState.PAUSED) {
             playAndPauseButton.classList.replace('button__pause', 'button__play');
@@ -82,15 +95,15 @@ export default class ChromecastControls {
     }
 
     bindEventsToControls(player) {
-        const playAndPauseButton = document.getElementById('play-pause-button');
-        const stopButton = document.getElementById('stop-button');
+        const playAndPauseButton = this.getElement('.play-pause-button');
+        const stopButton = this.getElement('.button__stop');
 
         playAndPauseButton.addEventListener('click', () => this.playPause(player));
         stopButton.addEventListener('click', () => this.stop(player));
     }
 
     renderTracksButton(player) {
-        const tracksButtonContainerElement = document.getElementById('tracks-button-container');
+        const tracksButtonContainerElement = this.getElement('.tracks-button-container');
         const sessionMediaInfo = cast.framework.CastContext.getInstance().getCurrentSession().getMediaSession();
         let audioTracks = [];
         let textTracks = [];
@@ -109,8 +122,8 @@ export default class ChromecastControls {
 
     renderTracks(player) {
         this.removeTracks();
-        const audioTracksContainerElement = document.getElementById('audio-tracks');
-        const textTracksContainerElement = document.getElementById('text-tracks');
+        const audioTracksContainerElement = this.getElement('.container-wrapper_audio-tracks');
+        const textTracksContainerElement = this.getElement('.container-wrapper_text-tracks');
         const sessionMediaInfo = cast.framework.CastContext.getInstance().getCurrentSession().getMediaSession();
         let audioTracks = [];
         let textTracks = [];
@@ -130,7 +143,7 @@ export default class ChromecastControls {
     }
 
     removeTracks() {
-        const tracksListElements = document.getElementsByClassName('list-container');
+        const tracksListElements = this.rootElement.getElementsByClassName('list-container');
         if(tracksListElements.length) {
             Array.from(tracksListElements).forEach(element => {
                 element.remove();
@@ -139,7 +152,7 @@ export default class ChromecastControls {
     }
 
     toggleTracksDialogue(player) {
-        const tracksContainer = document.getElementById('tracks-container');
+        const tracksContainer = this.getElement('.chromecast-controls__subtitles');
         if (tracksContainer.style.display === 'none') {
             this.renderTracks(player);
             tracksContainer.style.display = 'unset';
@@ -182,19 +195,8 @@ export default class ChromecastControls {
     }
 
     setTitle(player) {
-        const titleElement = document.getElementById('asset-title');
+        const titleElement = this.getElement('.chromecast-controls__title');
         titleElement.innerText = player.mediaInfo.metadata.title;
-    }
-
-    setProgressBarValues(player) {
-        const currentTimeElement = document.getElementById('current-time');
-        const totalTimeElement = document.getElementById('total-time');
-        const progressBarElement = document.getElementById('progress-bar');
-
-        currentTimeElement.innerText = this.getTransformedDurationValue(player.currentTime);
-        totalTimeElement.innerText = this.getTransformedDurationValue(player.duration);
-        progressBarElement.max = player.duration;
-        progressBarElement.value = player.currentTime;
     }
 
     getTransformedDurationValue(value) {
@@ -218,11 +220,24 @@ export default class ChromecastControls {
         return result + seconds;
     }
 
-    checkChromecastVisibility(player) {
+    setProgressBarValues(player) {
+        if(this.rootElement) {
+            const currentTimeElement = this.getElement('.chromecast-controls__progress-bar__current');
+            const totalTimeElement = this.getElement('.chromecast-controls__progress-bar__total');
+            const progressBarElement = this.getElement('.chromecast-controls__progress-bar__slider');
+
+            currentTimeElement.innerText = this.getTransformedDurationValue(player.currentTime);
+            totalTimeElement.innerText = this.getTransformedDurationValue(player.duration);
+            progressBarElement.max = player.duration;
+            progressBarElement.value = player.currentTime;
+        }
+    }
+
+    checkChromecastContainerVisibility(player) {
         if(player.playerState === chrome.cast.media.PlayerState.IDLE) {
-            document.getElementById('chromecast').style.display = 'none'
-        } else {
-            document.getElementById('chromecast').style.display = 'unset'
+            this.rootElement.remove();
+            this.rootElement = null;
+
         }
     }
 
@@ -268,5 +283,13 @@ export default class ChromecastControls {
                 },
                 (error) => console.error('ChromeCast', error))
         }
+    }
+
+    getElement(selector) {
+        if(selector) {
+            return this.rootElement.querySelector(selector);
+        }
+
+        return document.querySelector('.chromecast-controls');
     }
 }
