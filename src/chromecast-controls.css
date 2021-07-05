@@ -1,3 +1,11 @@
+:root {
+    --main-bg-color: #e7e7e7;
+    --tracks-dialogue-bg-color: #e9e9e9;
+    --tracks-dialogue-shadow-color: rgb(0 0 0 / 20%);
+    --track-item-hover-bg-color: #d4d0d0;
+}
+
+
 body {
     margin: 0;
     padding: 0;
@@ -8,7 +16,7 @@ body {
     height: auto;
     width: 100%;
     padding: 20px 15px;
-    background-color: #e7e7e7;
+    background-color: var(--main-bg-color);
     box-sizing: border-box;
     position: absolute;
     bottom: 0;
@@ -79,13 +87,13 @@ body {
 }
 
 .chromecast-controls__subtitles {
-    background-color: #e9e9e9;
+    background-color: var(--tracks-dialogue-bg-color);
     position: absolute;
     bottom: 75px;
     right: 0;
     min-width: 250px;
     padding: 15px;
-    box-shadow: 0 0 10px 1px rgb(0 0 0 / 20%);
+    box-shadow: 0 0 10px 1px var(--tracks-dialogue-shadow-color);
 }
 
 .container-wrapper {
@@ -100,13 +108,13 @@ body {
 .list-item {
     cursor: pointer;
     width: 100%;
-    padding: 10px 0px 10px 40px;
+    padding: 10px 0 10px 40px;
     position: relative;
     box-sizing: border-box;
 }
 
 .list-item:hover {
-    background-color: #d4d0d0;
+    background-color: var(--track-item-hover-bg-color);
 }
 
 .list-item.active::before {
