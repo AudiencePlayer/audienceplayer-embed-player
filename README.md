@@ -152,3 +152,12 @@ Mind when testing the demo that this example uses relative imports to `../../src
 
 The chromecast controls have a default styling, which can be changed via the css variables (prefixed with `--chromecast-`).
 Another option is to completely replace the chromecast-controls.css with your own implementation. 
+
+
+### Supported browsers
+Latest version of:
+
+* Microsoft Edge
+* Chrome (supports Chromecast)
+* Firefox
+* Safari
