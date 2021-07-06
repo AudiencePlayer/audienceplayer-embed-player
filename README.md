@@ -117,6 +117,9 @@ function playVideo() {
                 assetId,
                 ...tokenParameter,
             })
+            .then(() => {
+                const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController())
+            })
             .catch((error) => console.error(error));
     } else {
         // ChromeCast is not connected; play the video directly
@@ -137,11 +140,15 @@ function playVideo() {
     }
 }
 
-// to stop casting
+// to stop casting (the cast controls contain a stop button)
 function stopCastVideo() {
     player.stopCasting();
     player.destroy();
 }
 ```
 
-An example of this can be found in `src/cast-index.html`, where the queryString params can be used to set the needed variables.
+An example of this can be found in `demo/chromecast-demo/index.html`, where the queryString params can be used to set the needed variables.
+Mind when testing the demo that this example uses relative imports to `../../src`.
+
+The chromecast controls have a default styling, which can be changed via the css variables (prefixed with `--chromecast-`).
+Another option is to completely replace the chromecast-controls.css with your own implementation. 
