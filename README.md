@@ -147,8 +147,7 @@ An example of this can be found in `src/cast-index.html`, where the queryString 
 
 
 ### Supported browsers
-* EdgeIE 11
-* IE 11
-* Chrome 37+
-* Firefox 42+
-* Safari 6+
+* Microsoft Edge
+* Chrome
+* Firefox
+* Safari
