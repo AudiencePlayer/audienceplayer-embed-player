@@ -155,7 +155,7 @@ Another option is to completely replace the chromecast-controls.css with your ow
 
 
 ### Supported browsers
-Latest version of:
+The latest versions of the following browsers are supported:
 
 * Microsoft Edge
 * Chrome (supports Chromecast)
