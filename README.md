@@ -147,8 +147,8 @@ function stopCastVideo() {
 }
 ```
 
-An example of this can be found in `demo/chromecast-demo/index.html`, where the queryString params can be used to set the needed variables.
-Mind when testing the demo that this example uses relative imports to `../../src`.
+An example of this can be found in `demo/index.html`, where the queryString params can be used to set the needed variables.
+Mind when testing the demo that this example uses relative imports to `../src`.
 
 The chromecast controls have a default styling, which can be changed via the css variables (prefixed with `--chromecast-`).
 Another option is to completely replace the chromecast-controls.css with your own implementation. 
