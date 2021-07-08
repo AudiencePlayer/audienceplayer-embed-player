@@ -397,7 +397,7 @@ export default class EmbedPlayer {
         });
         this.castContext = cast.framework.CastContext.getInstance();
         this.castPlayer = new cast.framework.RemotePlayer();
-        this.playerController = new cast.framework.RemotePlayerController(
+        this.castPlayerController = new cast.framework.RemotePlayerController(
             this.castPlayer
         );
     }
@@ -522,6 +522,14 @@ export default class EmbedPlayer {
     stopCasting() {
         const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
         castSession.endSession(true);
+    }
+
+    getCastPlayer() {
+        return this.castPlayer;
+    }
+
+    getCastPlayerController() {
+        return this.castPlayerController;
     }
 }
 //*** Example of usage ***//

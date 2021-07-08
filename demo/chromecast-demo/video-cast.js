@@ -1,4 +1,5 @@
-import EmbedPlayer from './embed-player.js';
+import EmbedPlayer from '../../src/embed-player.js';
+import ChromecastControls from '../../src/chromecast-controls.js';
 
 (function () {
     const urlQueryString = window.location.search;
@@ -33,6 +34,9 @@ import EmbedPlayer from './embed-player.js';
                     projectId,
                     assetId,
                     ...tokenParameter,
+                })
+                .then(() => {
+                    const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController())
                 })
                 .catch((error) => console.error(error));
         } else {
