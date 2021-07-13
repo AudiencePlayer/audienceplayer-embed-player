@@ -97,11 +97,17 @@ An example of this can be found in `src/index.html`, where the queryString param
 
 ### Usage with ChromeCast option
 
+Besides just using the embedded player, when you have an AudiencePlayer ChromeCast receiver application, you can offer 
+video playout via a ChromeCast device that is on the same local network.
+In the below example, it is shown how you can set this up with the `chromecast receiver app id` which you will then have 
+received from AudiencePlayer.
+
+
 ```javascript
 
-const chromecastReceiverAppId = `000000`; // replace with the custom receiver app id of the AudiencePlayer environment
+const chromecastReceiverAppId = `000000`; // replace with the receiver app id
 const player = new EmbedPlayer();
-// the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognizable spot next
+// the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognisable spot next
 // to the play-button/thumbnail or in the menu.
 player.setupChromecast('#cast-wrapper', chromecastReceiverAppId);
 
@@ -147,8 +153,20 @@ function stopCastVideo() {
 }
 ```
 
-An example of this can be found in `demo/chromecast-demo/index.html`, where the queryString params can be used to set the needed variables.
-Mind when testing the demo that this example uses relative imports to `../../src`.
+An example of this can be found in `demo/index.html`, where the queryString params can be used to set the needed variables.
+When testing the demo, mind that this example uses relative imports to `../src`.
+
+### Important to note: 
+ 
+In this demo, the `embed-player` is only used when there is no ChromeCast session. 
+The reason for this is that the Azure Media Player is unaware of the ChromeCast session, so pressing play inside the player will
+always just play the video in the player, regardless of the session.
+
+In the situation where you already show the `embed-player` and want to make used of ChromeCast, we advise to show a thumbnail
+with a play icon instead and use this as the button to cast the video or start the video with the autoplay option to true.
+We also advise to then show the player inside a modal dialog, so that when the dialog is closed, the user will see the thumbnail again. 
+
+#### Styling the ChromeCast controls
 
 The chromecast controls have a default styling, which can be changed via the css variables (prefixed with `--chromecast-`).
 Another option is to completely replace the chromecast-controls.css with your own implementation. 

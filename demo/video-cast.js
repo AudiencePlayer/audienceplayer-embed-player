@@ -1,5 +1,5 @@
-import EmbedPlayer from '../../src/embed-player.js';
-import ChromecastControls from '../../src/chromecast-controls.js';
+import EmbedPlayer from '../src/embed-player.js';
+import ChromecastControls from '../src/chromecast-controls.js';
 
 (function () {
     const urlQueryString = window.location.search;
