@@ -107,7 +107,7 @@ received from AudiencePlayer.
 
 const chromecastReceiverAppId = `000000`; // replace with the receiver app id
 const player = new EmbedPlayer();
-// the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognizable spot next
+// the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognisable spot next
 // to the play-button/thumbnail or in the menu.
 player.setupChromecast('#cast-wrapper', chromecastReceiverAppId);
 
@@ -154,16 +154,17 @@ function stopCastVideo() {
 ```
 
 An example of this can be found in `demo/index.html`, where the queryString params can be used to set the needed variables.
-Mind when testing the demo that this example uses relative imports to `../src`.
+When testing the demo, mind that this example uses relative imports to `../src`.
 
 ### Important to note: 
  
 In this demo, the `embed-player` is only used when there is no ChromeCast session. 
-The reason is that the Azure Media Player is unaware of the ChromeCast session, so pressing play inside the player will
+The reason for this is that the Azure Media Player is unaware of the ChromeCast session, so pressing play inside the player will
 always just play the video in the player, regardless of the session.
-In the case where you already show the `embed-player` and want to make used of ChromeCast, we advice to show a thumbnail
+
+In the situation where you already show the `embed-player` and want to make used of ChromeCast, we advise to show a thumbnail
 with a play icon instead and use this as the button to cast the video or start the video with the autoplay option to true.
-We also advice to then show the player inside a modal dialog, so that when the dialog is closed, the user will see the thumbnail again. 
+We also advise to then show the player inside a modal dialog, so that when the dialog is closed, the user will see the thumbnail again. 
 
 #### Styling the ChromeCast controls
 
