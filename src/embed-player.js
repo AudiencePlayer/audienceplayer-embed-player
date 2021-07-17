@@ -426,9 +426,13 @@ export default class EmbedPlayer {
             const entitlement = articlePlayConfig.config.player.find((item) => {
                 return item.type === contentType;
             });
-            const protectionConfig = entitlement.protectionInfo.find((protection) => {
-                return protection.type === 'PlayReady';
-            });
+            let protectionConfig = null;
+
+            if(entitlement && entitlement.protectionInfo) {
+                protectionConfig = entitlement.protectionInfo.find((protection) => {
+                    return protection.type === 'PlayReady';
+                });
+            }
             const token = protectionConfig
                 ? protectionConfig.authenticationToken
                 : null;
@@ -441,8 +445,9 @@ export default class EmbedPlayer {
             mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
             mediaInfo.metadata.title = articlePlayConfig.article.name;
             mediaInfo.tracks = tracks;
+            const licenceUrlParam = token ? {...this.getLicenseUrlFromSrc(entitlement.src, token)} : {};
             mediaInfo.customData = {
-                ...this.getLicenseUrlFromSrc(entitlement.src, token),
+                ...licenceUrlParam,
                 pulseToken: articlePlayConfig.pulseToken,
             };
             mediaInfo.currentTime = articlePlayConfig.currentTime;
