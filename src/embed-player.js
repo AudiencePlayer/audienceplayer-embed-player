@@ -263,6 +263,7 @@ export default class EmbedPlayer {
                         manifest
                         token
                         encryption_type
+                        key_delivery_url
                     }
                     subtitles_new {
                         url
@@ -338,6 +339,13 @@ export default class EmbedPlayer {
             })
             : config.entitlements;
 
+        const dashWidevine = entitlements.find(
+            entitlement => !!entitlement.token && entitlement.encryption_type === 'cenc' && entitlement.protocol.indexOf('dash') === 0
+        );
+        const mssPlayReady = entitlements.find(
+            entitlement => !!entitlement.token && entitlement.encryption_type === 'cenc' && entitlement.protocol.indexOf('mss') === 0
+        );
+
         entitlements.forEach((entitlement) => {
             const entitlementConfig = {
                 src: entitlement.manifest,
@@ -346,23 +354,30 @@ export default class EmbedPlayer {
             };
 
             if (entitlement.token) {
+                entitlementConfig.protectionInfo = [];
                 if (entitlement.encryption_type === 'cenc') {
-                    entitlementConfig.protectionInfo = [
-                        {
-                            type: 'PlayReady',
-                            authenticationToken: 'Bearer=' + entitlement.token,
-                        },
-                        {
+                    if (!!dashWidevine) {
+                        entitlementConfig.protectionInfo.push({
                             type: 'Widevine',
-                            authenticationToken: 'Bearer ' + entitlement.token,
-                        },
-                    ];
+                            authenticationToken: 'Bearer ' + dashWidevine.token,
+                            keyDeliveryUrl: dashWidevine.key_delivery_url,
+                        });
+                    }
+
+                    if (!!mssPlayReady) {
+                        entitlementConfig.protectionInfo.push({
+                            type: 'PlayReady',
+                            authenticationToken: 'Bearer=' + mssPlayReady.token,
+                            keyDeliveryUrl: mssPlayReady.key_delivery_url,
+                        });
+                    }
                 } else if (entitlement.encryption_type === 'fps') {
                     entitlementConfig.protectionInfo = [
                         {
                             type: 'FairPlay',
                             authenticationToken: 'Bearer ' + entitlement.token,
                             certificateUrl: config.fairplay_certificate_url,
+                            keyDeliveryUrl: entitlement.key_delivery_url
                         },
                     ];
                 }
@@ -445,7 +460,7 @@ export default class EmbedPlayer {
             mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
             mediaInfo.metadata.title = articlePlayConfig.article.name;
             mediaInfo.tracks = tracks;
-            const licenceUrlParam = token ? {...this.getLicenseUrlFromSrc(entitlement.src, token)} : {};
+            const licenceUrlParam = token ? {...this.getLicenseUrlFromSrc(protectionConfig.keyDeliveryUrl, token)} : {};
             mediaInfo.customData = {
                 ...licenceUrlParam,
                 pulseToken: articlePlayConfig.pulseToken,
@@ -460,25 +475,12 @@ export default class EmbedPlayer {
 
     getLicenseUrlFromSrc (src, token) {
         if (token) {
-            const res1 = src.match(
-                /^https:\/\/([^.]+)\.streaming\.mediaservices\.windows\.net\/.*/i
-            );
-            const res2 = src.match(
-                /^https:\/\/([a-z0-9_]+)-euwe.streaming\.media\.azure\.net\/.*/i
-            );
-            const res = res1 ? res1 : res2;
-
-            if (res && res.length === 2) {
-                const licenseUrl =
-                    'https://' +
-                    res[1] +
-                    '.keydelivery.westeurope.media.azure.net/PlayReady/?token=' +
-                    encodeURIComponent(token);
-                return {
-                    licenseUrl,
-                    token,
-                };
-            }
+            const rootSrc = src.includes('?') ? `${src}&token=` : `${src}?token=`;
+            const licenseUrl = rootSrc + encodeURIComponent(token);
+            return {
+                licenseUrl,
+                token,
+            };
         }
         return {};
     }
