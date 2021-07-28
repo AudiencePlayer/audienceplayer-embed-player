@@ -190,7 +190,7 @@ export default class ChromecastControls {
         return player.mediaInfo.tracks.filter(track => track.type === type).map(track => ({
             id: track.trackId,
             locale: track.language,
-            active: sessionMediaInfo.activeTrackIds.indexOf(track.trackId) !== -1,
+            active: sessionMediaInfo.activeTrackIds && sessionMediaInfo.activeTrackIds.indexOf(track.trackId) !== -1,
         }));
     }
 
