@@ -21,9 +21,11 @@ import ChromecastControls from '../src/chromecast-controls.js';
 
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('video-button-stop').addEventListener('click', stopCastVideo);
-
-    player.setupChromecast('#cast-wrapper', chromecastReceiverAppId);
-    document.getElementById('cast-wrapper').style.display = 'unset';
+    player.setupChromecast('#cast-wrapper', chromecastReceiverAppId)
+        .then(() => {
+            const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
+            document.getElementById('cast-wrapper').style.display = 'unset';
+        });
 
     function playVideo() {
         if (player.isConnected()) {
@@ -34,9 +36,6 @@ import ChromecastControls from '../src/chromecast-controls.js';
                     projectId,
                     assetId,
                     ...tokenParameter,
-                })
-                .then(() => {
-                    const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController())
                 })
                 .catch((error) => console.error(error));
         } else {

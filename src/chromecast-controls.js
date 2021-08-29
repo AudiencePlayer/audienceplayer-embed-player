@@ -2,39 +2,48 @@ export default class ChromecastControls {
     constructor(player, controller, selector) {
         this.playerController = controller;
         this.rootElement = null;
+        this.controlInitialized = false;
+        this.totalDuration = player.duration || 0;
+        this.currentTime = player.currentTime || 0;
+        this.currentStatus = player.playerState;
         this.createChromecastControlsTemplate(player, selector);
         this.bindEvents(player);
-        this.setPlayButtonClass(player);
+        this.setPlayButtonClass();
         this.bindEventsToControls(player);
+        this.setProgressBarValues();
+        this.setTitle(player);
     }
 
     bindEvents(player) {
         this.playerController.addEventListener(
             cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, () => {
-                if(this.rootElement) {
-                    this.setProgressBarValues(player);
+                if(this.rootElement && player.mediaInfo) {
                     this.renderTracks(player);
-                    this.checkChromecastContainerVisibility(player);
+                    this.setTitle(player);
                 }
             });
 
         this.playerController.addEventListener(
             cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED,
-            () => {
-                if(this.rootElement) {
-                    this.setProgressBarValues(player);
+            (e) => {
+                if(this.rootElement && player.mediaInfo) {
+                    this.currentTime = e.value;
+                    this.setProgressBarValues();
                 }
             });
 
         this.playerController.addEventListener(
             cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED,
-            () => {
-                if(this.rootElement) {
-                    this.setProgressBarValues(player);
-                    this.setPlayButtonClass(player);
-                    this.checkChromecastContainerVisibility(player);
+            (e) => {
+                if(this.rootElement && player.mediaInfo) {
+                    this.currentStatus = e.value;
+                    this.checkChromecastContainerVisibility();
+                    this.setPlayButtonClass();
+                    this.setProgressBarValues();
                 }
             });
+
+        this.checkChromecastContainerVisibility();
     };
 
     createChromecastControlsTemplate(player, selector) {
@@ -76,18 +85,14 @@ export default class ChromecastControls {
             document.body.insertAdjacentHTML('beforeend', chromecastControlsTemplateString)
         }
         this.rootElement = this.getElement();
-        this.setTitle(player);
-        this.renderTracksButton(player);
-        this.setProgressBarValues(player);
         this.rootElement.querySelector('.button__audio-tracks').addEventListener('click', () => this.toggleTracksDialogue(player));
         this.rootElement.querySelector('.chromecast-controls__subtitles__close-icon').addEventListener('click', () => this.toggleTracksDialogue(player));
         this.rootElement.querySelector('.chromecast-controls__progress-bar__slider').addEventListener('input', (event) => this.seek(player, event.target.value));
     }
 
-    setPlayButtonClass(player) {
+    setPlayButtonClass() {
         const playAndPauseButton = this.getElement('.play-pause-button');
-
-        if(player.playerState === chrome.cast.media.PlayerState.PAUSED) {
+        if(this.currentStatus === chrome.cast.media.PlayerState.PAUSED) {
             playAndPauseButton.classList.replace('button__pause', 'button__play');
         } else {
             playAndPauseButton.classList.replace('button__play', 'button__pause');
@@ -98,8 +103,11 @@ export default class ChromecastControls {
         const playAndPauseButton = this.getElement('.play-pause-button');
         const stopButton = this.getElement('.button__stop');
 
-        playAndPauseButton.addEventListener('click', () => this.playPause(player));
-        stopButton.addEventListener('click', () => this.stop(player));
+        if(!this.controlInitialized) {
+            playAndPauseButton.addEventListener('click', () => this.playPause(player));
+            stopButton.addEventListener('click', () => this.stop(player));
+            this.controlInitialized = true;
+        }
     }
 
     renderTracksButton(player) {
@@ -120,6 +128,27 @@ export default class ChromecastControls {
         }
     }
 
+    renderTracks(player) {
+        this.removeTracks();
+        const audioTracksContainerElement = this.getElement('.container-wrapper_audio-tracks');
+        const textTracksContainerElement = this.getElement('.container-wrapper_text-tracks');
+        const sessionMediaInfo = cast.framework.CastContext.getInstance().getCurrentSession().getMediaSession();
+        let audioTracks = [];
+        let textTracks = [];
+
+        if(player.mediaInfo && player.mediaInfo.tracks && sessionMediaInfo) {
+            audioTracks = this.getTracksByType(player, 'AUDIO');
+            textTracks = this.getTracksByType(player, 'TEXT');
+        }
+
+        if(audioTracks.length) {
+            audioTracksContainerElement.appendChild(this.getTracksList(player, audioTracks, 'AUDIO'));
+        }
+
+        if(textTracks.length) {
+            textTracksContainerElement.appendChild(this.getTracksList(player, textTracks, 'TEXT'));
+        }
+    }
     renderTracks(player) {
         this.removeTracks();
         const audioTracksContainerElement = this.getElement('.container-wrapper_audio-tracks');
@@ -195,8 +224,10 @@ export default class ChromecastControls {
     }
 
     setTitle(player) {
-        const titleElement = this.getElement('.chromecast-controls__title');
-        titleElement.innerText = player.mediaInfo.metadata.title;
+        if(player.mediaInfo) {
+            const titleElement = this.getElement('.chromecast-controls__title');
+            titleElement.innerText = player.mediaInfo.metadata.title;
+        }
     }
 
     getTransformedDurationValue(value) {
@@ -220,24 +251,24 @@ export default class ChromecastControls {
         return result + seconds;
     }
 
-    setProgressBarValues(player) {
+    setProgressBarValues() {
         if(this.rootElement) {
             const currentTimeElement = this.getElement('.chromecast-controls__progress-bar__current');
             const totalTimeElement = this.getElement('.chromecast-controls__progress-bar__total');
             const progressBarElement = this.getElement('.chromecast-controls__progress-bar__slider');
 
-            currentTimeElement.innerText = this.getTransformedDurationValue(player.currentTime);
-            totalTimeElement.innerText = this.getTransformedDurationValue(player.duration);
-            progressBarElement.max = player.duration;
-            progressBarElement.value = player.currentTime;
+            currentTimeElement.innerText = this.getTransformedDurationValue(this.currentTime);
+            totalTimeElement.innerText = this.getTransformedDurationValue(this.totalDuration);
+            progressBarElement.max = this.totalDuration;
+            progressBarElement.value = this.currentTime;
         }
     }
 
-    checkChromecastContainerVisibility(player) {
-        if(player.playerState === chrome.cast.media.PlayerState.IDLE) {
-            this.rootElement.remove();
-            this.rootElement = null;
-
+    checkChromecastContainerVisibility() {
+        if(this.currentStatus === chrome.cast.media.PlayerState.IDLE) {
+            this.rootElement.style.display = 'none';
+        } else {
+            this.rootElement.style.display = 'block';
         }
     }
 
@@ -257,7 +288,6 @@ export default class ChromecastControls {
     stop(player) {
         if(player && player.isConnected) {
             this.playerController.stop();
-            cast.framework.CastContext.getInstance().getCurrentSession().endSession(true);
         }
     }
 
