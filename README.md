@@ -127,9 +127,6 @@ function playVideo() {
                 assetId,
                 ...tokenParameter,
             })
-            .then(() => {
-                const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController())
-            })
             .catch((error) => console.error(error));
     } else {
         // ChromeCast is not connected; play the video directly
