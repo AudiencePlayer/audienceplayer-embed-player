@@ -26,8 +26,9 @@ export default class ChromecastControls {
         this.playerController.addEventListener(
             cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED,
             (e) => {
-                if(this.rootElement && player.mediaInfo) {
+                if(this.rootElement) {
                     this.currentTime = e.value;
+                    this.totalDuration = player.duration;
                     this.setProgressBarValues();
                 }
             });
@@ -35,7 +36,7 @@ export default class ChromecastControls {
         this.playerController.addEventListener(
             cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED,
             (e) => {
-                if(this.rootElement && player.mediaInfo) {
+                if(this.rootElement) {
                     this.currentStatus = e.value;
                     this.checkChromecastContainerVisibility();
                     this.setPlayButtonClass();
