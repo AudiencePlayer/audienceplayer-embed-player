@@ -109,7 +109,11 @@ const chromecastReceiverAppId = `000000`; // replace with the receiver app id
 const player = new EmbedPlayer();
 // the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognisable spot next
 // to the play-button/thumbnail or in the menu.
-player.setupChromecast('#cast-wrapper', chromecastReceiverAppId);
+player
+    .setupChromecast('#cast-wrapper', chromecastReceiverAppId)
+    .then(() => {
+            const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
+    });
 
 // call the playVideo function `onClick` of the play-button/thumbnail
 function playVideo() {
@@ -122,9 +126,6 @@ function playVideo() {
                 projectId,
                 assetId,
                 ...tokenParameter,
-            })
-            .then(() => {
-                const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController())
             })
             .catch((error) => console.error(error));
     } else {

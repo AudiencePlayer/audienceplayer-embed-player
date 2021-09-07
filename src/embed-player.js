@@ -388,21 +388,30 @@ export default class EmbedPlayer {
     }
 
     setupChromecast(selector, chromecastReceiverAppId) {
-        const castButtonContaner = document.querySelector(selector);
-        const castButton = document.createElement('google-cast-launcher');
-        castButtonContaner.appendChild(castButton);
-        if (chromecastReceiverAppId) {
-            window['__onGCastApiAvailable'] = (isAvailable) => {
-                if (isAvailable && cast && cast.framework) {
-                    this.initializeCastApi(chromecastReceiverAppId);
-                }
-            };
+        return new Promise((resolve, reject) => {
+            const castButtonContaner = document.querySelector(selector);
+            const castButton = document.createElement('google-cast-launcher');
+            castButtonContaner.appendChild(castButton);
+            if (chromecastReceiverAppId) {
+                window['__onGCastApiAvailable'] = (isAvailable) => {
+                    if (isAvailable && cast && cast.framework) {
+                        this.initializeCastApi(chromecastReceiverAppId);
 
-            const scriptElement = document.createElement('script');
-            scriptElement.src =
-                'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
-            document.head.appendChild(scriptElement);
-        }
+                        //Some Chromecast configurations are taking some time to initialize
+                        setTimeout(() => {
+                            resolve()
+                        }, 1000);
+                    }
+                };
+
+                const scriptElement = document.createElement('script');
+                scriptElement.src =
+                    'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
+                document.head.appendChild(scriptElement);
+            } else {
+                reject('Chromecast Receiver Application Id is missing')
+            }
+        });
     }
 
     initializeCastApi(chromecastReceiverAppId) {
