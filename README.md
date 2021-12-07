@@ -95,29 +95,6 @@ player.destroy();
 
 An example of this can be found in `src/index.html`, where the queryString params can be used to set the needed variables.
 
-### Styling improvements of video player controls
-Video player controls by default are well styled for all large/medium screen devices but on mobile viewport,
-controls often disappear. To fix this, please add the following CSS code after all your CSS imports in a way to override the default
-library styling:
-```css
-.amp-flush-skin .amp-logo {
-    display: none !important;
-}
-
-.amp-closedcaption-control {
-    display: none !important;
-}
-
-.azuremediaplayer.amp-flush-skin.amp-size-s .vjs-control-bar .amp-controlbaricons-left .vjs-play-control {
-    display: block !important;
-}
-
-.amp-flush-skin .vjs-text-track-display > div > div > div {
-    background-color: transparent !important;
-    text-shadow: 0.1rem 0.1rem 0.05rem #000;
-    }
-```
-
 
 
 ### Usage with ChromeCast option

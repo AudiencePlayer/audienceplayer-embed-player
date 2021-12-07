@@ -1,3 +1,8 @@
+/*
+Video player controls by default are well styled for all large/medium screen devices but require a few modifications
+specifically for mobile
+ */
+
 .amp-flush-skin .amp-logo {
     display: none !important;
 }
