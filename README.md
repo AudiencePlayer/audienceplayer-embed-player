@@ -21,7 +21,7 @@ The Azure Media Player comes with default css:
 ```html
 <link href="https://static.audienceplayer.com/embed-player/azure-media-player/amp.min.css" rel="stylesheet" />
 <link href="https://static.audienceplayer.com/embed-player/azure-media-player/amp-flush.min.css" rel="stylesheet" />
-<link href="https://static.audienceplayer.com/embed-player/embed-player.min.css" rel="stylesheet" />
+<link href="https://static.audienceplayer.com/embed-player/embed-player.css" rel="stylesheet" />
 ```
 
 ## Usage
