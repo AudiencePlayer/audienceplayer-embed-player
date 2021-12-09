@@ -21,6 +21,7 @@ The Azure Media Player comes with default css:
 ```html
 <link href="https://static.audienceplayer.com/embed-player/azure-media-player/amp.min.css" rel="stylesheet" />
 <link href="https://static.audienceplayer.com/embed-player/azure-media-player/amp-flush.min.css" rel="stylesheet" />
+<link href="https://static.audienceplayer.com/embed-player/embed-player.css" rel="stylesheet" />
 ```
 
 ## Usage
@@ -93,6 +94,7 @@ player.destroy();
 ````
 
 An example of this can be found in `src/index.html`, where the queryString params can be used to set the needed variables.
+
 
 
 ### Usage with ChromeCast option
@@ -170,8 +172,7 @@ We also advise to then show the player inside a modal dialog, so that when the d
 #### Styling the ChromeCast controls
 
 The chromecast controls have a default styling, which can be changed via the css variables (prefixed with `--chromecast-`).
-Another option is to completely replace the chromecast-controls.css with your own implementation. 
-
+Another option is to completely replace the chromecast-controls.css with your own implementation.
 
 ### Supported browsers
 The latest versions of the following browsers are supported:
@@ -180,3 +181,4 @@ The latest versions of the following browsers are supported:
 * Chrome (supports Chromecast)
 * Firefox
 * Safari
+
