@@ -68,7 +68,7 @@ export default class EmbedPlayer {
 
     destroy() {
         if (this.myPlayer) {
-            if (this.configData && this.isPlaying) {
+            if (this.configData) {
                 this.eventHandler({type: 'ended'});
             }
             this.myPlayer.dispose();
