@@ -7,6 +7,7 @@ export default class EmbedPlayer {
         this.castPlayer = null;
         this.castContext = null;
         this.castPlayerController = null;
+        this.configData = null;
     }
 
     initPlayer(selector) {
@@ -51,7 +52,7 @@ export default class EmbedPlayer {
             return Promise.reject('projectId property is missing');
         }
         const apiFetchUrl = `${apiBaseUrl}/graphql/${projectId}`;
-        const heartBeatUrl = `${apiBaseUrl}/service/analytics/stream/pulse/`;
+        const heartBeatUrl = `${apiBaseUrl}/service/${projectId}/analytics/stream/pulse/`;
         this.initPlayer(selector);
         return this.getPlayConfig(
             apiFetchUrl,
@@ -67,12 +68,20 @@ export default class EmbedPlayer {
 
     destroy() {
         if (this.myPlayer) {
+            if (this.configData) {
+                this.eventHandler({type: 'ended'});
+            }
             this.myPlayer.dispose();
             this.myPlayer = null;
         }
+        this.isFirstPlay = true;
+        this.isPlaying = false;
+        this.configData = null;
     }
 
     playVideo(configData, posterUrl, autoplay, fullScreen) {
+        this.configData = configData;
+        this.lastPlayTime = Date.now();
         const videoElement = document.querySelector('video');
         var myOptions = {
             autoplay,
@@ -83,45 +92,45 @@ export default class EmbedPlayer {
             myOptions.poster = posterUrl;
         }
         this.myPlayer = amp(videoElement, myOptions);
-        this.myPlayer.src(configData.config.player, configData.config.options);
-        this.bindEvents(configData);
+        this.myPlayer.src(this.configData.config.player, this.configData.config.options);
+        this.bindEvents();
         if(fullScreen) {
             this.myPlayer.enterFullscreen();
         }
     }
 
-    bindEvents(configData) {
+    bindEvents() {
         if (this.myPlayer) {
             this.myPlayer.addEventListener('error', (event) =>
-                this.eventHandler(event, configData)
+                this.eventHandler(event)
             );
 
             this.myPlayer.addEventListener('ended', (event) =>
-                this.eventHandler(event, configData)
+                this.eventHandler(event)
             );
 
             this.myPlayer.addEventListener('pause', (event) =>
-                this.eventHandler(event, configData)
+                this.eventHandler(event)
             );
 
             this.myPlayer.addEventListener('timeupdate', (event) =>
-                this.eventHandler(event, configData)
+                this.eventHandler(event)
             );
 
             this.myPlayer.addEventListener('playing', (event) =>
-                this.eventHandler(event, configData)
+                this.eventHandler(event)
             );
         }
     }
 
-    eventHandler(event, config) {
+    eventHandler(event) {
         switch (event.type) {
             case 'timeupdate': {
                 if (this.isPlaying) {
                     if (Date.now() - this.lastPlayTime > 30000) {
                         this.sendPulse(
-                            config.heartBeatUrl + 'update',
-                            this.getHeartBeatParams(config)
+                            this.configData.heartBeatUrl + 'update',
+                            this.getHeartBeatParams()
                         );
                         this.lastPlayTime = Date.now();
                     }
@@ -131,11 +140,11 @@ export default class EmbedPlayer {
             case 'playing': {
                 if (this.isFirstPlay) {
                     this.isFirstPlay = false;
-                    this.myPlayer.currentTime(config.currentTime);
+                    this.myPlayer.currentTime(this.configData.currentTime);
                 }
                 this.sendPulse(
-                    config.heartBeatUrl + 'init',
-                    this.getHeartBeatParams(config)
+                    this.configData.heartBeatUrl + 'init',
+                    this.getHeartBeatParams()
                 );
                 this.lastPlayTime = Date.now();
                 this.isPlaying = true;
@@ -143,8 +152,8 @@ export default class EmbedPlayer {
                 break;
             case 'pause': {
                 this.sendPulse(
-                    config.heartBeatUrl + 'update',
-                    this.getHeartBeatParams(config)
+                    this.configData.heartBeatUrl + 'update',
+                    this.getHeartBeatParams()
                 );
                 this.lastPlayTime = Date.now();
                 this.isPlaying = false;
@@ -152,8 +161,8 @@ export default class EmbedPlayer {
                 break;
             case 'ended': {
                 this.sendPulse(
-                    config.heartBeatUrl + 'finish',
-                    this.getHeartBeatParams(config)
+                    this.configData.heartBeatUrl + 'finish',
+                    this.getHeartBeatParams()
                 );
                 this.lastPlayTime = Date.now();
                 this.isPlaying = false;
@@ -162,13 +171,13 @@ export default class EmbedPlayer {
         }
     }
 
-    getHeartBeatParams(config) {
+    getHeartBeatParams() {
         return {
             appa: '' + this.myPlayer.currentTime(),
             appr:
                 '' +
                 Math.min(this.myPlayer.currentTime() / this.myPlayer.duration(), 1),
-            pulseToken: config.pulseToken,
+            pulseToken: this.configData.pulseToken,
         };
     }
 

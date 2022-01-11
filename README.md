@@ -58,6 +58,7 @@ The `play()` method mentioned before provides a promise that, in case of success
 
 The `destroy()` method will clean-up the underlying Azure Media Player, so that you can safely remove the element referred by the `selector` from the DOM.
 This is typically used when playing the video in a modal dialog or from a different element in the DOM.
+####important: call .destroy() to make sure the `finish` stream-pulse is sent, so that the user will continue playing on an accurate position.
 
 ## Example of usage
 
