@@ -52,7 +52,7 @@ export default class EmbedPlayer {
             return Promise.reject('projectId property is missing');
         }
         const apiFetchUrl = `${apiBaseUrl}/graphql/${projectId}`;
-        const heartBeatUrl = `${apiBaseUrl}/service/analytics/stream/pulse/`;
+        const heartBeatUrl = `${apiBaseUrl}/service/${projectId}/analytics/stream/pulse/`;
         this.initPlayer(selector);
         return this.getPlayConfig(
             apiFetchUrl,
