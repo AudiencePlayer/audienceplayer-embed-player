@@ -2,32 +2,32 @@
 
 This library allows you to play your AudiencePlayer videos assets on your website, via the "headless" solution of the [AudiencePlayer video platform](https://www.audienceplayer.com). 
 
-## Hosted solution
+## Usage example project
 
-There is no need to (npm) install anything into your project. It should be used as a remotely hosted solution, where you include the needed scripts and styles directly into your HTML.
+An example implementation can be found here: https://github.com/AudiencePlayer/audienceplayer-embed-player-projects
 
 
-## Dependencies in your HTML
+## Manual implementation without dependency management
 
-Embed the Azure Media Player and this library in your `index.html`, using the absolute URL's:
+Copy the needed files to your project, next to your `index.html`.
+
+Include the Azure Media Player and this library in your `index.html`:
 
 ```html
-<script src="https://static.audienceplayer.com/embed-player/azure-media-player/amp.min.js"></script>
-<script src="https://static.audienceplayer.com/embed-player/embed-player.min.js" type="module"></script>
+<script src="azure-media-player-[version]/amp.min.js"></script>
+<script src="embed-player.js" type="module"></script>
 ```
 
 The Azure Media Player comes with default css:
 
 ```html
-<link href="https://static.audienceplayer.com/embed-player/azure-media-player/amp.min.css" rel="stylesheet" />
-<link href="https://static.audienceplayer.com/embed-player/azure-media-player/amp-flush.min.css" rel="stylesheet" />
-<link href="https://static.audienceplayer.com/embed-player/embed-player.css" rel="stylesheet" />
+<link href="azure-media-player-[version]/amp.min.css" rel="stylesheet" />
+<link href="azure-media-player-[version]/amp-flush.min.css" rel="stylesheet" />
+<link href="embed-player.css" rel="stylesheet" />
 ```
 
-## Usage
+Mind to replace the [version] with the latest (or wanted) version (2.3.4)
 
-The basic implementation is demonstrated in [index.html](src/index.html). The dependencies above are visible in this file (in this case with relative URL's).
-For your project, use the absolute URLs of the hosted version, so you will benefit from the latest version of the player and in case of Graph API changes, the player will not break.
 
 Import `embed-player` in your javascript code:
 
@@ -94,7 +94,7 @@ player.destroy();
 // DOM element refered by the selector, e.g. `.video-wrapper` can now safely be removed. 
 ````
 
-An example of this can be found in `src/index.html`, where the queryString params can be used to set the needed variables.
+An example of this can be found in https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/main/src, where the queryString params can be used to set the needed variables.
 
 
 
@@ -104,6 +104,13 @@ Besides just using the embedded player, when you have an AudiencePlayer ChromeCa
 video playout via a ChromeCast device that is on the same local network.
 In the below example, it is shown how you can set this up with the `chromecast receiver app id` which you will then have 
 received from AudiencePlayer.
+
+Extra dependencies need to be included in `index.html`
+
+```html
+<script src="chromecast-controls.js" type="module"></script>
+<link href="chromecast-controls.css" rel="stylesheet" />
+```
 
 
 ```javascript
@@ -157,8 +164,10 @@ function stopCastVideo() {
 }
 ```
 
-An example of this can be found in `demo/index.html`, where the queryString params can be used to set the needed variables.
-When testing the demo, mind that this example uses relative imports to `../src`.
+
+An implementation example of the above can be found here:
+
+https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/demo/
 
 ### Important to note: 
  
