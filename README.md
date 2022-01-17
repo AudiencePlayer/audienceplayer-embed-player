@@ -2,14 +2,19 @@
 
 This library allows you to play your AudiencePlayer videos assets on your website, via the "headless" solution of the [AudiencePlayer video platform](https://www.audienceplayer.com). 
 
-## Usage example project
+## Installation
 
-An example implementation can be found here: https://github.com/AudiencePlayer/audienceplayer-embed-player-projects
+There is no npm package, so install from the GitHub link:
+`npm install git@github.com:AudiencePlayer/audienceplayer-embed-player`
+
+Check below section `Example of usage` or check out the example project https://github.com/AudiencePlayer/audienceplayer-embed-player-projects
+
+Please mind that the Azure Media Player library should be treated using "static files", meaning that they should be included directly into your HTML instead of a framework (e.g. Angular) or build tool (e.g. Webpack)
 
 
 ## Manual implementation without dependency management
 
-Copy the needed files to your project, next to your `index.html`.
+Copy all files and folders from `src/` to your project, next to your `index.html`.
 
 Include the Azure Media Player and this library in your `index.html`:
 
@@ -26,16 +31,14 @@ The Azure Media Player comes with default css:
 <link href="embed-player.css" rel="stylesheet" />
 ```
 
-Mind to replace the [version] with the latest (or wanted) version (2.3.4)
+Mind to replace the [version] with the latest (or desired) version
 
 
 Import `embed-player` in your javascript code:
 
-```javascript
-import EmbedPlayer from 'embed-player.js';
-```
+## Methods
 
-and create a new instance of the `embed-player`:
+Create a new instance of the `embed-player`:
 
 ```javascript
 const player = new EmbedPlayer();
@@ -61,6 +64,20 @@ This is typically used when playing the video in a modal dialog or from a differ
 ####important: call .destroy() to make sure the `finish` stream-pulse is sent, so that the user will continue playing on an accurate position.
 
 ## Example of usage
+
+Import the class; 
+
+using npm
+
+```js
+import {EmbedPlayer} from 'embed-player';
+```
+
+or via the manual implementation
+```javascript
+import EmbedPlayer from 'embed-player.js';
+```
+
 
 ### Default usage with a video player
 ```javascript
@@ -97,21 +114,36 @@ player.destroy();
 An example of this can be found in https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/main/src, where the queryString params can be used to set the needed variables.
 
 
-
-### Usage with ChromeCast option
+## Usage with ChromeCast
 
 Besides just using the embedded player, when you have an AudiencePlayer ChromeCast receiver application, you can offer 
 video playout via a ChromeCast device that is on the same local network.
 In the below example, it is shown how you can set this up with the `chromecast receiver app id` which you will then have 
 received from AudiencePlayer.
 
-Extra dependencies need to be included in `index.html`
+Add the `ChromecastControls` class;
+
+### using npm
+
+```js
+import {ChromecastControls} from 'embed-player';
+```
+
+### manual implementation
+In the manual implementation make sure to add the extra dependencies in `index.html`
 
 ```html
 <script src="chromecast-controls.js" type="module"></script>
 <link href="chromecast-controls.css" rel="stylesheet" />
 ```
 
+and import via the js module:
+
+```javascript
+import ChromecastControls from 'chromecast-controls.js';
+```
+
+### example
 
 ```javascript
 
@@ -164,8 +196,7 @@ function stopCastVideo() {
 }
 ```
 
-
-An implementation example of the above can be found here:
+A complete implementation example of the above can be found here:
 
 https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/demo/
 
