@@ -274,7 +274,7 @@ export default class EmbedPlayer {
                         encryption_type
                         key_delivery_url
                     }
-                    subtitles_new {
+                    subtitles {
                         url
                         locale
                         locale_label
@@ -305,7 +305,7 @@ export default class EmbedPlayer {
 
     toPlayConfigConverter(article, assetId, config, heartBeatUrl) {
         const asset = article.assets.find((item) => item.id === assetId);
-        const options = config.subtitles_new.map((item) => ({
+        const options = config.subtitles.map((item) => ({
             src: item.url,
             srclang: item.locale,
             kind: 'subtitles',
