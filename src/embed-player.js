@@ -161,7 +161,7 @@ export default class EmbedPlayer {
             case 'pause': {
                 this.sendPulseThrottled(
                     this.configData.heartBeatUrl,
-                    'update',
+                    'finish',
                     this.getHeartBeatParams()
                 );
                 this.isPlaying = false;
