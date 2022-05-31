@@ -5,7 +5,7 @@ This library allows you to play your AudiencePlayer videos assets on your websit
 ## Installation
 
 There is no npm package, so install from the GitHub link:
-`npm install git@github.com:AudiencePlayer/audienceplayer-embed-player`
+`npm install git+https://github.com/AudiencePlayer/audienceplayer-embed-player`
 
 Check below section `Example of usage` or check out the example project https://github.com/AudiencePlayer/audienceplayer-embed-player-projects
 
