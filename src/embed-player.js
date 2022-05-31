@@ -8,6 +8,7 @@ export default class EmbedPlayer {
         this.castContext = null;
         this.castPlayerController = null;
         this.configData = null;
+        this.videoElement = null;
     }
 
     initPlayer(selector) {
@@ -23,6 +24,7 @@ export default class EmbedPlayer {
         videoElement.setAttribute('height', '100%');
         videoElement.setAttribute('id', 'azuremediaplayer');
         videoContainer.appendChild(videoElement);
+        this.videoElement = videoElement;
     }
 
     play({
@@ -82,7 +84,6 @@ export default class EmbedPlayer {
     playVideo(configData, posterUrl, autoplay, fullScreen) {
         this.configData = configData;
         this.lastPlayTime = Date.now();
-        const videoElement = document.querySelector('video');
         var myOptions = {
             autoplay,
             controls: true,
@@ -91,7 +92,7 @@ export default class EmbedPlayer {
         if (posterUrl) {
             myOptions.poster = posterUrl;
         }
-        this.myPlayer = amp(videoElement, myOptions);
+        this.myPlayer = amp(this.videoElement, myOptions);
         this.myPlayer.src(this.configData.config.player, this.configData.config.options);
         this.bindEvents();
         if(fullScreen) {
