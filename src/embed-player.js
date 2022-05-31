@@ -12,7 +12,8 @@ export default class EmbedPlayer {
 
     initPlayer(selector) {
         this.destroy();
-        const videoContainer = document.querySelector(selector);
+        const videoContainer = selector instanceof Element ?
+            selector : document.querySelector(selector);
         const videoElement = document.createElement('video');
         videoElement.setAttribute(
             'class',
