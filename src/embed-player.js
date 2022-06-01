@@ -8,6 +8,12 @@ export default class EmbedPlayer {
         this.castContext = null;
         this.castPlayerController = null;
         this.configData = null;
+
+
+        this.minimumMilliSecondsBetweenPulses = 5000;
+        this.throttleTimeout = null;
+        this.lastPulseTypeSent = 'finish';
+        this.streamPulseMaxTimeMs = 30000;
     }
 
     initPlayer(selector) {
@@ -81,7 +87,9 @@ export default class EmbedPlayer {
 
     playVideo(configData, posterUrl, autoplay, fullScreen) {
         this.configData = configData;
-        this.lastPlayTime = Date.now();
+        this.lastPlayTime = 0;
+        this.lastPulseTypeSent = 'finish';
+        this.clearThrottleTimeout();
         const videoElement = document.querySelector('video');
         var myOptions = {
             autoplay,
@@ -127,12 +135,12 @@ export default class EmbedPlayer {
         switch (event.type) {
             case 'timeupdate': {
                 if (this.isPlaying) {
-                    if (Date.now() - this.lastPlayTime > 30000) {
-                        this.sendPulse(
-                            this.configData.heartBeatUrl + 'update',
+                    if (Date.now() - this.lastPlayTime > this.streamPulseMaxTimeMs) {
+                        this.sendPulseThrottled(
+                            this.configData.heartBeatUrl,
+                            'update',
                             this.getHeartBeatParams()
                         );
-                        this.lastPlayTime = Date.now();
                     }
                 }
             }
@@ -142,29 +150,29 @@ export default class EmbedPlayer {
                     this.isFirstPlay = false;
                     this.myPlayer.currentTime(this.configData.currentTime);
                 }
-                this.sendPulse(
-                    this.configData.heartBeatUrl + 'init',
+                this.sendPulseThrottled(
+                    this.configData.heartBeatUrl,
+                    'init',
                     this.getHeartBeatParams()
                 );
-                this.lastPlayTime = Date.now();
                 this.isPlaying = true;
             }
                 break;
             case 'pause': {
-                this.sendPulse(
-                    this.configData.heartBeatUrl + 'update',
+                this.sendPulseThrottled(
+                    this.configData.heartBeatUrl,
+                    'finish',
                     this.getHeartBeatParams()
                 );
-                this.lastPlayTime = Date.now();
                 this.isPlaying = false;
             }
                 break;
             case 'ended': {
-                this.sendPulse(
-                    this.configData.heartBeatUrl + 'finish',
+                this.sendPulseThrottled(
+                    this.configData.heartBeatUrl,
+                    'finish',
                     this.getHeartBeatParams()
                 );
-                this.lastPlayTime = Date.now();
                 this.isPlaying = false;
             }
                 break;
@@ -181,9 +189,26 @@ export default class EmbedPlayer {
         };
     }
 
-    sendPulse(heartBeatUrl, config) {
-        const url = `${heartBeatUrl}?pulse_token=${config.pulseToken}&appa=${config.appa}&appr=${config.appr}`;
-        fetch(url).then();
+    sendPulse(heartBeatUrl, action, config) {
+        if(action) {
+            this.lastPlayTime = Date.now();
+            const url = `${heartBeatUrl}${action}?pulse_token=${config.pulseToken}&appa=${config.appa}&appr=${config.appr}`;
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network error');
+                    }
+                    return response;
+                })
+                .then(() => {
+                    this.lastPulseTypeSent = action;
+                })
+                .catch(() => {
+                    if (action === 'update') {
+                        this.sendPulse(heartBeatUrl, 'init', config);
+                    }
+                })
+        }
     }
 
     getPlayConfig(apiBaseUrl, articleId, assetId, heartBeatUrl, token) {
@@ -555,6 +580,58 @@ export default class EmbedPlayer {
 
     getCastPlayerController() {
         return this.castPlayerController;
+    }
+
+    sendPulseThrottled(heartBeatUrl, pulseAction, config) {
+        const now = Date.now();
+        const nextThrottleTimeStamp =
+            this.throttleTimeout === null
+                ? now + this.minimumMilliSecondsBetweenPulses
+                : Math.max(this.lastPlayTime + this.minimumMilliSecondsBetweenPulses, now);
+        const firePulseInMillis = nextThrottleTimeStamp - now;
+
+        this.clearThrottleTimeout();
+        this.throttleTimeout = setTimeout(() => {
+            this.sendPulse(heartBeatUrl , this.checkPulseAction(pulseAction), config);
+            this.clearThrottleTimeout();
+        }, firePulseInMillis);
+    }
+
+
+    clearThrottleTimeout() {
+        if (this.throttleTimeout !== null) {
+            clearTimeout(this.throttleTimeout);
+            this.throttleTimeout = null;
+        }
+    }
+
+    checkPulseAction(action) {
+        // possibly some pulses have been throttled, now check against last sent pulse, so we are only sending stuff that makes sense
+        if (this.lastPulseTypeSent === 'finish' && action === 'finish') {
+            // skip when finish was sent before
+            return null;
+        }
+        if (this.lastPulseTypeSent === 'init' && action === 'init') {
+            // theoretical case, two init's should not happen. change to update
+            action = 'update';
+        }
+        if (this.lastPulseTypeSent === 'update' && action === 'init') {
+            // change init after update to init.
+            action = 'update';
+        }
+        // milliseconds since last heartbeat
+        const milliSecondsSinceLastHeartbeatTimeStamp = Date.now() - this.lastPlayTime;
+        // add the minimumMilliSecondsBetweenPulses delay for throttling to the streamPulseMaxTimeMs for the maximum allowed time between pulses
+        const maximumMilliSecondsBetweenPulses = this.streamPulseMaxTimeMs + this.minimumMilliSecondsBetweenPulses;
+        if (action === 'update' && milliSecondsSinceLastHeartbeatTimeStamp > maximumMilliSecondsBetweenPulses) {
+            // change update to init if time diff with last heart beat time stamp is too big
+            return 'init';
+        }
+        if (action === 'update' && this.lastPulseTypeSent === 'finish') {
+            // change update to init if previous type was finish
+            return 'init';
+        }
+        return action;
     }
 }
 //*** Example of usage ***//
