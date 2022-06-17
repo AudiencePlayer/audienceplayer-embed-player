@@ -113,6 +113,7 @@ player.destroy();
 
 An example of this can be found in https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/main/src, where the queryString params can be used to set the needed variables.
 
+Please take note that it is possible to create multiple instances of the EmbedPlayer and play multiple video's at the same time. This however is not tested and not officially supported.
 
 ## Usage with ChromeCast
 
