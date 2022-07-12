@@ -501,7 +501,7 @@ export default class EmbedPlayer {
             mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
             mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
             mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
-            mediaInfo.metadata.title = articlePlayConfig.article.name;
+            mediaInfo.metadata.title = articlePlayConfig.article.metas['title'] || articlePlayConfig.article.name;
             mediaInfo.tracks = tracks;
             const licenceUrlParam = token ? {...this.getLicenseUrlFromSrc(protectionConfig.keyDeliveryUrl, token)} : {};
             mediaInfo.customData = {
