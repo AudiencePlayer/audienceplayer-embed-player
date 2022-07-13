@@ -252,6 +252,10 @@ export default class EmbedPlayer {
                 Article(id: $articleId) {
                     id
                     name
+                    metas {
+                        key
+                        value
+                    }
                     assets {
                         id
                         duration
@@ -501,7 +505,7 @@ export default class EmbedPlayer {
             mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
             mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
             mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
-            mediaInfo.metadata.title = articlePlayConfig.article.name;
+            mediaInfo.metadata.title = this.getMetaValue(articlePlayConfig.article.metas, 'title') || articlePlayConfig.article.name;
             mediaInfo.tracks = tracks;
             const licenceUrlParam = token ? {...this.getLicenseUrlFromSrc(protectionConfig.keyDeliveryUrl, token)} : {};
             mediaInfo.customData = {
@@ -514,6 +518,11 @@ export default class EmbedPlayer {
             return mediaInfo;
         }
         return null;
+    }
+
+    getMetaValue (metas, key) {
+        const meta = metas.find(m => m.key === key);
+        return meta ? meta.value : '';
     }
 
     getLicenseUrlFromSrc (src, token) {
