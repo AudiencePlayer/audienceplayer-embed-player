@@ -666,7 +666,7 @@ export default class EmbedPlayer {
                     const request = new chrome.cast.media.LoadRequest(mediaInfo);
                     request.currentTime = config.currentTime;
                     if (config.subtitleLocale) {
-                        request.activeTrackIds = mediaInfo.tracks.filter(track => track.language === config.subtitleLocale).map(track => track.id);
+                        request.activeTrackIds = mediaInfo.tracks.filter(track => track.language === config.subtitleLocale).map(track => track.trackId);
                     }
                     return castSession.loadMedia(request);
                 } else {
