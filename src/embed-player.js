@@ -608,8 +608,10 @@ export default class EmbedPlayer {
             mediaInfo.metadata.title = this.getMetaValue(articlePlayConfig.article.metas, 'title') || articlePlayConfig.article.name;
             mediaInfo.tracks = tracks;
             const licenceUrlParam = token ? {...this.getLicenseUrlFromSrc(protectionConfig.keyDeliveryUrl, token)} : {};
+            const audieLocalePram = articlePlayConfig.audioLocale ? {preferredAudioLocale:  articlePlayConfig.audioLocale} : {};
             mediaInfo.customData = {
                 ...licenceUrlParam,
+                ...audieLocalePram,
                 pulseToken: articlePlayConfig.pulseToken,
             };
             mediaInfo.currentTime = articlePlayConfig.currentTime;
@@ -666,7 +668,11 @@ export default class EmbedPlayer {
                     const request = new chrome.cast.media.LoadRequest(mediaInfo);
                     request.currentTime = config.currentTime;
                     if (config.subtitleLocale) {
-                        request.activeTrackIds = mediaInfo.tracks.filter(track => track.language === config.subtitleLocale).map(track => track.trackId);
+                        // can NOT use .filter on tracks because the cast library has patched the Array.
+                        const textTrack = mediaInfo.tracks.find(track => track.language === config.subtitleLocale);
+                        if (textTrack) {
+                            request.activeTrackIds = [textTrack.trackId];
+                        }
                     }
                     return castSession.loadMedia(request);
                 } else {

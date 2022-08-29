@@ -19,6 +19,7 @@ export default class ChromecastControls {
             cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, () => {
                 if(this.rootElement && player.mediaInfo) {
                     this.renderTracks(player);
+                    this.renderTracksButton(player);
                     this.setTitle(player);
                 }
             });
@@ -129,27 +130,6 @@ export default class ChromecastControls {
         }
     }
 
-    renderTracks(player) {
-        this.removeTracks();
-        const audioTracksContainerElement = this.getElement('.container-wrapper_audio-tracks');
-        const textTracksContainerElement = this.getElement('.container-wrapper_text-tracks');
-        const sessionMediaInfo = cast.framework.CastContext.getInstance().getCurrentSession().getMediaSession();
-        let audioTracks = [];
-        let textTracks = [];
-
-        if(player.mediaInfo && player.mediaInfo.tracks && sessionMediaInfo) {
-            audioTracks = this.getTracksByType(player, 'AUDIO');
-            textTracks = this.getTracksByType(player, 'TEXT');
-        }
-
-        if(audioTracks.length) {
-            audioTracksContainerElement.appendChild(this.getTracksList(player, audioTracks, 'AUDIO'));
-        }
-
-        if(textTracks.length) {
-            textTracksContainerElement.appendChild(this.getTracksList(player, textTracks, 'TEXT'));
-        }
-    }
     renderTracks(player) {
         this.removeTracks();
         const audioTracksContainerElement = this.getElement('.container-wrapper_audio-tracks');
