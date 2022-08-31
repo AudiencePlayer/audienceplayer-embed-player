@@ -128,6 +128,10 @@ export default class EmbedPlayer {
             this.myPlayer.addEventListener('playing', (event) =>
                 this.eventHandler(event)
             );
+
+            this.myPlayer.addEventListener('loadedmetadata', () =>
+                this.setDefaultTracks()
+            );
         }
     }
 
@@ -179,20 +183,112 @@ export default class EmbedPlayer {
         }
     }
 
-    getHeartBeatParams() {
+    setDefaultTracks() {
+        if (this.myPlayer.currentAudioStreamList()) {
+            // set default tracks when available
+            this.setDefaultAudioTrack();
+            this.setDefaultTextTrack();
+        } else {
+            // unfortunately there is no reliable way to know when iOS native binding to text-tracks is done
+            // (even after first play event, this is not true), so we resort to an old fashioned timeout
+            setTimeout(() => {
+                this.setDefaultAudioTrack();
+                this.setDefaultTextTrack();
+            }, 1000);
+        }
+    }
+
+    setDefaultTextTrack() {
+        if (this.configData.subtitleLocale) {
+            const tracks = this.myPlayer.textTracks();
+            for (let i = 0; i < tracks.length; i++) {
+                // textTracks is not a real array so no iterators here
+                if (tracks[i].mode !== 'disabled') {
+                    tracks[i].mode = 'disabled';
+                }
+            }
+            // it must be split up in to two loops, because two 'showing' items will break
+            for (let i = 0; i < tracks.length; i++) {
+                if (tracks[i].language === this.configData.subtitleLocale.toLowerCase() && tracks[i].kind === 'subtitles') {
+                    tracks[i].mode = 'showing';
+                    break;
+                }
+            }
+        }
+    }
+
+    setDefaultAudioTrack() {
+        if (this.configData.audioLocale) {
+            if (this.myPlayer.currentAudioStreamList()) {
+                for (let i = 0; i < this.myPlayer.currentAudioStreamList().streams.length; i++) {
+                    if (
+                        this.myPlayer.currentAudioStreamList().streams[i].language ===
+                        this.configData.audioLocale.toLowerCase()
+                    ) {
+                        this.myPlayer.currentAudioStreamList().switchIndex(i);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    getSelectedTracks() {
+        let selectedAudioTrack = null;
+        let selectedTextTrack = null;
+        const tracks = this.myPlayer.textTracks();
+        for (let i = 0; i < tracks.length; i++) {
+            if (tracks[i].mode === 'showing' && tracks[i].kind === 'subtitles') {
+                selectedTextTrack = tracks[i].language;
+            }
+        }
+
+        if (this.myPlayer.currentAudioStreamList()) {
+            for (let i = 0; i < this.myPlayer.currentAudioStreamList().streams.length; i++) {
+                if (this.myPlayer.currentAudioStreamList().streams[i].enabled) {
+                    selectedAudioTrack = this.myPlayer.currentAudioStreamList().streams[i].language;
+                    break;
+                }
+            }
+        }
+
         return {
+            audioTrack: selectedAudioTrack,
+            textTrack: selectedTextTrack,
+        };
+    }
+
+    getHeartBeatParams() {
+        const selectedTracks = this.getSelectedTracks();
+        const params = {
             appa: '' + this.myPlayer.currentTime(),
             appr:
                 '' +
                 Math.min(this.myPlayer.currentTime() / this.myPlayer.duration(), 1),
             pulseToken: this.configData.pulseToken,
         };
+
+        if (selectedTracks.textTrack !== null) {
+            params['textTrack'] = selectedTracks.textTrack ? selectedTracks.textTrack.toLowerCase() : '';
+        }
+        if (selectedTracks.audioTrack !== null) {
+            params['audioTrack'] = selectedTracks.audioTrack ? selectedTracks.audioTrack.toLowerCase() : '';
+        }
+
+        return params;
     }
 
     sendPulse(heartBeatUrl, action, config) {
         if(action) {
             this.lastPlayTime = Date.now();
-            const url = `${heartBeatUrl}${action}?pulse_token=${config.pulseToken}&appa=${config.appa}&appr=${config.appr}`;
+            let url = `${heartBeatUrl}${action}?pulse_token=${config.pulseToken}&appa=${config.appa}&appr=${config.appr}`;
+            if (config.textTrack) {
+                url += `&subtitle_locale=${config.textTrack}`;
+            }
+            if (config.audioTrack) {
+                url += `&audio_locale=${config.audioTrack}`;
+            }
+
             fetch(url)
                 .then(response => {
                     if (!response.ok) {
@@ -312,6 +408,8 @@ export default class EmbedPlayer {
                     appa
                     appr
                     fairplay_certificate_url
+                    user_subtitle_locale
+                    user_audio_locale
                 }
             }
         `;
@@ -354,6 +452,8 @@ export default class EmbedPlayer {
             asset: asset,
             currentTime: config.appa / asset.duration <= 0.98 ? config.appa : 0,
             heartBeatUrl: heartBeatUrl,
+            subtitleLocale: config.user_subtitle_locale,
+            audioLocale: config.user_audio_locale,
         };
     }
 
@@ -508,8 +608,10 @@ export default class EmbedPlayer {
             mediaInfo.metadata.title = this.getMetaValue(articlePlayConfig.article.metas, 'title') || articlePlayConfig.article.name;
             mediaInfo.tracks = tracks;
             const licenceUrlParam = token ? {...this.getLicenseUrlFromSrc(protectionConfig.keyDeliveryUrl, token)} : {};
+            const audieLocalePram = articlePlayConfig.audioLocale ? {preferredAudioLocale:  articlePlayConfig.audioLocale} : {};
             mediaInfo.customData = {
                 ...licenceUrlParam,
+                ...audieLocalePram,
                 pulseToken: articlePlayConfig.pulseToken,
             };
             mediaInfo.currentTime = articlePlayConfig.currentTime;
@@ -565,6 +667,13 @@ export default class EmbedPlayer {
                 if (mediaInfo) {
                     const request = new chrome.cast.media.LoadRequest(mediaInfo);
                     request.currentTime = config.currentTime;
+                    if (config.subtitleLocale) {
+                        // can NOT use .filter on tracks because the cast library has patched the Array.
+                        const textTrack = mediaInfo.tracks.find(track => track.language === config.subtitleLocale);
+                        if (textTrack) {
+                            request.activeTrackIds = [textTrack.trackId];
+                        }
+                    }
                     return castSession.loadMedia(request);
                 } else {
                     throw {message: 'Unexpected manifest format in articlePlayConfig'};
