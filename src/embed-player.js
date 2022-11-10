@@ -172,9 +172,11 @@ export default class EmbedPlayer {
             }
                 break;
             case 'ended': {
-                this.sendPulseThrottled(
+                // no throttling and clear any events
+                this.clearThrottleTimeout();
+                this.sendPulse(
                     this.configData.heartBeatUrl,
-                    'finish',
+                    this.checkPulseAction('finish'),
                     this.getHeartBeatParams()
                 );
                 this.isPlaying = false;
