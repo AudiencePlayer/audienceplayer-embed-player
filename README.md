@@ -199,7 +199,7 @@ function stopCastVideo() {
 
 A complete implementation example of the above can be found here:
 
-https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/demo/
+https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/main/src/demo
 
 ### Important to note: 
  
