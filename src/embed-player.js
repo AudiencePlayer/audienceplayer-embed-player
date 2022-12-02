@@ -102,7 +102,7 @@ export default class EmbedPlayer {
         this.myPlayer = amp(this.videoElement, myOptions);
         this.myPlayer.src(this.configData.config.player, this.configData.config.options);
         this.bindEvents();
-        if(fullScreen) {
+        if (fullScreen) {
             this.myPlayer.enterFullscreen();
         }
     }
@@ -281,7 +281,7 @@ export default class EmbedPlayer {
     }
 
     sendPulse(heartBeatUrl, action, config) {
-        if(action) {
+        if (action) {
             this.lastPlayTime = Date.now();
             let url = `${heartBeatUrl}${action}?pulse_token=${config.pulseToken}&appa=${config.appa}&appr=${config.appr}`;
             if (config.textTrack) {
@@ -586,50 +586,59 @@ export default class EmbedPlayer {
                 castTrack.customDate = null;
                 return castTrack;
             });
-            const contentType = 'application/vnd.ms-sstr+xml';
+            let contentType = null;
+            const supportedContentTypes = ['application/vnd.ms-sstr+xml', 'video/mp4'];
             const entitlement = articlePlayConfig.config.player.find((item) => {
-                return item.type === contentType;
+                if (supportedContentTypes.includes(item.type)) {
+                    contentType = item.type;
+                    return true;
+                } else {
+                    return false;
+                }
             });
             let protectionConfig = null;
 
-            if(entitlement && entitlement.protectionInfo) {
-                protectionConfig = entitlement.protectionInfo.find((protection) => {
-                    return protection.type === 'PlayReady';
-                });
-            }
-            const token = protectionConfig
-                ? protectionConfig.authenticationToken
-                : null;
-            const mediaInfo = new chrome.cast.media.MediaInfo(
-                entitlement.src,
-                contentType
-            );
-            mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
-            mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
-            mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
-            mediaInfo.metadata.title = this.getMetaValue(articlePlayConfig.article.metas, 'title') || articlePlayConfig.article.name;
-            mediaInfo.tracks = tracks;
-            const licenceUrlParam = token ? {...this.getLicenseUrlFromSrc(protectionConfig.keyDeliveryUrl, token)} : {};
-            const audieLocalePram = articlePlayConfig.audioLocale ? {preferredAudioLocale:  articlePlayConfig.audioLocale} : {};
-            mediaInfo.customData = {
-                ...licenceUrlParam,
-                ...audieLocalePram,
-                pulseToken: articlePlayConfig.pulseToken,
-            };
-            mediaInfo.currentTime = articlePlayConfig.currentTime;
-            mediaInfo.autoplay = true;
+            if (entitlement) {
 
-            return mediaInfo;
+                if (entitlement.protectionInfo) {
+                    protectionConfig = entitlement.protectionInfo.find((protection) => {
+                        return protection.type === 'PlayReady';
+                    });
+                }
+                const token = protectionConfig
+                    ? protectionConfig.authenticationToken
+                    : null;
+                const mediaInfo = new chrome.cast.media.MediaInfo(
+                    entitlement.src,
+                    contentType
+                );
+                mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
+                mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+                mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
+                mediaInfo.metadata.title = this.getMetaValue(articlePlayConfig.article.metas, 'title') || articlePlayConfig.article.name;
+                mediaInfo.tracks = tracks;
+                const licenceUrlParam = token ? {...this.getLicenseUrlFromSrc(protectionConfig.keyDeliveryUrl, token)} : {};
+                const audieLocalePram = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
+                mediaInfo.customData = {
+                    ...licenceUrlParam,
+                    ...audieLocalePram,
+                    pulseToken: articlePlayConfig.pulseToken,
+                };
+                mediaInfo.currentTime = articlePlayConfig.currentTime;
+                mediaInfo.autoplay = true;
+
+                return mediaInfo;
+            }
         }
         return null;
     }
 
-    getMetaValue (metas, key) {
+    getMetaValue(metas, key) {
         const meta = metas.find(m => m.key === key);
         return meta ? meta.value : '';
     }
 
-    getLicenseUrlFromSrc (src, token) {
+    getLicenseUrlFromSrc(src, token) {
         if (token) {
             const rootSrc = src.includes('?') ? `${src}&token=` : `${src}?token=`;
             const licenseUrl = rootSrc + encodeURIComponent(token);
@@ -712,7 +721,7 @@ export default class EmbedPlayer {
 
         this.clearThrottleTimeout();
         this.throttleTimeout = setTimeout(() => {
-            this.sendPulse(heartBeatUrl , this.checkPulseAction(pulseAction), config);
+            this.sendPulse(heartBeatUrl, this.checkPulseAction(pulseAction), config);
             this.clearThrottleTimeout();
         }, firePulseInMillis);
     }
