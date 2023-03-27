@@ -3,6 +3,7 @@ export default class EmbedPlayer {
         this.isPlaying = false;
         this.isFirstPlay = true;
         this.lastPlayTime = Date.now();
+        this.lastCurrentTime = 0;
         this.myPlayer = null;
         this.castPlayer = null;
         this.castContext = null;
@@ -89,6 +90,7 @@ export default class EmbedPlayer {
     playVideo(configData, posterUrl, autoplay, fullScreen) {
         this.configData = configData;
         this.lastPlayTime = 0;
+        this.lastCurrentTime = 0;
         this.lastPulseTypeSent = 'finish';
         this.clearThrottleTimeout();
         var myOptions = {
@@ -136,6 +138,10 @@ export default class EmbedPlayer {
     }
 
     eventHandler(event) {
+        if (event.type !== 'ended') {
+            // store last current time as a workaround for 'ended' event where myPlayer.currentTime() returns 0
+            this.lastCurrentTime = this.myPlayer.currentTime();
+        }
         switch (event.type) {
             case 'timeupdate': {
                 if (this.isPlaying) {
@@ -263,10 +269,10 @@ export default class EmbedPlayer {
     getHeartBeatParams() {
         const selectedTracks = this.getSelectedTracks();
         const params = {
-            appa: '' + this.myPlayer.currentTime(),
+            appa: '' + this.lastCurrentTime,
             appr:
                 '' +
-                Math.min(this.myPlayer.currentTime() / this.myPlayer.duration(), 1),
+                Math.min(this.lastCurrentTime / this.myPlayer.duration(), 1),
             pulseToken: this.configData.pulseToken,
         };
 
