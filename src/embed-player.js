@@ -1,19 +1,15 @@
+import PlayerLoggerService from './player-logger-service.js'
+
 export default class EmbedPlayer {
     constructor() {
-        this.isPlaying = false;
-        this.isFirstPlay = true;
-        this.lastPlayTime = Date.now();
-        this.lastCurrentTime = 0;
         this.myPlayer = null;
         this.castPlayer = null;
         this.castContext = null;
         this.castPlayerController = null;
         this.configData = null;
         this.videoElement = null;
-        this.minimumMilliSecondsBetweenPulses = 5000;
-        this.throttleTimeout = null;
-        this.lastPulseTypeSent = 'finish';
-        this.streamPulseMaxTimeMs = 30000;
+        this.metadataLoaded = false;
+        this.playerLoggerService = new PlayerLoggerService();
     }
 
     initPlayer(selector) {
@@ -60,39 +56,36 @@ export default class EmbedPlayer {
             return Promise.reject('projectId property is missing');
         }
         const apiFetchUrl = `${apiBaseUrl}/graphql/${projectId}`;
-        const heartBeatUrl = `${apiBaseUrl}/service/${projectId}/analytics/stream/pulse/`;
+        const streamLoggingUrl = `${apiBaseUrl}/service/${projectId}/analytics/stream/pulse/log`;
         this.initPlayer(selector);
         return this.getPlayConfig(
             apiFetchUrl,
             articleId,
             assetId,
-            heartBeatUrl,
             token
         ).then((config) => {
-            this.playVideo(config, posterImageUrl, !!autoplay, fullScreen);
+            this.playVideo(config, posterImageUrl, !!autoplay, fullScreen, streamLoggingUrl);
             return config;
         });
     }
 
     destroy() {
         if (this.myPlayer) {
-            if (this.configData) {
-                this.eventHandler({type: 'ended'});
-            }
+            this.playerLoggerService.onStop();
             this.myPlayer.dispose();
             this.myPlayer = null;
         }
-        this.isFirstPlay = true;
-        this.isPlaying = false;
         this.configData = null;
     }
 
-    playVideo(configData, posterUrl, autoplay, fullScreen) {
+    playVideo(configData, posterUrl, autoplay, fullScreen, logServiceUrl) {
         this.configData = configData;
-        this.lastPlayTime = 0;
-        this.lastCurrentTime = 0;
-        this.lastPulseTypeSent = 'finish';
-        this.clearThrottleTimeout();
+        this.playerLoggerService.setApiUrl(logServiceUrl) ;
+        this.playerLoggerService.onStart(
+            this.configData.pulseToken,
+            'default',
+            this.configData.localTimeDelta
+        );
         var myOptions = {
             autoplay,
             controls: true,
@@ -115,10 +108,6 @@ export default class EmbedPlayer {
                 this.eventHandler(event)
             );
 
-            this.myPlayer.addEventListener('ended', (event) =>
-                this.eventHandler(event)
-            );
-
             this.myPlayer.addEventListener('pause', (event) =>
                 this.eventHandler(event)
             );
@@ -131,64 +120,108 @@ export default class EmbedPlayer {
                 this.eventHandler(event)
             );
 
-            this.myPlayer.addEventListener('loadedmetadata', () =>
-                this.setDefaultTracks()
+            this.myPlayer.addEventListener('loadedmetadata', (event) =>
+                this.eventHandler(event)
+            );
+            this.myPlayer.addEventListener('durationchange', (event) =>
+                this.eventHandler(event)
             );
         }
     }
 
     eventHandler(event) {
-        if (event.type !== 'ended') {
-            // store last current time as a workaround for 'ended' event where myPlayer.currentTime() returns 0
-            this.lastCurrentTime = this.myPlayer.currentTime();
-        }
         switch (event.type) {
             case 'timeupdate': {
-                if (this.isPlaying) {
-                    if (Date.now() - this.lastPlayTime > this.streamPulseMaxTimeMs) {
-                        this.sendPulseThrottled(
-                            this.configData.heartBeatUrl,
-                            'update',
-                            this.getHeartBeatParams()
-                        );
+                this.checkSelectedTracks();
+                this.playerLoggerService.onCurrentTimeUpdated(this.myPlayer.currentTime() || 0);
+            }break;
+            case 'durationchange': {
+                this.checkSelectedTracks();
+                this.playerLoggerService.onDurationUpdated(this.myPlayer.duration());
+            } break;
+            case 'loadedmetadata': {
+                if (this.myPlayer.currentAudioStreamList()) {
+                    // set default tracks when available
+                    this.setDefaultAudioTrack();
+                    this.setDefaultTextTrack();
+
+                    this.metadataLoaded = true;
+                } else {
+                    // unfortunately there is no reliable way to know when iOS native binding to text-tracks is done
+                    // (even after first play event, this is not true), so we resort to an old fashioned timeout
+                    setTimeout(() => {
+                        this.setDefaultAudioTrack();
+                        this.setDefaultTextTrack();
+
+                        this.metadataLoaded = true;
+                    }, 1000);
+                }
+            } break;
+            case 'playing': {
+                if (this.firstPlayingEvent) {
+                    this.firstPlayingEvent = false;
+                    if (this.myPlayer.currentTime > 0) {
+                        this.myPlayer.currentTime(this.configData.currentTime);
                     }
                 }
-            }
-                break;
-            case 'playing': {
-                if (this.isFirstPlay) {
-                    this.isFirstPlay = false;
-                    this.myPlayer.currentTime(this.configData.currentTime);
-                }
-                this.sendPulseThrottled(
-                    this.configData.heartBeatUrl,
-                    'init',
-                    this.getHeartBeatParams()
-                );
-                this.isPlaying = true;
+                this.checkSelectedTracks();
+                this.playerLoggerService.onPlaying();
             }
                 break;
             case 'pause': {
-                this.sendPulseThrottled(
-                    this.configData.heartBeatUrl,
-                    'finish',
-                    this.getHeartBeatParams()
-                );
-                this.isPlaying = false;
+                this.checkSelectedTracks();
+                if (this.myPlayer.paused() && !this.myPlayer.ended()) {
+                    this.playerLoggerService.onPause();
+                }
             }
                 break;
-            case 'ended': {
-                // no throttling and clear any events
-                this.clearThrottleTimeout();
-                this.sendPulse(
-                    this.configData.heartBeatUrl,
-                    this.checkPulseAction('finish'),
-                    this.getHeartBeatParams()
-                );
-                this.isPlaying = false;
-            }
-                break;
+            case 'error': {
+                const errorDetails = this.myPlayer.error();
+                this.playerLoggerService.onError(JSON.stringify(errorDetails));
+            } break;
         }
+    }
+
+
+    checkSelectedTracks() {
+        if (!this.metadataLoaded) {
+            return false;
+        }
+
+        let selectedAudioTrack = '';
+        let selectedTextTrack = '';
+
+        const tracks = this.myPlayer.textTracks();
+        for (let i = 0; i < tracks.length; i++) {
+            if (tracks[i].mode === 'showing' && tracks[i].kind === 'subtitles') {
+                selectedTextTrack = tracks[i].language;
+            }
+        }
+
+        if (this.myPlayer.currentAudioStreamList()) {
+            for (let i = 0; i < this.myPlayer.currentAudioStreamList().streams.length; i++) {
+                if (this.myPlayer.currentAudioStreamList().streams[i].enabled) {
+                    selectedAudioTrack = this.myPlayer.currentAudioStreamList().streams[i].language;
+                    break;
+                }
+            }
+        }
+
+        this.playerLoggerService.updateProperties({
+            textTrack: selectedTextTrack,
+            audioTrack: selectedAudioTrack,
+        });
+
+        if (this.currentTextTrack !== null && this.currentTextTrack !== selectedTextTrack) {
+            this.playerLoggerService.onTextTrackChanged(selectedTextTrack);
+        }
+
+        this.currentTextTrack = selectedTextTrack;
+
+        if (this.currentAudioTrack !== null && this.currentAudioTrack !== selectedAudioTrack) {
+            this.playerLoggerService.onAudioTrackChanged(selectedAudioTrack);
+        }
+        this.currentAudioTrack = selectedAudioTrack;
     }
 
     setDefaultTracks() {
@@ -266,56 +299,7 @@ export default class EmbedPlayer {
         };
     }
 
-    getHeartBeatParams() {
-        const selectedTracks = this.getSelectedTracks();
-        const params = {
-            appa: '' + this.lastCurrentTime,
-            appr:
-                '' +
-                Math.min(this.lastCurrentTime / this.myPlayer.duration(), 1),
-            pulseToken: this.configData.pulseToken,
-        };
-
-        if (selectedTracks.textTrack !== null) {
-            params['textTrack'] = selectedTracks.textTrack ? selectedTracks.textTrack.toLowerCase() : '';
-        }
-        if (selectedTracks.audioTrack !== null) {
-            params['audioTrack'] = selectedTracks.audioTrack ? selectedTracks.audioTrack.toLowerCase() : '';
-        }
-
-        return params;
-    }
-
-    sendPulse(heartBeatUrl, action, config) {
-        if (action) {
-            this.lastPlayTime = Date.now();
-            let url = `${heartBeatUrl}${action}?pulse_token=${config.pulseToken}&appa=${config.appa}&appr=${config.appr}`;
-            if (config.textTrack) {
-                url += `&subtitle_locale=${config.textTrack}`;
-            }
-            if (config.audioTrack) {
-                url += `&audio_locale=${config.audioTrack}`;
-            }
-
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network error');
-                    }
-                    return response;
-                })
-                .then(() => {
-                    this.lastPulseTypeSent = action;
-                })
-                .catch(() => {
-                    if (action === 'update') {
-                        this.sendPulse(heartBeatUrl, 'init', config);
-                    }
-                })
-        }
-    }
-
-    getPlayConfig(apiBaseUrl, articleId, assetId, heartBeatUrl, token) {
+    getPlayConfig(apiBaseUrl, articleId, assetId, token) {
         let article = {};
         let config = {};
 
@@ -343,8 +327,7 @@ export default class EmbedPlayer {
                 config = this.toPlayConfigConverter(
                     article,
                     assetId,
-                    configData.data.ArticleAssetPlay,
-                    heartBeatUrl
+                    configData.data.ArticleAssetPlay
                 );
                 return config;
             });
@@ -418,6 +401,7 @@ export default class EmbedPlayer {
                     fairplay_certificate_url
                     user_subtitle_locale
                     user_audio_locale
+                    issued_at
                 }
             }
         `;
@@ -438,7 +422,8 @@ export default class EmbedPlayer {
         });
     }
 
-    toPlayConfigConverter(article, assetId, config, heartBeatUrl) {
+    toPlayConfigConverter(article, assetId, config) {
+        const timeStamp = Date.parse(config.issued_at);
         const asset = article.assets.find((item) => item.id === assetId);
         const options = config.subtitles.map((item) => ({
             src: item.url,
@@ -459,9 +444,9 @@ export default class EmbedPlayer {
             assetType: asset.linked_type,
             asset: asset,
             currentTime: config.appa / asset.duration <= 0.98 ? config.appa : 0,
-            heartBeatUrl: heartBeatUrl,
             subtitleLocale: config.user_subtitle_locale,
             audioLocale: config.user_audio_locale,
+            localTimeDelta: isNaN(timeStamp) ? 0 : Date.now() - timeStamp
         };
     }
 
@@ -715,58 +700,6 @@ export default class EmbedPlayer {
 
     getCastPlayerController() {
         return this.castPlayerController;
-    }
-
-    sendPulseThrottled(heartBeatUrl, pulseAction, config) {
-        const now = Date.now();
-        const nextThrottleTimeStamp =
-            this.throttleTimeout === null
-                ? now + this.minimumMilliSecondsBetweenPulses
-                : Math.max(this.lastPlayTime + this.minimumMilliSecondsBetweenPulses, now);
-        const firePulseInMillis = nextThrottleTimeStamp - now;
-
-        this.clearThrottleTimeout();
-        this.throttleTimeout = setTimeout(() => {
-            this.sendPulse(heartBeatUrl, this.checkPulseAction(pulseAction), config);
-            this.clearThrottleTimeout();
-        }, firePulseInMillis);
-    }
-
-
-    clearThrottleTimeout() {
-        if (this.throttleTimeout !== null) {
-            clearTimeout(this.throttleTimeout);
-            this.throttleTimeout = null;
-        }
-    }
-
-    checkPulseAction(action) {
-        // possibly some pulses have been throttled, now check against last sent pulse, so we are only sending stuff that makes sense
-        if (this.lastPulseTypeSent === 'finish' && action === 'finish') {
-            // skip when finish was sent before
-            return null;
-        }
-        if (this.lastPulseTypeSent === 'init' && action === 'init') {
-            // theoretical case, two init's should not happen. change to update
-            action = 'update';
-        }
-        if (this.lastPulseTypeSent === 'update' && action === 'init') {
-            // change init after update to init.
-            action = 'update';
-        }
-        // milliseconds since last heartbeat
-        const milliSecondsSinceLastHeartbeatTimeStamp = Date.now() - this.lastPlayTime;
-        // add the minimumMilliSecondsBetweenPulses delay for throttling to the streamPulseMaxTimeMs for the maximum allowed time between pulses
-        const maximumMilliSecondsBetweenPulses = this.streamPulseMaxTimeMs + this.minimumMilliSecondsBetweenPulses;
-        if (action === 'update' && milliSecondsSinceLastHeartbeatTimeStamp > maximumMilliSecondsBetweenPulses) {
-            // change update to init if time diff with last heart beat time stamp is too big
-            return 'init';
-        }
-        if (action === 'update' && this.lastPulseTypeSent === 'finish') {
-            // change update to init if previous type was finish
-            return 'init';
-        }
-        return action;
     }
 }
 //*** Example of usage ***//
