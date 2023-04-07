@@ -4,8 +4,6 @@ export default class PlayerLogProcessor {
     constructor() {
         this.playLogs = [];
         this.apiCallInProgress = false;
-
-        this.init();
     }
 
     setApiUrl(url) {

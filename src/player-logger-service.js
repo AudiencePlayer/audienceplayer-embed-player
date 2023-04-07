@@ -14,23 +14,16 @@ export default class PlayerLoggerService {
 
     onStart(pulseToken, deviceType, localTimeDelta) {
         this.reset();
-
         this.playSession = {
             pulseToken,
             deviceType,
             eventStack: [],
             localTimeDelta
         };
-
-        this.logEvent('playStart');
-
-        this.processPlaySession();
-        this.startInterval();
     }
 
     onCurrentTimeUpdated(currentTime) {
         this.playerProperties.playPosition = currentTime;
-
         if (this.playerProperties.mediaDuration > 0 && this.playerProperties.state !== 'idle') {
             this.logEvent('timeupdate');
         }
@@ -42,13 +35,20 @@ export default class PlayerLoggerService {
 
     onPlaying() {
         if (this.playerProperties.state !== 'playing') {
-            this.playerProperties.state = 'playing';
-            this.logEvent('playing');
+            if (this.playerProperties.state === 'idle') {
+                this.logEvent('playStart');
+                this.processPlaySession();
+                this.startInterval();
+                this.playerProperties.state = 'playing';
+            } else {
+                this.playerProperties.state = 'playing';
+                this.logEvent('playing');
+            }
         }
     }
 
     onPause() {
-        if (this.playerProperties.state !== 'paused') {
+        if (this.playerProperties.state !== 'paused' && this.playerProperties.state !== 'idle') {
             this.playerProperties.state = 'paused';
             this.logEvent('pause');
         }

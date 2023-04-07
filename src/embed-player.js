@@ -71,7 +71,10 @@ export default class EmbedPlayer {
 
     destroy() {
         if (this.myPlayer) {
-            this.playerLoggerService.onStop();
+            if (this.myPlayer.ended() === false) {
+                // Be aware that the `stopped` emit also send along all kinds of info, so call _before_ disposing player
+                this.playerLoggerService.onStop();
+            }
             this.myPlayer.dispose();
             this.myPlayer = null;
         }
@@ -105,6 +108,10 @@ export default class EmbedPlayer {
     bindEvents() {
         if (this.myPlayer) {
             this.myPlayer.addEventListener('error', (event) =>
+                this.eventHandler(event)
+            );
+
+            this.myPlayer.addEventListener('ended', (event) =>
                 this.eventHandler(event)
             );
 
@@ -173,6 +180,11 @@ export default class EmbedPlayer {
                 if (this.myPlayer.paused() && !this.myPlayer.ended()) {
                     this.playerLoggerService.onPause();
                 }
+            }
+                break;
+            case 'ended': {
+                this.checkSelectedTracks();
+                this.playerLoggerService.onStop();
             }
                 break;
             case 'error': {
