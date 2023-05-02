@@ -9,6 +9,7 @@ export default class EmbedPlayer {
         this.configData = null;
         this.videoElement = null;
         this.metadataLoaded = false;
+        this.firstPlayingEvent = true;
         this.playerLoggerService = new PlayerLoggerService();
     }
 
@@ -167,7 +168,7 @@ export default class EmbedPlayer {
             case 'playing': {
                 if (this.firstPlayingEvent) {
                     this.firstPlayingEvent = false;
-                    if (this.myPlayer.currentTime > 0) {
+                    if (this.configData.currentTime > 0) {
                         this.myPlayer.currentTime(this.configData.currentTime);
                     }
                 }
