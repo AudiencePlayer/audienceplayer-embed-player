@@ -10,6 +10,7 @@ export default class EmbedPlayer {
         this.videoElement = null;
         this.metadataLoaded = false;
         this.firstPlayingEvent = true;
+        this.hasNomadics = true;
         this.playerLoggerService = new PlayerLoggerService();
     }
 
@@ -39,7 +40,8 @@ export default class EmbedPlayer {
              token,
              posterImageUrl,
              autoplay,
-             fullScreen
+             fullScreen,
+             hasNomadics
          }) {
         if (!selector) {
             return Promise.reject('selector property is missing');
@@ -55,6 +57,9 @@ export default class EmbedPlayer {
         }
         if (!projectId) {
             return Promise.reject('projectId property is missing');
+        }
+        if (hasNomadics === false) {
+          this.hasNomadics = false;
         }
         const apiFetchUrl = `${apiBaseUrl}/graphql/${projectId}`;
         const streamLoggingUrl = `${apiBaseUrl}/service/${projectId}/analytics/stream/pulse/log`;
@@ -168,7 +173,7 @@ export default class EmbedPlayer {
             case 'playing': {
                 if (this.firstPlayingEvent) {
                     this.firstPlayingEvent = false;
-                    if (this.configData.currentTime > 0) {
+                    if (this.hasNomadics && this.configData.currentTime > 0) {
                         this.myPlayer.currentTime(this.configData.currentTime);
                     }
                 }

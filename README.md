@@ -56,6 +56,7 @@ Once created it is ready for use on your website. To play an asset, just call th
 -   **posterImageUrl (optional)** - image that will be used as the initial player background image.
 -   **autoplay (optional)** - if true, player will start playing once loaded (mobile devices may have this disabled to protect bandwidth)
 -   **fullScreen (optional)** - if true, player will start in full screen once loaded
+-   **hasNomadics (option)** - indicates if your player supports nomadic watching. It is true by default.
 
 The `play()` method mentioned before provides a promise that, in case of successful asset fetch will return the player's config, otherwise - the error occurred.
 
@@ -91,6 +92,7 @@ player
         articleId: 1234,
         assetId: 4321,
         token: '',
+        hasNomadics: true
     })
     .then(config => {
         console.log('Config', config);
@@ -183,6 +185,7 @@ function playVideo() {
                 ...tokenParameter,
                 ...posterImageUrlParameter,
                 autoplay: autoplay && autoplay === 'true',
+                hasNomadics: true
             })
             .catch((error) => {
                 console.error(error);
