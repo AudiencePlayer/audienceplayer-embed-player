@@ -10,7 +10,7 @@ export default class EmbedPlayer {
         this.videoElement = null;
         this.metadataLoaded = false;
         this.firstPlayingEvent = true;
-        this.hasNomadics = true;
+        this.continueFromPreviousPosition = true;
         this.playerLoggerService = new PlayerLoggerService();
     }
 
@@ -41,7 +41,7 @@ export default class EmbedPlayer {
              posterImageUrl,
              autoplay,
              fullScreen,
-             hasNomadics
+             continueFromPreviousPosition
          }) {
         if (!selector) {
             return Promise.reject('selector property is missing');
@@ -58,8 +58,8 @@ export default class EmbedPlayer {
         if (!projectId) {
             return Promise.reject('projectId property is missing');
         }
-        if (hasNomadics === false) {
-          this.hasNomadics = false;
+        if (continueFromPreviousPosition === false) {
+          this.continueFromPreviousPosition = false;
         }
         const apiFetchUrl = `${apiBaseUrl}/graphql/${projectId}`;
         const streamLoggingUrl = `${apiBaseUrl}/service/${projectId}/analytics/stream/pulse/log`;
@@ -173,7 +173,7 @@ export default class EmbedPlayer {
             case 'playing': {
                 if (this.firstPlayingEvent) {
                     this.firstPlayingEvent = false;
-                    if (this.hasNomadics && this.configData.currentTime > 0) {
+                    if (this.continueFromPreviousPosition && this.configData.currentTime > 0) {
                         this.myPlayer.currentTime(this.configData.currentTime);
                     }
                 }
@@ -659,7 +659,7 @@ export default class EmbedPlayer {
         return {};
     }
 
-    castVideo({apiBaseUrl, projectId, articleId, assetId, token}) {
+    castVideo({apiBaseUrl, projectId, articleId, assetId, token, continueFromPreviousPosition}) {
         if (!apiBaseUrl) {
             return Promise.reject('apiBaseUrl property is missing');
         }
@@ -671,6 +671,9 @@ export default class EmbedPlayer {
         }
         if (!projectId) {
             return Promise.reject('projectId property is missing');
+        }
+        if (continueFromPreviousPosition === false) {
+          this.continueFromPreviousPosition = false;
         }
         const apiFetchUrl = `${apiBaseUrl}/graphql/${projectId}`;
         return this.getPlayConfig(
@@ -686,7 +689,7 @@ export default class EmbedPlayer {
 
                 if (mediaInfo) {
                     const request = new chrome.cast.media.LoadRequest(mediaInfo);
-                    request.currentTime = config.currentTime;
+                    request.currentTime = this.continueFromPreviousPosition ? config.currentTime : 0;
                     if (config.subtitleLocale) {
                         // can NOT use .filter on tracks because the cast library has patched the Array.
                         const textTrack = mediaInfo.tracks.find(track => track.language === config.subtitleLocale);
@@ -734,6 +737,7 @@ export default class EmbedPlayer {
 //         token: '',
 //         posterImageUrl: '',
 //         fullScreen: false
+//         continueFromPreviousPosition: true
 //     })
 //     .then(config => {
 //         console.log('Config', config);
@@ -754,6 +758,7 @@ export default class EmbedPlayer {
 //         articleId: '',
 //         assetId: '',
 //         token: '',
+//         continueFromPreviousPosition: true
 //     })
 //     .then(config => {
 //         console.log('Config', config);
