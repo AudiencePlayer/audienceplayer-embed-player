@@ -680,7 +680,6 @@ export default class EmbedPlayer {
             apiFetchUrl,
             articleId,
             assetId,
-            null,
             token
         ).then((config) => {
             if (this.isConnected()) {
