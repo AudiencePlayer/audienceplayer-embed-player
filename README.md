@@ -87,7 +87,7 @@ const player = new EmbedPlayer();
 player
     .play({
         selector: '.video-wrapper',
-        apiBaseUrl: 'https://<your-audienceplayer-api-url-here>',
+        apiBaseUrl: '<your-audienceplayer-api-url-here>', // default: 'https://api.audienceplayer.com'
         projectId: 4,
         articleId: 1234,
         assetId: 4321,
