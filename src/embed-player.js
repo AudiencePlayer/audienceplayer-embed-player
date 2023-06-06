@@ -59,10 +59,10 @@ export default class EmbedPlayer {
             return Promise.reject('projectId property is missing');
         }
         if (continueFromPreviousPosition === false) {
-          this.continueFromPreviousPosition = false;
+            this.continueFromPreviousPosition = false;
         }
-        const apiFetchUrl = `${apiBaseUrl}/graphql/${projectId}`;
-        const streamLoggingUrl = `${apiBaseUrl}/service/${projectId}/analytics/stream/pulse/log`;
+        const apiFetchUrl = this.sanitiseApiBaseUrl(apiBaseUrl) + `/graphql/${projectId}`;
+        const streamLoggingUrl = this.sanitiseApiBaseUrl(apiBaseUrl) + `/service/${projectId}/analytics/stream/pulse/log`;
         this.initPlayer(selector);
         return this.getPlayConfig(
             apiFetchUrl,
@@ -89,7 +89,7 @@ export default class EmbedPlayer {
 
     playVideo(configData, posterUrl, autoplay, fullScreen, logServiceUrl) {
         this.configData = configData;
-        this.playerLoggerService.setApiUrl(logServiceUrl) ;
+        this.playerLoggerService.setApiUrl(logServiceUrl);
         this.playerLoggerService.onStart(
             this.configData.pulseToken,
             'default',
@@ -147,11 +147,13 @@ export default class EmbedPlayer {
             case 'timeupdate': {
                 this.checkSelectedTracks();
                 this.playerLoggerService.onCurrentTimeUpdated(this.myPlayer.currentTime() || 0);
-            }break;
+            }
+                break;
             case 'durationchange': {
                 this.checkSelectedTracks();
                 this.playerLoggerService.onDurationUpdated(this.myPlayer.duration());
-            } break;
+            }
+                break;
             case 'loadedmetadata': {
                 if (this.myPlayer.currentAudioStreamList()) {
                     // set default tracks when available
@@ -169,7 +171,8 @@ export default class EmbedPlayer {
                         this.metadataLoaded = true;
                     }, 1000);
                 }
-            } break;
+            }
+                break;
             case 'playing': {
                 if (this.firstPlayingEvent) {
                     this.firstPlayingEvent = false;
@@ -196,7 +199,8 @@ export default class EmbedPlayer {
             case 'error': {
                 const errorDetails = this.myPlayer.error();
                 this.playerLoggerService.onError(JSON.stringify(errorDetails));
-            } break;
+            }
+                break;
         }
     }
 
@@ -317,11 +321,11 @@ export default class EmbedPlayer {
         };
     }
 
-    getPlayConfig(apiBaseUrl, articleId, assetId, token) {
+    getPlayConfig(apiFetchUrl, articleId, assetId, token) {
         let article = {};
         let config = {};
 
-        return this.getArticle(apiBaseUrl, articleId, token)
+        return this.getArticle(apiFetchUrl, articleId, token)
             .then((response) => response.json())
             .then((articleData) => {
                 if (!articleData || !articleData.data || articleData.errors) {
@@ -330,7 +334,7 @@ export default class EmbedPlayer {
                 }
                 article = {...articleData.data.Article};
                 return this.getArticleAssetPlayConfig(
-                    apiBaseUrl,
+                    apiFetchUrl,
                     articleId,
                     assetId,
                     token
@@ -351,7 +355,7 @@ export default class EmbedPlayer {
             });
     }
 
-    getArticle(apiBaseUrl, articleId, token) {
+    getArticle(apiFetchUrl, articleId, token) {
         const articleQuery = `
             query Article($articleId: Int!) {
                 Article(id: $articleId) {
@@ -380,7 +384,7 @@ export default class EmbedPlayer {
 
         const authHeader = token ? {Authorization: 'Bearer ' + token} : {};
 
-        return fetch(apiBaseUrl, {
+        return fetch(apiFetchUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -394,7 +398,7 @@ export default class EmbedPlayer {
         });
     }
 
-    getArticleAssetPlayConfig(apiBaseUrl, articleId, assetId, token) {
+    getArticleAssetPlayConfig(apiFetchUrl, articleId, assetId, token) {
         const articleAssetPlayMutation = `
             mutation ArticleAssetPlay($articleId: Int, $assetId: Int, $protocols: [ArticlePlayProtocolEnum]) {
                 ArticleAssetPlay(article_id: $articleId, asset_id: $assetId, protocols: $protocols) {
@@ -426,7 +430,7 @@ export default class EmbedPlayer {
 
         const authHeader = token ? {Authorization: 'Bearer ' + token} : {};
 
-        return fetch(apiBaseUrl, {
+        return fetch(apiFetchUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -673,9 +677,9 @@ export default class EmbedPlayer {
             return Promise.reject('projectId property is missing');
         }
         if (continueFromPreviousPosition === false) {
-          this.continueFromPreviousPosition = false;
+            this.continueFromPreviousPosition = false;
         }
-        const apiFetchUrl = `${apiBaseUrl}/graphql/${projectId}`;
+        const apiFetchUrl = this.sanitiseApiBaseUrl(apiBaseUrl) + `/graphql/${projectId}`;
         return this.getPlayConfig(
             apiFetchUrl,
             articleId,
@@ -720,6 +724,10 @@ export default class EmbedPlayer {
 
     getCastPlayerController() {
         return this.castPlayerController;
+    }
+
+    sanitiseApiBaseUrl(apiBaseUrl) {
+        return apiBaseUrl.replace(/\/*$/, '');
     }
 }
 //*** Example of usage ***//
