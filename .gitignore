@@ -7,3 +7,5 @@ Thumbs.db
 
 dist/
 node_modules
+
+src/**/*.d.ts

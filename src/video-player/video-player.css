@@ -1,0 +1,25 @@
+.video-js .vjs-current-time {
+    display: block !important;
+}
+
+.video-js .vjs-time-divider {
+    display: block !important;
+}
+
+.video-js .vjs-duration {
+    display: block !important;
+}
+
+/* removing background from subtitles */
+.video-js .vjs-text-track-display > div > div > div {
+    background-color: transparent !important;
+    text-shadow: 0.1rem 0.1rem 0.05rem #000;
+}
+
+.video-js .vjs-tech {
+    outline: none !important;
+}
+
+.video-js .vjs-button-tooltip {
+    display: none !important;
+}
