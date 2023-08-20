@@ -15,12 +15,15 @@ export class PlayerLogProcessor {
     protected apiUrl: string;
     protected playLogs: PlayerLogPayload[] = [];
     protected apiCallInProgress = false;
+    protected intervalHandle: any = null;
 
     init(baseUrl: string, projectId: number) {
         this.apiUrl = `${baseUrl}/service/${projectId}/analytics/stream/pulse/log`.replace(/\/*$/, '');
-        setInterval(() => {
-            this.processFirstPlayLog();
-        }, 3000);
+        if (this.intervalHandle === null) {
+            this.intervalHandle = setInterval(() => {
+                this.processFirstPlayLog();
+            }, 3000);
+        }
     }
 
     processPlaySession(playSession: PlaySession, timeStamp: number) {

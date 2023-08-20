@@ -82,9 +82,12 @@ export class VideoPlayer {
         this.player = videojs(videoElement, playOptions);
         const vhs = this.player.tech().vhs;
         this.player.eme();
+        this.bindEvents();
     }
 
     play(playConfig: ArticlePlayConfig, posterUrl: string, fullscreen: boolean) {
+
+        this.articlePlayConfig = playConfig;
 
         this.playerLoggerService.onStart(
             playConfig.pulseToken,
