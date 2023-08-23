@@ -48,7 +48,7 @@ export class EmbedPlayer {
         }
         this.apiService.init(apiBaseUrl, projectId);
         this.apiService.setToken(token);
-        this.videoPlayer.init(selector, apiBaseUrl, projectId, {autoplay});
+        this.videoPlayer.init(selector, apiBaseUrl, projectId, {autoplay, poster: posterImageUrl});
 
         return this.apiService.getArticleAssetPlayConfig(articleId, assetId, continueFromPreviousPosition).then(config => {
             this.playVideo(config, posterImageUrl, fullScreen);
@@ -65,7 +65,10 @@ export class EmbedPlayer {
     }
 
     setupChromecast(selector: string | Element, chromecastReceiverAppId: string) {
-        this.castSender.init(chromecastReceiverAppId);
+        const castButtonContaner = selector instanceof Element ? selector : document.querySelector(selector);
+        const castButton = document.createElement('google-cast-launcher');
+        castButtonContaner.appendChild(castButton);
+        return this.castSender.init(chromecastReceiverAppId);
     }
 
     castVideo({apiBaseUrl, projectId, articleId, assetId, token, continueFromPreviousPosition}: PlayParamsChromecast) {
@@ -92,6 +95,14 @@ export class EmbedPlayer {
             this.castSender.castVideo(config, article, continueFromPreviousPosition);
             return config;
         });
+    }
+
+    getCastPlayer() {
+        return this.castSender.getCastPlayer();
+    }
+
+    getCastPlayerController() {
+        return this.castSender.getCastPlayerController();
     }
 
     isConnected() {

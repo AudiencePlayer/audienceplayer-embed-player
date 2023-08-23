@@ -3,6 +3,8 @@
     "version": "1.0.0",
     "description": "This library allows you to play your AudiencePlayer videos assets on your website, via the \"headless\" solution of the [AudiencePlayer video platform](https://www.audienceplayer.com).",
     "main": "dist/bundle.js",
+    "module": "dist/bundle.js",
+    "types": "src/index.d.ts",
     "scripts": {
         "develop": "webpack --mode development --watch",
         "build": "webpack --mode production",

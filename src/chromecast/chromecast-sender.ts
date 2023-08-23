@@ -1,18 +1,17 @@
-import CastContext = cast.framework.CastContext;
-import RemotePlayer = cast.framework.RemotePlayer;
-import RemotePlayerController = cast.framework.RemotePlayerController;
+/// <reference path="../../node_modules/@types/chromecast-caf-sender/index.d.ts" />
+
 import {ArticlePlayConfig} from '../models/play-config';
 import {Article} from '../models/article';
 
 export class ChromecastSender {
-    castContext: CastContext = null;
-    castPlayer: RemotePlayer = null;
-    castPlayerController: RemotePlayerController = null;
+    castContext: cast.framework.CastContext = null;
+    castPlayer: cast.framework.RemotePlayer = null;
+    castPlayerController: cast.framework.RemotePlayerController = null;
 
     init(chromecastReceiverAppId: string) {
         return new Promise<void>((resolve, reject) => {
             if (chromecastReceiverAppId) {
-                window['__onGCastApiAvailable'] = isAvailable => {
+                window['__onGCastApiAvailable'] = (isAvailable: boolean) => {
                     if (isAvailable && cast && cast.framework) {
                         this.initializeCastApi(chromecastReceiverAppId);
 
@@ -123,7 +122,7 @@ export class ChromecastSender {
                 request.currentTime = continueFromPreviousPosition ? playConfig.currentTime : 0;
                 if (playConfig.subtitleLocale) {
                     // can NOT use .filter on tracks because the cast library has patched the Array.
-                    const textTrack = mediaInfo.tracks.find(track => track.language === playConfig.subtitleLocale);
+                    const textTrack = mediaInfo.tracks.find((track: chrome.cast.media.Track) => track.language === playConfig.subtitleLocale);
                     if (textTrack) {
                         request.activeTrackIds = [textTrack.trackId];
                     }
@@ -141,7 +140,9 @@ export class ChromecastSender {
 
     stopCasting() {
         const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-        castSession.endSession(true);
+        if (castSession) {
+            castSession.endSession(true);
+        }
     }
 
     getCastPlayer() {

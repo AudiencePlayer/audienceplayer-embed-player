@@ -191,6 +191,10 @@ export class VideoPlayer {
         }
     }
 
+    getPlayer(): any {
+        return this.player;
+    }
+
     private bindEvents() {
         // same trick as azure media player; set label to language
         this.player.on('loadeddata', () => {
@@ -225,7 +229,6 @@ export class VideoPlayer {
         });
 
         this.player.on('ended', () => {
-            // this.stopped.emit(); @TODO VideoPlayerStopped
             this.checkSelectedTracks();
             this.playerLoggerService.onStop();
         });

@@ -1,7 +1,6 @@
-import RemotePlayerController = cast.framework.RemotePlayerController;
-import PlayerState = chrome.cast.media.PlayerState;
-import RemotePlayer = cast.framework.RemotePlayer;
-import Track = chrome.cast.media.Track;
+/// <reference path="../../node_modules/@types/chromecast-caf-sender/index.d.ts" />
+// declare const cast: any;
+// declare const chrome: any;
 
 interface TrackInfo {
     id: number;
@@ -10,18 +9,17 @@ interface TrackInfo {
 }
 
 export class ChromecastControls {
-    private currentStatus: PlayerState;
-    private playerController: RemotePlayerController;
-    private player: RemotePlayer;
+    private currentStatus: chrome.cast.media.PlayerState;
+    private playerController: cast.framework.RemotePlayerController;
+    private player: cast.framework.RemotePlayer;
     private rootElement: HTMLElement;
     private controlInitialized: boolean;
     private totalDuration: number;
     private currentTime: number;
 
-    constructor(player: RemotePlayer, controller: RemotePlayerController, selector: string) {
+    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector: string) {
         this.player = player;
         this.playerController = controller;
-        this.rootElement = null;
         this.controlInitialized = false;
         this.totalDuration = player.duration || 0;
         this.currentTime = player.currentTime || 0;
@@ -95,13 +93,10 @@ export class ChromecastControls {
             </div>
         `;
 
-        if (selector) {
-            const wrapperContainer = this.getElement(selector);
-            wrapperContainer.insertAdjacentHTML('beforeend', chromecastControlsTemplateString);
-        } else {
-            document.body.insertAdjacentHTML('beforeend', chromecastControlsTemplateString);
-        }
-        this.rootElement = this.getElement();
+        const element = !!selector ? document.querySelector(selector) : document.body;
+        element.insertAdjacentHTML('beforeend', chromecastControlsTemplateString);
+
+        this.rootElement = element.querySelector('.chromecast-controls');
         this.rootElement.querySelector('.button__audio-tracks').addEventListener('click', () => this.toggleTracksDialogue());
         this.rootElement
             .querySelector('.chromecast-controls__subtitles__close-icon')
@@ -326,16 +321,12 @@ export class ChromecastControls {
                 () => {
                     this.toggleTracksDialogue();
                 },
-                error => console.error('ChromeCast', error)
+                (error: chrome.cast.Error) => console.error('ChromeCast', error)
             );
         }
     }
 
-    getElement(selector?: string) {
-        if (selector) {
-            return this.rootElement.querySelector(selector) as HTMLElement;
-        }
-
-        return document.querySelector('.chromecast-controls') as HTMLElement;
+    getElement(selector: string) {
+        return this.rootElement.querySelector(selector) as HTMLElement;
     }
 }
