@@ -17,7 +17,7 @@ export class ChromecastControls {
     private totalDuration: number;
     private currentTime: number;
 
-    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector: string) {
+    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string) {
         this.player = player;
         this.playerController = controller;
         this.controlInitialized = false;
@@ -61,7 +61,7 @@ export class ChromecastControls {
         this.checkChromecastContainerVisibility();
     }
 
-    createChromecastControlsTemplate(selector: string) {
+    createChromecastControlsTemplate(selector?: string) {
         const chromecastControlsTemplateString = `
             <div class="chromecast-controls">
                <div class="chromecast-controls__title"></div>
@@ -102,9 +102,7 @@ export class ChromecastControls {
             .querySelector('.chromecast-controls__subtitles__close-icon')
             .addEventListener('click', () => this.toggleTracksDialogue());
         this.rootElement.querySelector('.chromecast-controls__progress-bar__slider').addEventListener('input', event => {
-            if (event.target instanceof HTMLProgressElement) {
-                this.seek(event.target.value);
-            }
+            this.seek((event.target as HTMLProgressElement).value);
         });
     }
 
