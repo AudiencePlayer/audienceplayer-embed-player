@@ -3,6 +3,7 @@ import {ChromecastSender} from './chromecast/chromecast-sender';
 import {ApiService} from './api/api-service';
 import {ArticlePlayConfig} from './models/play-config';
 import {PlayParams, PlayParamsChromecast} from './models/play-params';
+import {toPlayConfigError} from "./api/converters";
 
 export class EmbedPlayer {
     private videoPlayer: VideoPlayer;
@@ -53,6 +54,9 @@ export class EmbedPlayer {
         return this.apiService.getArticleAssetPlayConfig(articleId, assetId, continueFromPreviousPosition).then(config => {
             this.playVideo(config, posterImageUrl, fullScreen);
             return config;
+        }).catch(error => {
+            console.log(toPlayConfigError(error.code));
+            throw error;
         });
     }
 
@@ -94,6 +98,9 @@ export class EmbedPlayer {
         ]).then(([config, article]) => {
             this.castSender.castVideo(config, article, continueFromPreviousPosition);
             return config;
+        }).catch(error => {
+            console.log(toPlayConfigError(error.code));
+            throw error;
         });
     }
 

@@ -1,7 +1,6 @@
 import {graphRequest} from './graph-request';
 import {articleAssetPlayMutation, articleQuery} from './queries';
 import {toArticle, toPlayConfig} from './converters';
-import {Article} from '../models/article';
 
 export class ApiService {
     private apiFetchUrl: string;

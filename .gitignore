@@ -5,7 +5,8 @@
 .DS_Store
 Thumbs.db
 
-dist/
+# build artifacts in `dist/` are NOT ignored, so devs are not forced to use `npm` and `node`.
+
 node_modules
 
 src/**/*.d.ts

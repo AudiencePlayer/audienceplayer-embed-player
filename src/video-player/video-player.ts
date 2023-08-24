@@ -7,7 +7,7 @@ import {PlayerDeviceTypes} from "../models/player";
 declare const videojs: any;
 
 export class VideoPlayer {
-    private player: any;
+    private player: any = null;
     private playerLoggerService: PlayerLoggerService;
     private articlePlayConfig: ArticlePlayConfig;
     private firstPlayingEvent: boolean;
@@ -21,6 +21,7 @@ export class VideoPlayer {
 
     init(selector: string | HTMLElement, baseUrl: string, projectId: number, options: PlayerOptions) {
         this.destroy();
+        this.firstPlayingEvent = true;
         this.playerLoggerService.init(baseUrl, projectId);
 
         const videoContainer = selector instanceof Element ? selector : document.querySelector(selector);
@@ -76,8 +77,6 @@ export class VideoPlayer {
             },
             ...options,
         };
-
-        console.log(playOptions);
 
         this.player = videojs(videoElement, playOptions);
         const vhs = this.player.tech().vhs;
@@ -157,7 +156,6 @@ export class VideoPlayer {
                 return (playOption.type === 'application/vnd.apple.mpegurl' && configureHLSOnly) || !configureHLSOnly;
             });
 
-        console.log(playSources);
         this.player.src(playSources);
 
         if (fullscreen) {
@@ -187,7 +185,6 @@ export class VideoPlayer {
             }
 
             this.player.dispose();
-            this.player = null;
         }
     }
 

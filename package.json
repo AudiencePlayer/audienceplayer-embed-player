@@ -1,6 +1,9 @@
 {
     "name": "audienceplayer-embed-player",
     "version": "1.0.0",
+    "engines": {
+        "node": ">=16.0.0"
+    },
     "description": "This library allows you to play your AudiencePlayer videos assets on your website, via the \"headless\" solution of the [AudiencePlayer video platform](https://www.audienceplayer.com).",
     "main": "dist/bundle.js",
     "module": "dist/bundle.js",
@@ -53,22 +56,6 @@
         "*.{js,json,css,md,ts,html,component.html}": [
             "prettier --write",
             "git add"
-        ]
-    },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all",
-            "not safari < 10",
-            "not chrome < 51",
-            "not android < 5",
-            "not ie > 0"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
         ]
     }
 }

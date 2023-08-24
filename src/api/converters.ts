@@ -1,4 +1,4 @@
-import {ArticlePlayConfig, ArticlePlayEntitlement} from '../models/play-config';
+import {ArticlePlayConfig, ArticlePlayEntitlement, ArticlePlayErrors} from '../models/play-config';
 import {Article} from '../models/article';
 
 export function toPlayConfig(config: any, continueFromPreviousPosition: boolean): ArticlePlayConfig {
@@ -79,6 +79,7 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
 
 export function toArticle(article: any, assetId: number): Article {
     const asset = article.assets.find((item: any) => item.id === assetId);
+
     return {
         title: getMetaValue(article.metas, 'title') || article.name,
         asset: {
@@ -89,4 +90,17 @@ export function toArticle(article: any, assetId: number): Article {
 export function getMetaValue(metas: any, key: string) {
     const meta = metas.find((m: any) => m.key === key);
     return meta ? meta.value : '';
+}
+
+export function toPlayConfigError(code: number): ArticlePlayErrors {
+    switch (code) {
+        case 0: return ArticlePlayErrors.offlineError;
+        case 401: return ArticlePlayErrors.notAuthenticated;
+        case 402: return ArticlePlayErrors.needEntitlement;
+        case 403: return ArticlePlayErrors.notAuthenticated;
+        case 404: return ArticlePlayErrors.noPlayableAsset;
+        case 429: return ArticlePlayErrors.maxConcurrentStreamNumberError;
+
+        default: return ArticlePlayErrors.serverError;
+    }
 }

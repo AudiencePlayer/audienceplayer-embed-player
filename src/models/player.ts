@@ -48,7 +48,7 @@ export interface PlayerEventPayload {
     event_payload?: string;
 }
 
-// generic abstraction of player events that are taken from Azure media player, Chromecast and mobile implementations
+// generic abstraction of player events that are taken from the video player, Chromecast and mobile implementations
 export enum PlayerEventTypes {
     playStart = 'playStart', // before attempt to play with given play configuration
     playing = 'playing', // play state is playing

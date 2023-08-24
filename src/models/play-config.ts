@@ -8,12 +8,6 @@ export interface ArticlePlayConfig {
     localTimeDelta?: number;
 }
 
-export interface ArticlePlayConfigError {
-    type: ArticlePlayErrors;
-    code?: string;
-    info?: string;
-}
-
 export interface ArticlePlayEntitlement {
     src: string;
     type: string;
@@ -35,16 +29,14 @@ export interface ArticlePlayConfigProtection {
 }
 
 export enum ArticlePlayErrors {
-    noPlayableAsset,
-    notAuthenticated,
-    needSubscription,
-    needEntitlement,
-    needSubscriptionOrEntitlement,
-    paymentNotAuthorizedInApp,
-    notAuthorized,
-    serverError,
-    offlineError,
-    playerError,
-    inAppBrowserError,
-    maxConcurrentStreamNumberError,
+    noPlayableAsset= "noPlayableAsset",
+    notAuthenticated = "notAuthenticated",
+    needEntitlement = "needEntitlement",
+    paymentNotAuthorizedInApp = "paymentNotAuthorizedInApp",
+    notAuthorized = "notAuthorized",
+    serverError = "serverError",
+    offlineError = "offlineError",
+    playerError = "playerError",
+    inAppBrowserError = "inAppBrowserError",
+    maxConcurrentStreamNumberError = "maxConcurrentStreamNumberError",
 }
