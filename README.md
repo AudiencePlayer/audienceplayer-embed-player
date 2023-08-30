@@ -1,6 +1,6 @@
 # Audienceplayer Embed Player
 
-This library allows you to play your AudiencePlayer videos assets on your website, via the "headless" solution of the [AudiencePlayer video platform](https://www.audienceplayer.com). 
+This library allows you to play your AudiencePlayer videos assets on your website, via the "headless" solution of the [AudiencePlayer video platform](https://www.audienceplayer.com).
 
 ## Installation
 
@@ -10,7 +10,6 @@ There is no npm package, so install from the GitHub link:
 Check below section `Example of usage` or check out the example project https://github.com/AudiencePlayer/audienceplayer-embed-player-projects
 
 Please mind that the some files from this library should be treated using "static files", meaning that they should be included directly into your HTML instead of a framework (e.g. Angular) or build tool (e.g. Webpack)
-
 
 ## Manual implementation without dependency management
 
@@ -61,7 +60,7 @@ This is typically used when playing the video in a modal dialog or from a differ
 
 ## Example of usage
 
-Import the class; 
+Import the class;
 
 using npm
 
@@ -70,12 +69,13 @@ import {EmbedPlayer} from 'embed-player';
 ```
 
 or via the manual implementation
+
 ```javascript
 import EmbedPlayer from 'embed-player.js';
 ```
 
-
 ### Default usage with a video player
+
 ```javascript
 const player = new EmbedPlayer();
 
@@ -87,7 +87,7 @@ player
         articleId: 1234,
         assetId: 4321,
         token: '',
-        continueFromPreviousPosition: true
+        continueFromPreviousPosition: true,
     })
     .then(config => {
         console.log('Config', config);
@@ -99,14 +99,14 @@ player
 
 The `Promise` returns a `config` object that can be used for debugging purposes, but is not needed outside the player.
 
-When an error occurs, the `error` object will contain the message and error code returned by the API. If the `error` is not an object, the API was not reachable.   
+When an error occurs, the `error` object will contain the message and error code returned by the API. If the `error` is not an object, the API was not reachable.
 
 To destroy the player:
 
-````javascript
+```javascript
 player.destroy();
-// DOM element refered by the selector, e.g. `.video-wrapper` can now safely be removed. 
-````
+// DOM element refered by the selector, e.g. `.video-wrapper` can now safely be removed.
+```
 
 An example of this can be found in https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/main/src, where the queryString params can be used to set the needed variables.
 
@@ -114,9 +114,9 @@ Please take note that it is possible to create multiple instances of the EmbedPl
 
 ## Usage with ChromeCast
 
-Besides just using the embedded player, when you have an AudiencePlayer ChromeCast receiver application, you can offer 
+Besides just using the embedded player, when you have an AudiencePlayer ChromeCast receiver application, you can offer
 video playout via a ChromeCast device that is on the same local network.
-In the below example, it is shown how you can set this up with the `chromecast receiver app id` which you will then have 
+In the below example, it is shown how you can set this up with the `chromecast receiver app id` which you will then have
 received from AudiencePlayer.
 
 Add the `ChromecastControls` class;
@@ -128,6 +128,7 @@ import {ChromecastControls} from 'embed-player';
 ```
 
 ### manual implementation
+
 In the manual implementation the ChromecastControls are avaible from the main bundle.
 
 ```javascript
@@ -137,16 +138,13 @@ import ChromecastControls from 'bundle.js';
 ### example
 
 ```javascript
-
 const chromecastReceiverAppId = `000000`; // replace with the receiver app id
 const player = new EmbedPlayer();
 // the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognisable spot next
 // to the play-button/thumbnail or in the menu.
-player
-    .setupChromecast('#cast-wrapper', chromecastReceiverAppId)
-    .then(() => {
-            const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
-    });
+player.setupChromecast('#cast-wrapper', chromecastReceiverAppId).then(() => {
+    const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
+});
 
 // call the playVideo function `onClick` of the play-button/thumbnail
 function playVideo() {
@@ -159,9 +157,9 @@ function playVideo() {
                 projectId,
                 assetId,
                 ...tokenParameter,
-              continueFromPreviousPosition: true
+                continueFromPreviousPosition: true,
             })
-            .catch((error) => console.error(error));
+            .catch(error => console.error(error));
     } else {
         // ChromeCast is not connected; play the video directly
         player
@@ -174,9 +172,9 @@ function playVideo() {
                 ...tokenParameter,
                 ...posterImageUrlParameter,
                 autoplay: autoplay && autoplay === 'true',
-                continueFromPreviousPosition: true
+                continueFromPreviousPosition: true,
             })
-            .catch((error) => {
+            .catch(error => {
                 console.error(error);
             });
     }
@@ -193,15 +191,15 @@ A complete implementation example of the above can be found here:
 
 https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/main/src/demo
 
-### Important to note: 
- 
-In this demo, the `embed-player` is only used when there is no ChromeCast session. 
+### Important to note:
+
+In this demo, the `embed-player` is only used when there is no ChromeCast session.
 The reason for this is that the video player is unaware of the ChromeCast session, so pressing play inside the player will
 always just play the video in the player, regardless of the session.
 
 In the situation where you already show the `embed-player` and want to make used of ChromeCast, we advise to show a thumbnail
 with a play icon instead and use this as the button to cast the video or start the video with the autoplay option to true.
-We also advise to then show the player inside a modal dialog, so that when the dialog is closed, the user will see the thumbnail again. 
+We also advise to then show the player inside a modal dialog, so that when the dialog is closed, the user will see the thumbnail again.
 
 #### Styling the ChromeCast controls
 
@@ -209,10 +207,10 @@ The chromecast controls have a default styling, which can be changed via the css
 Another option is to completely replace the chromecast-controls.css with your own implementation.
 
 ### Supported browsers
+
 The latest versions of the following browsers are supported:
 
-* Microsoft Edge
-* Chrome (supports Chromecast)
-* Firefox
-* Safari
-
+-   Microsoft Edge
+-   Chrome (supports Chromecast)
+-   Firefox
+-   Safari

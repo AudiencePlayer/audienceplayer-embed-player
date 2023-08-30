@@ -3,7 +3,7 @@ import {ChromecastSender} from './chromecast/chromecast-sender';
 import {ApiService} from './api/api-service';
 import {ArticlePlayConfig} from './models/play-config';
 import {PlayParams, PlayParamsChromecast} from './models/play-params';
-import {toPlayConfigError} from "./api/converters";
+import {toPlayConfigError} from './api/converters';
 
 export class EmbedPlayer {
     private videoPlayer: VideoPlayer;
@@ -51,13 +51,16 @@ export class EmbedPlayer {
         this.apiService.setToken(token);
         this.videoPlayer.init(selector, apiBaseUrl, projectId, {autoplay, poster: posterImageUrl});
 
-        return this.apiService.getArticleAssetPlayConfig(articleId, assetId, continueFromPreviousPosition).then(config => {
-            this.playVideo(config, posterImageUrl, fullScreen);
-            return config;
-        }).catch(error => {
-            console.log(toPlayConfigError(error.code));
-            throw error;
-        });
+        return this.apiService
+            .getArticleAssetPlayConfig(articleId, assetId, continueFromPreviousPosition)
+            .then(config => {
+                this.playVideo(config, posterImageUrl, fullScreen);
+                return config;
+            })
+            .catch(error => {
+                console.log(toPlayConfigError(error.code));
+                throw error;
+            });
     }
 
     destroy() {
@@ -95,13 +98,15 @@ export class EmbedPlayer {
         return Promise.all([
             this.apiService.getArticleAssetPlayConfig(articleId, assetId, continueFromPreviousPosition),
             this.apiService.getArticle(articleId, assetId),
-        ]).then(([config, article]) => {
-            this.castSender.castVideo(config, article, continueFromPreviousPosition);
-            return config;
-        }).catch(error => {
-            console.log(toPlayConfigError(error.code));
-            throw error;
-        });
+        ])
+            .then(([config, article]) => {
+                this.castSender.castVideo(config, article, continueFromPreviousPosition);
+                return config;
+            })
+            .catch(error => {
+                console.log(toPlayConfigError(error.code));
+                throw error;
+            });
     }
 
     getCastPlayer() {

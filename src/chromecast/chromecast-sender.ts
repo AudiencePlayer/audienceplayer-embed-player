@@ -122,7 +122,9 @@ export class ChromecastSender {
                 request.currentTime = continueFromPreviousPosition ? playConfig.currentTime : 0;
                 if (playConfig.subtitleLocale) {
                     // can NOT use .filter on tracks because the cast library has patched the Array.
-                    const textTrack = mediaInfo.tracks.find((track: chrome.cast.media.Track) => track.language === playConfig.subtitleLocale);
+                    const textTrack = mediaInfo.tracks.find(
+                        (track: chrome.cast.media.Track) => track.language === playConfig.subtitleLocale
+                    );
                     if (textTrack) {
                         request.activeTrackIds = [textTrack.trackId];
                     }

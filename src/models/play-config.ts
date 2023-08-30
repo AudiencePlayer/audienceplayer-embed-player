@@ -29,14 +29,14 @@ export interface ArticlePlayConfigProtection {
 }
 
 export enum ArticlePlayErrors {
-    noPlayableAsset= "noPlayableAsset",
-    notAuthenticated = "notAuthenticated",
-    needEntitlement = "needEntitlement",
-    paymentNotAuthorizedInApp = "paymentNotAuthorizedInApp",
-    notAuthorized = "notAuthorized",
-    serverError = "serverError",
-    offlineError = "offlineError",
-    playerError = "playerError",
-    inAppBrowserError = "inAppBrowserError",
-    maxConcurrentStreamNumberError = "maxConcurrentStreamNumberError",
+    noPlayableAsset = 'noPlayableAsset',
+    notAuthenticated = 'notAuthenticated',
+    needEntitlement = 'needEntitlement',
+    paymentNotAuthorizedInApp = 'paymentNotAuthorizedInApp',
+    notAuthorized = 'notAuthorized',
+    serverError = 'serverError',
+    offlineError = 'offlineError',
+    playerError = 'playerError',
+    inAppBrowserError = 'inAppBrowserError',
+    maxConcurrentStreamNumberError = 'maxConcurrentStreamNumberError',
 }

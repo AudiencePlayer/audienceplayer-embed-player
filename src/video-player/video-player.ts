@@ -2,8 +2,8 @@ import {EmeOptions, PlayerOptions} from '../models/player-options';
 import {ArticlePlayConfig} from '../models/play-config';
 import {willPlayHls} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
-import {PlayerDeviceTypes} from "../models/player";
-import {base64ToBinary, binaryToBase64, getHostnameFromUri, parseLicenseResponse} from "../utils/eme";
+import {PlayerDeviceTypes} from '../models/player';
+import {base64ToBinary, binaryToBase64, getHostnameFromUri, parseLicenseResponse} from '../utils/eme';
 
 declare const videojs: any;
 
@@ -78,15 +78,9 @@ export class VideoPlayer {
     }
 
     play(playConfig: ArticlePlayConfig, posterUrl: string, fullscreen: boolean) {
-
         this.articlePlayConfig = playConfig;
 
-        this.playerLoggerService.onStart(
-            playConfig.pulseToken,
-            PlayerDeviceTypes.default,
-            playConfig.localTimeDelta,
-            true,
-        );
+        this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
         const hlsSources = playConfig.entitlements.filter(entitlement => entitlement.type === 'application/vnd.apple.mpegurl');
         const configureHLSOnly = willPlayHls() && hlsSources.length > 0; // make sure there is actually HLS
@@ -105,9 +99,9 @@ export class VideoPlayer {
                                         'com.widevine.alpha': protectionInfo.keyDeliveryUrl,
                                     },
                                     emeHeaders: {
-                                        Authorization: protectionInfo.authenticationToken
-                                    }
-                                }
+                                        Authorization: protectionInfo.authenticationToken,
+                                    },
+                                };
                             }
                             break;
                         case 'application/vnd.ms-sstr+xml':
@@ -118,8 +112,8 @@ export class VideoPlayer {
                                         'com.microsoft.playready': protectionInfo.keyDeliveryUrl,
                                     },
                                     emeHeaders: {
-                                        Authorization: protectionInfo.authenticationToken
-                                    }
+                                        Authorization: protectionInfo.authenticationToken,
+                                    },
                                 };
                             }
                             break;
@@ -133,23 +127,27 @@ export class VideoPlayer {
                                             getContentId: function() {
                                                 return getHostnameFromUri(protectionInfo.keyDeliveryUrl);
                                             },
-                                            getLicense: function (emeOptions: any, contentId: string, keyMessage: any, callback: any) {
-                                                const payload = 'spc=' + binaryToBase64(keyMessage) + '&assetId=' + encodeURIComponent(contentId);
-                                                videojs.xhr({
-                                                    uri: protectionInfo.keyDeliveryUrl,
-                                                    method: 'post',
-                                                    headers: {
-                                                        'Content-type': 'application/x-www-form-urlencoded',
-                                                        Authorization: protectionInfo.authenticationToken
+                                            getLicense: function(emeOptions: any, contentId: string, keyMessage: any, callback: any) {
+                                                const payload =
+                                                    'spc=' + binaryToBase64(keyMessage) + '&assetId=' + encodeURIComponent(contentId);
+                                                videojs.xhr(
+                                                    {
+                                                        uri: protectionInfo.keyDeliveryUrl,
+                                                        method: 'post',
+                                                        headers: {
+                                                            'Content-type': 'application/x-www-form-urlencoded',
+                                                            Authorization: protectionInfo.authenticationToken,
+                                                        },
+                                                        body: payload,
+                                                        responseType: 'arraybuffer',
                                                     },
-                                                    body: payload,
-                                                    responseType: 'arraybuffer',
-                                                }, videojs.xhr.httpHandler(function (err: any, response: ArrayBuffer) {
-                                                    callback(null, parseLicenseResponse(response));
-                                                }, true));
-                                            }
+                                                    videojs.xhr.httpHandler(function(err: any, response: ArrayBuffer) {
+                                                        callback(null, parseLicenseResponse(response));
+                                                    }, true)
+                                                );
+                                            },
                                         },
-                                    }
+                                    },
                                 };
                             }
                             break;
@@ -212,7 +210,7 @@ export class VideoPlayer {
                 try {
                     // readonly property in some cases
                     element.label = element.language;
-                } catch (e){}
+                } catch (e) {}
             }
         });
 
