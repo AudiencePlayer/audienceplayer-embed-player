@@ -2,7 +2,7 @@ export interface ArticlePlayConfig {
     pulseToken?: string;
     currentTime?: number;
     entitlements: ArticlePlayEntitlement[];
-    subtitles: ArticlePlayConfigOption[];
+    subtitles: ArticlePlayConfigSubtitle[];
     subtitleLocale: string;
     audioLocale: string;
     localTimeDelta?: number;
@@ -14,7 +14,7 @@ export interface ArticlePlayEntitlement {
     protectionInfo: ArticlePlayConfigProtection[] | null;
 }
 
-export interface ArticlePlayConfigOption {
+export interface ArticlePlayConfigSubtitle {
     src: string;
     srclang: string;
     kind: string;

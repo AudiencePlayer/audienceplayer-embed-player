@@ -1,6 +1,7 @@
-export function binaryToBase64(a: any) {
-    for (var b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=', c = [], d = 0; d < a.byteLength; ) {
-        var e = a[d++];
+export function binaryToBase64(a: Uint8Array) {
+    let b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=', c = [];
+    for (let d = 0; d < a.byteLength; ) {
+        let e = a[d++];
         c.push(b.charAt(e >> 2)),
             (e = (3 & e) << 4),
             d < a.byteLength
@@ -14,21 +15,17 @@ export function binaryToBase64(a: any) {
     return c.join('');
 }
 
-export function base64ToBinary(a: any) {
-    for (
-        var b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
-            c = new Uint8Array(new ArrayBuffer((3 * a.length) / 4 + 4)),
-            d = 0,
-            e = 0;
-        d < a.length;
-
-    ) {
-        var f = b.indexOf(a.charAt(d)),
+export function base64ToBinary(a: string) {
+    let b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+        c = new Uint8Array(new ArrayBuffer((3 * a.length) / 4 + 4)),
+        e = 0;
+    for (let d = 0; d < a.length;) {
+        let f = b.indexOf(a.charAt(d)),
             g = b.indexOf(a.charAt(d + 1));
         if (((c[e++] = (f << 2) | (g >> 4)), '=' !== a.charAt(d + 2))) {
-            var h = b.indexOf(a.charAt(d + 2));
+            let h = b.indexOf(a.charAt(d + 2));
             if (((c[e++] = (g << 4) | (h >> 2)), '=' !== a.charAt(d + 3))) {
-                var i = b.indexOf(a.charAt(d + 3));
+                let i = b.indexOf(a.charAt(d + 3));
                 c[e++] = (h << 6) | i;
             }
         }
@@ -40,7 +37,7 @@ export function base64ToBinary(a: any) {
 export function parseLicenseResponse(response: ArrayBuffer) {
     const responseBody = String.fromCharCode.apply(null, new Uint8Array(response));
 
-    var b = responseBody.trim(),
+    let b = responseBody.trim(),
         c = b.indexOf('<ckc>'),
         d = b.indexOf('</ckc>');
     if (-1 === c || -1 === d) {
@@ -52,7 +49,7 @@ export function parseLicenseResponse(response: ArrayBuffer) {
 }
 
 export function getHostnameFromUri(uri: string) {
-    var link = document.createElement('a');
+    let link = document.createElement('a');
     link.href = uri;
     return link.hostname;
 }
