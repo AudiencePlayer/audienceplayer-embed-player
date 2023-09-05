@@ -1,9 +1,9 @@
-import {EmeOptions, PlayerOptions} from '../models/player-options';
+import {PlayerOptions} from '../models/player-options';
 import {ArticlePlayConfig} from '../models/play-config';
 import {willPlayHls} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
-import {base64ToBinary, binaryToBase64, getHostnameFromUri, parseLicenseResponse} from '../utils/eme';
+import {getEmeOptionsFromEntitlement} from '../utils/eme';
 
 declare const videojs: any;
 
@@ -86,74 +86,7 @@ export class VideoPlayer {
         const configureHLSOnly = willPlayHls() && hlsSources.length > 0; // make sure there is actually HLS
         const playSources = playConfig.entitlements
             .map(entitlement => {
-                let protectionInfo: any = null;
-                let emeOptions: EmeOptions = {};
-
-                if (entitlement.protectionInfo) {
-                    switch (entitlement.type) {
-                        case 'application/dash+xml':
-                            protectionInfo = entitlement.protectionInfo.find(p => p.type === 'Widevine');
-                            if (protectionInfo) {
-                                emeOptions = {
-                                    keySystems: {
-                                        'com.widevine.alpha': protectionInfo.keyDeliveryUrl,
-                                    },
-                                    emeHeaders: {
-                                        Authorization: protectionInfo.authenticationToken,
-                                    },
-                                };
-                            }
-                            break;
-                        case 'application/vnd.ms-sstr+xml':
-                            protectionInfo = entitlement.protectionInfo.find(p => p.type === 'PlayReady');
-                            if (protectionInfo) {
-                                emeOptions = {
-                                    keySystems: {
-                                        'com.microsoft.playready': protectionInfo.keyDeliveryUrl,
-                                    },
-                                    emeHeaders: {
-                                        Authorization: protectionInfo.authenticationToken,
-                                    },
-                                };
-                            }
-                            break;
-                        case 'application/vnd.apple.mpegurl':
-                            protectionInfo = entitlement.protectionInfo.find(p => p.type === 'FairPlay');
-                            if (protectionInfo) {
-                                emeOptions = {
-                                    keySystems: {
-                                        'com.apple.fps.1_0': {
-                                            certificateUri: protectionInfo.certificateUrl,
-                                            getContentId: function() {
-                                                return getHostnameFromUri(protectionInfo.keyDeliveryUrl);
-                                            },
-                                            getLicense: function(emeOptions: any, contentId: string, keyMessage: any, callback: any) {
-                                                const payload =
-                                                    'spc=' + binaryToBase64(keyMessage) + '&assetId=' + encodeURIComponent(contentId);
-                                                videojs.xhr(
-                                                    {
-                                                        uri: protectionInfo.keyDeliveryUrl,
-                                                        method: 'post',
-                                                        headers: {
-                                                            'Content-type': 'application/x-www-form-urlencoded',
-                                                            Authorization: protectionInfo.authenticationToken,
-                                                        },
-                                                        body: payload,
-                                                        responseType: 'arraybuffer',
-                                                    },
-                                                    videojs.xhr.httpHandler(function(err: any, response: ArrayBuffer) {
-                                                        callback(null, parseLicenseResponse(response));
-                                                    }, true)
-                                                );
-                                            },
-                                        },
-                                    },
-                                };
-                            }
-                            break;
-                    }
-                }
-
+                const emeOptions = getEmeOptionsFromEntitlement(entitlement);
                 return {
                     src: entitlement.src,
                     type: entitlement.type,

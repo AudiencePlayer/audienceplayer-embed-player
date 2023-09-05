@@ -1,5 +1,81 @@
+import {ArticlePlayConfigProtection, ArticlePlayEntitlement} from '../models/play-config';
+import {EmeOptions} from '../models/player-options';
+
+declare const videojs: any;
+
+export function getEmeOptionsFromEntitlement(entitlement: ArticlePlayEntitlement): EmeOptions {
+    let protectionInfo: ArticlePlayConfigProtection = null;
+    let emeOptions: EmeOptions = {};
+
+    if (entitlement.protectionInfo) {
+        switch (entitlement.type) {
+            case 'application/dash+xml':
+                protectionInfo = entitlement.protectionInfo.find(p => p.type === 'Widevine');
+                if (protectionInfo) {
+                    emeOptions = {
+                        keySystems: {
+                            'com.widevine.alpha': protectionInfo.keyDeliveryUrl,
+                        },
+                        emeHeaders: {
+                            Authorization: protectionInfo.authenticationToken,
+                        },
+                    };
+                }
+                break;
+            case 'application/vnd.ms-sstr+xml':
+                protectionInfo = entitlement.protectionInfo.find(p => p.type === 'PlayReady');
+                if (protectionInfo) {
+                    emeOptions = {
+                        keySystems: {
+                            'com.microsoft.playready': protectionInfo.keyDeliveryUrl,
+                        },
+                        emeHeaders: {
+                            Authorization: protectionInfo.authenticationToken,
+                        },
+                    };
+                }
+                break;
+            case 'application/vnd.apple.mpegurl':
+                protectionInfo = entitlement.protectionInfo.find(p => p.type === 'FairPlay');
+                if (protectionInfo) {
+                    emeOptions = {
+                        keySystems: {
+                            'com.apple.fps.1_0': {
+                                certificateUri: protectionInfo.certificateUrl,
+                                getContentId: function() {
+                                    return getHostnameFromUri(protectionInfo.keyDeliveryUrl);
+                                },
+                                getLicense: function(emeOptions: any, contentId: string, keyMessage: any, callback: any) {
+                                    const payload = 'spc=' + binaryToBase64(keyMessage) + '&assetId=' + encodeURIComponent(contentId);
+                                    videojs.xhr(
+                                        {
+                                            uri: protectionInfo.keyDeliveryUrl,
+                                            method: 'post',
+                                            headers: {
+                                                'Content-type': 'application/x-www-form-urlencoded',
+                                                Authorization: protectionInfo.authenticationToken,
+                                            },
+                                            body: payload,
+                                            responseType: 'arraybuffer',
+                                        },
+                                        videojs.xhr.httpHandler(function(err: any, response: ArrayBuffer) {
+                                            callback(null, parseLicenseResponse(response));
+                                        }, true)
+                                    );
+                                },
+                            },
+                        },
+                    };
+                }
+                break;
+        }
+    }
+    return emeOptions;
+}
+
 export function binaryToBase64(a: Uint8Array) {
-    let b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=', c = [];
+    let b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+        c = [];
     for (let d = 0; d < a.byteLength; ) {
         let e = a[d++];
         c.push(b.charAt(e >> 2)),
@@ -19,7 +95,7 @@ export function base64ToBinary(a: string) {
     let b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
         c = new Uint8Array(new ArrayBuffer((3 * a.length) / 4 + 4)),
         e = 0;
-    for (let d = 0; d < a.length;) {
+    for (let d = 0; d < a.length; ) {
         let f = b.indexOf(a.charAt(d)),
             g = b.indexOf(a.charAt(d + 1));
         if (((c[e++] = (f << 2) | (g >> 4)), '=' !== a.charAt(d + 2))) {

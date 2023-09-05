@@ -9,17 +9,17 @@ There is no npm package, so install from the GitHub link:
 
 Check below section `Example of usage` or check out the example project https://github.com/AudiencePlayer/audienceplayer-embed-player-projects
 
-Please mind that the some files from this library should be treated using "static files", meaning that they should be included directly into your HTML instead of a framework (e.g. Angular) or build tool (e.g. Webpack)
+Please mind that `dist/video.js` and `dist/style.css` from this library should be treated as "static files". They should be included directly into your HTML or added as static files via a framework (e.g. Angular, Webpack).
+The library comes with a compiled `dist/bundle.js`, so no `npm prepare` or more dependencies are needed or installed.
 
 ## Manual implementation without dependency management
 
-Copy all files and folders from `dist/` to your project, next to your `index.html`.
+Copy all files from `dist/` to your project, next to your `index.html`. (in our `demo` folders we link to `../../dist` for simplicity)
 
-Include the scripts in your `index.html`:
+Include the static scripts in your `index.html`:
 
 ```html
 <script src="video.js"></script>
-<script src="bundle.js" type="module"></script>
 ```
 
 The player comes with default css:
@@ -29,6 +29,12 @@ The player comes with default css:
 ```
 
 Import `embed-player` in your javascript code:
+
+`import {EmbedPlayer} from 'bundle.js';`
+
+or if you have used npm:
+
+`import {EmbedPlayer} from 'audienceplayer-embed-player';`
 
 ## Methods
 
@@ -57,22 +63,6 @@ The `play()` method mentioned before provides a promise that, in case of success
 The `destroy()` method will clean-up the player, so that you can safely remove the element referred by the `selector` from the DOM.
 This is typically used when playing the video in a modal dialog or from a different element in the DOM.
 ####important: call .destroy() to make sure the `finish` stream-pulse is sent, so that the user will continue playing on an accurate position.
-
-## Example of usage
-
-Import the class;
-
-using npm
-
-```js
-import {EmbedPlayer} from 'embed-player';
-```
-
-or via the manual implementation
-
-```javascript
-import EmbedPlayer from 'embed-player.js';
-```
 
 ### Default usage with a video player
 
@@ -129,16 +119,18 @@ import {ChromecastControls} from 'embed-player';
 
 ### manual implementation
 
-In the manual implementation the ChromecastControls are avaible from the main bundle.
+In the manual implementation the ChromecastControls are available from the main bundle.
 
 ```javascript
-import ChromecastControls from 'bundle.js';
+import {ChromecastControls} from 'bundle.js';
 ```
 
 ### example
 
 ```javascript
 const chromecastReceiverAppId = `000000`; // replace with the receiver app id
+const token = ''; // replace with your JWT access token or do not provide the `token` property
+const posterImageUrl = 'https://path/to/image'; // or do not provide the `posterImageUrl` property
 const player = new EmbedPlayer();
 // the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognisable spot next
 // to the play-button/thumbnail or in the menu.
@@ -156,7 +148,7 @@ function playVideo() {
                 articleId,
                 projectId,
                 assetId,
-                ...tokenParameter,
+                token,
                 continueFromPreviousPosition: true,
             })
             .catch(error => console.error(error));
@@ -169,8 +161,8 @@ function playVideo() {
                 articleId,
                 projectId,
                 assetId,
-                ...tokenParameter,
-                ...posterImageUrlParameter,
+                token,
+                posterImageUrl,
                 autoplay: autoplay && autoplay === 'true',
                 continueFromPreviousPosition: true,
             })
@@ -187,9 +179,7 @@ function stopCastVideo() {
 }
 ```
 
-A complete implementation example of the above can be found here:
-
-https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/main/src/demo
+The manual example implementations can be found in the `demo` folder. Note the difference in `import` statement when used with `npm`, so these examples are applicable there as well.
 
 ### Important to note:
 

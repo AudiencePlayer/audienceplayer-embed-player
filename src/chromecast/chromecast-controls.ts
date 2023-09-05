@@ -1,6 +1,4 @@
 /// <reference path="../../node_modules/@types/chromecast-caf-sender/index.d.ts" />
-// declare const cast: any;
-// declare const chrome: any;
 
 interface TrackInfo {
     id: number;
