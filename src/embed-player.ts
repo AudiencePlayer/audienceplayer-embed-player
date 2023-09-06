@@ -16,10 +16,6 @@ export class EmbedPlayer {
         this.apiService = new ApiService();
     }
 
-    initPlayer(selector: string | Element) {
-        this.destroy();
-    }
-
     play({
         selector,
         apiBaseUrl,
