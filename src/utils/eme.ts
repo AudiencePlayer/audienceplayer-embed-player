@@ -119,7 +119,8 @@ export function parseLicenseResponse(response: ArrayBuffer) {
     if (-1 === c || -1 === d) {
         throw Error('License data format not as expected, missing or misplaced <ckc> tag');
     }
-    (c += 5), (b = b.substr(c, d - c));
+    c += 5;
+    b = b.substr(c, d - c);
 
     return base64ToBinary(b);
 }

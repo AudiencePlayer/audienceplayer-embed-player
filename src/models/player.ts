@@ -56,17 +56,12 @@ export enum PlayerEventTypes {
     error = 'error', // an error occured
     stopped = 'stopped', // player was manually closed, or video was ended
     timeupdate = 'timeupdate', // play position of video updated
-    buffering = 'buffering',
-    durationChanged = 'durationChanged',
     textTrackChanged = 'textTrackChanged',
     audioTrackChanged = 'audioTrackChanged',
 }
 
 export enum PlayerDeviceTypes {
     chromecast = 'chromecast',
-    airplay = 'airplay',
-    mob_android = 'mob_android',
-    mob_ios = 'mob_ios',
     default = '', // API should figure it out based on Navigator agent
 }
 
