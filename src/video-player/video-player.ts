@@ -47,10 +47,12 @@ export class VideoPlayer {
                 skipButtons: {
                     forward: 5,
                 },
+                volumePanel: {
+                    inline: false
+                },
                 // order of elements:
                 children: [
                     'playToggle',
-                    'volumeMenuButton',
                     'currentTimeDisplay',
                     //"timeDivider",
                     'progressControl',
@@ -64,6 +66,7 @@ export class VideoPlayer {
                     'subtitlesButton',
                     'captionsButton',
                     'audioTrackButton',
+                    'volumePanel',
                     'fullscreenToggle',
                 ],
             },

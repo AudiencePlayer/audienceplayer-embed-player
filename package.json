@@ -11,7 +11,7 @@
     "scripts": {
         "develop": "webpack --mode development --watch",
         "build": "webpack --mode production",
-        "prettier": "prettier --write \"**/*.{js,json,css,md,ts,html}\"",
+        "prettier": "prettier --write \"src/**/*.{js,json,css,md,ts,html}\"",
         "pre-commit-script": "lint-staged"
     },
     "repository": {
