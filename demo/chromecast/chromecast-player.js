@@ -14,9 +14,7 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     const autoplay = urlParams.get('autoplay');
     const chromecastReceiverAppId = urlParams.get('chromecastReceiverAppId');
     const continueFromPreviousPosition = urlParams.get('continueFromPreviousPosition');
-
     const tokenParameter = token ? {token} : {};
-    const posterImageUrlParameter = posterImageUrl ? {posterImageUrl} : {};
 
     const player = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
 
@@ -42,15 +40,23 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
                 })
                 .catch(error => console.error(error));
         } else {
-            player.initVideoPlayer('.video-wrapper');
+            const initParam = {
+                selector: '.video-wrapper',
+                options: {
+                    autoplay: autoplay && autoplay === 'true',
+                }
+            };
+            if (posterImageUrl) {
+                initParam.options.poster = posterImageUrl;
+            }
 
             player
                 .play({
+                    ...initParam,
                     articleId,
                     assetId,
                     ...tokenParameter,
-                    ...posterImageUrlParameter,
-                    autoplay: autoplay && autoplay === 'true',
+                    fullscreen: true,
                     continueFromPreviousPosition: continueFromPreviousPosition ? continueFromPreviousPosition === 'true' : true,
                 })
                 .catch(error => {

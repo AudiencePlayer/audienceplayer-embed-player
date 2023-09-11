@@ -14,10 +14,16 @@ import {EmbedPlayer} from '../../dist/bundle.js';
     const autoplay = urlParams.get('autoplay');
     const continueFromPreviousPosition = urlParams.get('continueFromPreviousPosition');
     const tokenParameter = token ? {token} : {};
+    const initParam = {
+        selector: '.video-wrapper',
+        options: {
+            autoplay: autoplay && autoplay === 'true',
+        }
+    };
 
     const embedPlayer = new EmbedPlayer({projectId, apiBaseUrl});
 
-    embedPlayer.initVideoPlayer('.video-wrapper');
+    embedPlayer.initVideoPlayer(initParam);
 
     if (posterImageUrl) {
         embedPlayer.setVideoPlayerPoster(posterImageUrl);
@@ -26,14 +32,12 @@ import {EmbedPlayer} from '../../dist/bundle.js';
     }
     embedPlayer
         .play({
+            ...initParam,
             articleId,
             assetId,
             ...tokenParameter,
-            autoplay: autoplay && autoplay === 'true',
             continueFromPreviousPosition: continueFromPreviousPosition ? continueFromPreviousPosition === 'true' : true,
         }).catch(error => {
             console.error(error);
         });
-
-        embedPlayer.initVideoPlayer('.video-wrapper');
 })();

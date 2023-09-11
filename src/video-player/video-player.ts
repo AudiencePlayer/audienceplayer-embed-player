@@ -1,9 +1,9 @@
-import {PlayerOptions} from '../models/player-options';
 import {ArticlePlayConfig} from '../models/play-config';
 import {willPlayHls} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
+import {InitParams, PlayParams} from '../models/play-params';
 
 declare const videojs: any;
 
@@ -20,10 +20,10 @@ export class VideoPlayer {
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
     }
 
-    init(selector: string | HTMLElement, options: PlayerOptions) {
+    init(initParams: InitParams) {
         this.destroy();
 
-        const videoContainer = selector instanceof Element ? selector : document.querySelector(selector);
+        const videoContainer = initParams.selector instanceof Element ? initParams.selector : document.querySelector(initParams.selector);
 
         if (!videoContainer) {
             throw Error('Invalid selector or element for player');
@@ -41,7 +41,6 @@ export class VideoPlayer {
 
         const playOptions = {
             fluid: true,
-            autoplay: true,
             controls: true,
             controlBar: {
                 pictureInPictureToggle: false,
@@ -75,7 +74,7 @@ export class VideoPlayer {
                 ],
             },
             aspectRatio: '16:9',
-            ...options,
+            ...initParams.options,
         };
 
         this.player = videojs(videoElement, playOptions);
@@ -83,11 +82,13 @@ export class VideoPlayer {
         this.bindEvents();
     }
 
-    play(playConfig: ArticlePlayConfig, autoplay: boolean, fullscreen: boolean) {
+    play(playConfig: ArticlePlayConfig, playParams: PlayParams) {
         this.firstPlayingEvent = true;
-        if (this.player.currentSrc()) {
-            throw Error('VideoPlayer.play was called without init()');
+        if (!this.player || (this.player && this.player.currentSrc())) {
+            this.destroy();
+            this.init(playParams);
         }
+
         this.articlePlayConfig = playConfig;
 
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
@@ -108,13 +109,12 @@ export class VideoPlayer {
             });
 
         if (playConfig.aspectRatio !== '16:9') {
-            this.player.aspectRatio = playConfig.aspectRatio;
+            this.player.aspectRatio(playConfig.aspectRatio);
         }
 
         this.player.src(playSources);
-        this.player.autoplay(autoplay);
 
-        if (fullscreen) {
+        if (playParams.fullscreen) {
             this.player.requestFullscreen();
         }
 
@@ -149,6 +149,7 @@ export class VideoPlayer {
         }
 
         this.playerLoggerService.destroy();
+        this.player = null;
     }
 
     getPlayer(): any {

@@ -7,7 +7,7 @@ export class ApiService {
     private token: string;
 
     constructor(baseUrl: string, projectId: number) {
-        this.apiFetchUrl = `${baseUrl}/graphql/${projectId}`.replace(/\/*$/, '');
+        this.apiFetchUrl = `${baseUrl}/graphql/${projectId}`;
         this.token = null;
     }
 

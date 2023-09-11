@@ -75,7 +75,7 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
         subtitleLocale: config.user_subtitle_locale,
         audioLocale: config.user_audio_locale,
         localTimeDelta: isNaN(timeStamp) ? 0 : Date.now() - timeStamp,
-        aspectRatio: config.aspect_ratio,
+        aspectRatio: config.aspect_ratio.replace('x', ':'),
     };
 }
 

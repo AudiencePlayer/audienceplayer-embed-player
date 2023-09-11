@@ -2,7 +2,7 @@ import {VideoPlayer} from './video-player/video-player';
 import {ChromecastSender} from './chromecast/chromecast-sender';
 import {ApiService} from './api/api-service';
 import {ArticlePlayConfig} from './models/play-config';
-import {PlayParams, PlayParamsChromecast} from './models/play-params';
+import {InitParams, PlayParams, PlayParamsChromecast} from './models/play-params';
 import {getArticleBackgroundImage, getResizedUrl, toPlayConfigError} from './api/converters';
 
 export class EmbedPlayer {
@@ -15,16 +15,15 @@ export class EmbedPlayer {
 
     constructor(properties: {projectId: number; apiBaseUrl: string; chromecastReceiverAppId: string}) {
         this.projectId = properties.projectId;
-        this.apiBaseUrl = properties.apiBaseUrl;
+        this.apiBaseUrl = properties.apiBaseUrl.replace(/\/*$/, '');
         this.chromecastReceiverAppId = properties.chromecastReceiverAppId ? properties.chromecastReceiverAppId : null;
         this.apiService = new ApiService(this.apiBaseUrl, this.projectId);
         this.videoPlayer = new VideoPlayer(this.apiBaseUrl, this.projectId);
         this.castSender = new ChromecastSender();
     }
 
-    initVideoPlayer(selector: string | HTMLElement, posterImageUrl = '') {
-        const options = posterImageUrl ? {poster: posterImageUrl} : {};
-        this.videoPlayer.init(selector, options);
+    initVideoPlayer(initParams: InitParams) {
+        this.videoPlayer.init(initParams);
     }
 
     setVideoPlayerPoster(posterUrl: string) {
@@ -49,7 +48,7 @@ export class EmbedPlayer {
         return this.apiService
             .getArticleAssetPlayConfig(playParams.articleId, playParams.assetId, playParams.continueFromPreviousPosition)
             .then(config => {
-                this.playVideo(config, playParams.autoplay, playParams.fullScreen);
+                this.playVideo(config, playParams);
                 return config;
             })
             .catch(error => {
@@ -62,8 +61,8 @@ export class EmbedPlayer {
         this.videoPlayer.destroy();
     }
 
-    playVideo(config: ArticlePlayConfig, autoplay: boolean, fullScreen: boolean) {
-        this.videoPlayer.play(config, autoplay, fullScreen);
+    playVideo(config: ArticlePlayConfig, playParams: PlayParams) {
+        this.videoPlayer.play(config, playParams);
     }
 
     getVideoPlayer() {

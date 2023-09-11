@@ -1,9 +1,15 @@
-export interface PlayParams {
+import {PlayerOptions} from './player-options';
+
+export interface InitParams {
+    selector: string | HTMLElement;
+    options: PlayerOptions;
+}
+
+export interface PlayParams extends InitParams {
     articleId: number;
     assetId: number;
     token: string;
-    autoplay: boolean;
-    fullScreen: boolean;
+    fullscreen?: boolean;
     continueFromPreviousPosition: boolean;
 }
 
