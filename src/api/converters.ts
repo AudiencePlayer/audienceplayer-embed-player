@@ -1,5 +1,6 @@
 import {ArticlePlayConfig, ArticlePlayEntitlement, ArticlePlayErrors} from '../models/play-config';
 import {Article} from '../models/article';
+import {FileData} from '../models/file-data';
 
 export function toPlayConfig(config: any, continueFromPreviousPosition: boolean): ArticlePlayConfig {
     const timeStamp = Date.parse(config.issued_at);
@@ -74,22 +75,53 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
         subtitleLocale: config.user_subtitle_locale,
         audioLocale: config.user_audio_locale,
         localTimeDelta: isNaN(timeStamp) ? 0 : Date.now() - timeStamp,
+        aspectRatio: config.aspect_ratio,
     };
 }
 
-export function toArticle(article: any, assetId: number): Article {
-    const asset = article.assets.find((item: any) => item.id === assetId);
-
+export function toArticle(article: any): Article {
     return {
-        title: getMetaValue(article.metas, 'title') || article.name,
-        asset: {
-            linkedType: asset.linked_type,
-        },
-    };
+        name: article.name,
+        metas: article.metas,
+        posters: article.posters.map(toFile),
+        images: article.images.map(toFile),
+    } as Article;
 }
+
+export function toFile(file: any): FileData {
+    return {
+        type: file.type,
+        url: file.url,
+        baseUrl: file.base_url,
+        fileName: file.file_name,
+    } as FileData;
+}
+
 export function getMetaValue(metas: any, key: string) {
     const meta = metas.find((m: any) => m.key === key);
     return meta ? meta.value : '';
+}
+
+export function getResizedUrl(fileData: FileData, size: {width: number; height: number}): string {
+    if (fileData) {
+        const {width, height} = size;
+        return `${fileData.baseUrl}/${width}x${height}/${fileData.fileName}`;
+    }
+    return '';
+}
+
+export function getArticleTitle(article: Article) {
+    return getMetaValue(article.metas, 'title') || article.name;
+}
+
+export function getArticleBackgroundImage(article: Article): FileData {
+    if (article.posters.length > 0) {
+        return article.posters[0];
+    }
+    if (this.article.length > 0) {
+        return article.images[0];
+    }
+    return null;
 }
 
 export function toPlayConfigError(code: number): ArticlePlayErrors {

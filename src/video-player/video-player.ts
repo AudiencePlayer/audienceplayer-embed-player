@@ -16,16 +16,20 @@ export class VideoPlayer {
     private currentAudioTrack: string;
     private metadataLoaded: boolean;
 
-    constructor() {
-        this.playerLoggerService = new PlayerLoggerService();
+    constructor(baseUrl: string, projectId: number) {
+        this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
     }
 
-    init(selector: string | HTMLElement, baseUrl: string, projectId: number, options: PlayerOptions) {
+    init(selector: string | HTMLElement, options: PlayerOptions) {
         this.destroy();
-        this.firstPlayingEvent = true;
-        this.playerLoggerService.init(baseUrl, projectId);
 
         const videoContainer = selector instanceof Element ? selector : document.querySelector(selector);
+
+        if (!videoContainer) {
+            throw Error('Invalid selector or element for player');
+        }
+
+        this.playerLoggerService.init();
 
         const videoElement = document.createElement('video');
         videoElement.setAttribute('class', ['video-js', 'vjs-default-skin'].join(' '));
@@ -48,7 +52,7 @@ export class VideoPlayer {
                     forward: 5,
                 },
                 volumePanel: {
-                    inline: false
+                    inline: false,
                 },
                 // order of elements:
                 children: [
@@ -75,12 +79,15 @@ export class VideoPlayer {
         };
 
         this.player = videojs(videoElement, playOptions);
-        const vhs = this.player.tech().vhs;
         this.player.eme();
         this.bindEvents();
     }
 
-    play(playConfig: ArticlePlayConfig, posterUrl: string, fullscreen: boolean) {
+    play(playConfig: ArticlePlayConfig, autoplay: boolean, fullscreen: boolean) {
+        this.firstPlayingEvent = true;
+        if (this.player.currentSrc()) {
+            throw Error('VideoPlayer.play was called without init()');
+        }
         this.articlePlayConfig = playConfig;
 
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
@@ -100,7 +107,12 @@ export class VideoPlayer {
                 return (playOption.type === 'application/vnd.apple.mpegurl' && configureHLSOnly) || !configureHLSOnly;
             });
 
+        if (playConfig.aspectRatio !== '16:9') {
+            this.player.aspectRatio = playConfig.aspectRatio;
+        }
+
         this.player.src(playSources);
+        this.player.autoplay(autoplay);
 
         if (fullscreen) {
             this.player.requestFullscreen();
@@ -120,9 +132,14 @@ export class VideoPlayer {
         }
     }
 
+    setPoster(posterUrl: string) {
+        this.player.poster(posterUrl);
+    }
+
     destroy() {
         if (this.player) {
             if (false === this.player.ended()) {
+                this.player.pause();
                 // only if we have not already caught the 'ended' event
                 // Be aware that the `stopped` emit also send along all kinds of info, so call _before_ disposing player
                 this.playerLoggerService.onStop();
@@ -130,6 +147,8 @@ export class VideoPlayer {
 
             this.player.dispose();
         }
+
+        this.playerLoggerService.destroy();
     }
 
     getPlayer(): any {

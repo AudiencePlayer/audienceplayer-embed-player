@@ -2,6 +2,7 @@
 
 import {ArticlePlayConfig} from '../models/play-config';
 import {Article} from '../models/article';
+import {getArticleTitle} from '../api/converters';
 
 export class ChromecastSender {
     castContext: cast.framework.CastContext = null;
@@ -77,7 +78,7 @@ export class ChromecastSender {
                 mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
                 mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
                 mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
-                mediaInfo.metadata.title = article.title;
+                mediaInfo.metadata.title = getArticleTitle(article);
                 mediaInfo.tracks = tracks;
                 const licenceUrlParam = token
                     ? {

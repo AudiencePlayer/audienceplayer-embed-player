@@ -7,13 +7,17 @@ export class PlayerLoggerService {
     protected playSession: PlaySession;
     protected intervalHandle = 0;
 
-    constructor() {
-        this.playerLogProcessor = new PlayerLogProcessor();
+    constructor(baseUrl: string, projectId: number) {
+        this.playerLogProcessor = new PlayerLogProcessor(baseUrl, projectId);
         this.reset();
     }
 
-    init(baseUrl: string, projectId: number) {
-        this.playerLogProcessor.init(baseUrl, projectId);
+    init() {
+        this.playerLogProcessor.init();
+    }
+
+    destroy() {
+        this.playerLogProcessor.destroy();
     }
 
     onStart(

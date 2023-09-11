@@ -18,36 +18,35 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     const tokenParameter = token ? {token} : {};
     const posterImageUrlParameter = posterImageUrl ? {posterImageUrl} : {};
 
-    const player = new EmbedPlayer();
+    const player = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
 
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('video-button-stop').addEventListener('click', stopCastVideo);
     document.getElementById('video-button-destroy').addEventListener('click', destroyVideo);
 
-    player.setupChromecast('#cast-wrapper', chromecastReceiverAppId).then(() => {
+    player.initChromecast().then(() => {
         const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
         document.getElementById('cast-wrapper').style.display = 'unset';
+
+        player.appendChromecastButton('#cast-wrapper');
     });
 
     function playVideo() {
         if (player.isConnected()) {
             player
                 .castVideo({
-                    apiBaseUrl,
                     articleId,
-                    projectId,
                     assetId,
                     ...tokenParameter,
                     continueFromPreviousPosition: continueFromPreviousPosition ? continueFromPreviousPosition === 'true' : true,
                 })
                 .catch(error => console.error(error));
         } else {
+            player.initVideoPlayer('.video-wrapper');
+
             player
                 .play({
-                    selector: '.video-wrapper',
-                    apiBaseUrl,
                     articleId,
-                    projectId,
                     assetId,
                     ...tokenParameter,
                     ...posterImageUrlParameter,

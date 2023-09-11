@@ -5,6 +5,7 @@ export interface ArticlePlayConfig {
     subtitles: ArticlePlayConfigSubtitle[];
     subtitleLocale: string;
     audioLocale: string;
+    aspectRatio: string;
     localTimeDelta?: number;
 }
 

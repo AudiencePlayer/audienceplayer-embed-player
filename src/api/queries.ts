@@ -22,6 +22,7 @@ export const articleAssetPlayMutation = `
             fairplay_certificate_url
             user_subtitle_locale
             user_audio_locale
+            aspect_ratio
             issued_at
         }
     }
@@ -43,6 +44,13 @@ export const articleQuery = `
                 accessibility
             }
             posters {
+                type
+                url
+                title
+                base_url
+                file_name
+            }
+            images {
                 type
                 url
                 title

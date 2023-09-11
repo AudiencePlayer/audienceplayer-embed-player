@@ -1,6 +1,8 @@
+import {FileData} from './file-data';
+
 export interface Article {
-    title: string;
-    asset: {
-        linkedType: string;
-    };
+    name: string;
+    metas: Array<{key: string; value: string}>;
+    posters: FileData[];
+    images: FileData[];
 }

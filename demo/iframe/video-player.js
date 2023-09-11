@@ -13,25 +13,27 @@ import {EmbedPlayer} from '../../dist/bundle.js';
     const posterImageUrl = urlParams.get('posterImageUrl');
     const autoplay = urlParams.get('autoplay');
     const continueFromPreviousPosition = urlParams.get('continueFromPreviousPosition');
-
     const tokenParameter = token ? {token} : {};
-    const posterImageUrlParameter = posterImageUrl ? {posterImageUrl} : {};
 
-    const player = new EmbedPlayer();
+    const embedPlayer = new EmbedPlayer({projectId, apiBaseUrl});
 
-    player
+    embedPlayer.initVideoPlayer('.video-wrapper');
+
+    if (posterImageUrl) {
+        embedPlayer.setVideoPlayerPoster(posterImageUrl);
+    } else {
+        embedPlayer.setVideoPlayerPosterFromArticle(articleId, {width: 1280, height: 720});
+    }
+    embedPlayer
         .play({
-            selector: '.video-wrapper',
-            apiBaseUrl,
             articleId,
-            projectId,
             assetId,
             ...tokenParameter,
-            ...posterImageUrlParameter,
             autoplay: autoplay && autoplay === 'true',
             continueFromPreviousPosition: continueFromPreviousPosition ? continueFromPreviousPosition === 'true' : true,
-        })
-        .catch(error => {
+        }).catch(error => {
             console.error(error);
         });
+
+        embedPlayer.initVideoPlayer('.video-wrapper');
 })();

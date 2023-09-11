@@ -17,12 +17,21 @@ export class PlayerLogProcessor {
     protected apiCallInProgress = false;
     protected intervalHandle: any = null;
 
-    init(baseUrl: string, projectId: number) {
+    constructor(baseUrl: string, projectId: number) {
         this.apiUrl = `${baseUrl}/service/${projectId}/analytics/stream/pulse/log`.replace(/\/*$/, '');
+    }
+
+    init() {
         if (this.intervalHandle === null) {
             this.intervalHandle = setInterval(() => {
                 this.processFirstPlayLog();
             }, 3000);
+        }
+    }
+
+    destroy() {
+        if (this.intervalHandle) {
+            clearInterval(this.intervalHandle);
         }
     }
 

@@ -67,13 +67,21 @@ This is typically used when playing the video in a modal dialog or from a differ
 ### Default usage with a video player
 
 ```javascript
-const player = new EmbedPlayer();
+const player = new EmbedPlayer({apiBaseUrl: '<your-audienceplayer-api-url-here>', /* default: 'https://api.audienceplayer.com' */
+                                projectId: 8});
+
+// .initVideoPlayer must always be called before .play
+player.initVideoPlayer('.video-wrapper', posterImageUrl);
+// in case you want to set a different posterImage url after the player was already inititalized
+player.setVideoPlayerPoster(anotherPosterImageUrl);
+
+// or in case you want to use the poster image that comes with the Article
+// width and height resolution must be an available resize config (see API GraphQL Config.image_resize_resolutions)
+player.setVideoPlayerPosterFromArticle(articleId, {width: 1280, height: 720});
 
 player
     .play({
         selector: '.video-wrapper',
-        apiBaseUrl: '<your-audienceplayer-api-url-here>', // default: 'https://api.audienceplayer.com'
-        projectId: 4,
         articleId: 1234,
         assetId: 4321,
         token: '',
@@ -85,6 +93,9 @@ player
     .catch(error => {
         console.log('Error', error);
     });
+
+
+
 ```
 
 The `Promise` returns a `config` object that can be used for debugging purposes, but is not needed outside the player.
@@ -131,11 +142,15 @@ import {ChromecastControls} from 'bundle.js';
 const chromecastReceiverAppId = `000000`; // replace with the receiver app id
 const token = ''; // replace with your JWT access token or do not provide the `token` property
 const posterImageUrl = 'https://path/to/image'; // or do not provide the `posterImageUrl` property
-const player = new EmbedPlayer();
+const player = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
 // the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognisable spot next
 // to the play-button/thumbnail or in the menu.
-player.setupChromecast('#cast-wrapper', chromecastReceiverAppId).then(() => {
+player.initChromecast().then(() => {
     const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
+    
+    // add the chromecast button
+    player.appendChromecastButton('#cast-wrapper')
+
 });
 
 // call the playVideo function `onClick` of the play-button/thumbnail
@@ -154,9 +169,9 @@ function playVideo() {
             .catch(error => console.error(error));
     } else {
         // ChromeCast is not connected; play the video directly
+        player.initVideoPlayer('.video-wrapper');
         player
             .play({
-                selector: '.video-wrapper',
                 apiBaseUrl,
                 articleId,
                 projectId,
@@ -167,8 +182,8 @@ function playVideo() {
                 continueFromPreviousPosition: true,
             })
             .catch(error => {
-                console.error(error);
-            });
+               console.error(error);
+            }); 
     }
 }
 

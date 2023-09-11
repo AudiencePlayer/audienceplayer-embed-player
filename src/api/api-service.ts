@@ -6,7 +6,7 @@ export class ApiService {
     private apiFetchUrl: string;
     private token: string;
 
-    init(baseUrl: string, projectId: number) {
+    constructor(baseUrl: string, projectId: number) {
         this.apiFetchUrl = `${baseUrl}/graphql/${projectId}`.replace(/\/*$/, '');
         this.token = null;
     }
@@ -31,13 +31,13 @@ export class ApiService {
         });
     }
 
-    getArticle(articleId: number, assetId: number) {
+    getArticle(articleId: number) {
         return graphRequest(this.apiFetchUrl, articleQuery, {articleId}, this.token).then((response: any) => {
             if (!response || !response.data || response.errors) {
                 const {message, code} = response.errors[0];
                 throw {message, code};
             }
-            return toArticle(response.data.Article, assetId);
+            return toArticle(response.data.Article);
         });
     }
 }
