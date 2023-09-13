@@ -1869,12 +1869,12 @@ video::-webkit-media-text-track-display {
     display: none !important;
 }
 
+/*
 .video-js .vjs-menu-button-popup .vjs-menu {
     left: -4em;
     width: 12em;
 }
-
-
+*/
 .video-js .vjs-big-play-button {
     width: 1.6em;
     height: 1.6em;
@@ -1883,7 +1883,7 @@ video::-webkit-media-text-track-display {
 }
 
 .video-js .vjs-control-bar {
-    background: linear-gradient(#0000,#000000bf);
+    background: linear-gradient(#0000, #000000bf);
 }
 
 .video-js .vjs-custom-svg-color {

@@ -4,7 +4,8 @@ import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
 import {InitParams, PlayParams} from '../models/play-params';
-import {CustomPlaybackRateMenuButton} from "./plugins/playback-rate-button";
+import {CustomPlaybackRateMenuButton} from './plugins/playback-rate-button';
+import {CustomAudioTrackButton} from './plugins/audio-track-button';
 
 declare const videojs: any;
 
@@ -20,6 +21,7 @@ export class VideoPlayer {
     constructor(baseUrl: string, projectId: number) {
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
 
+        videojs.registerComponent('customAudioTrackButton', CustomAudioTrackButton);
         videojs.registerComponent('customPlaybackRateMenuButton', CustomPlaybackRateMenuButton);
     }
 
@@ -115,8 +117,10 @@ export class VideoPlayer {
                 };
             })
             .filter(playOption => {
-                return (playOption.type === 'application/vnd.apple.mpegurl' && configureHLSOnly) ||
-                       (playOption.type !== 'application/vnd.apple.mpegurl' && !configureHLSOnly);
+                return (
+                    (playOption.type === 'application/vnd.apple.mpegurl' && configureHLSOnly) ||
+                    (playOption.type !== 'application/vnd.apple.mpegurl' && !configureHLSOnly)
+                );
             });
 
         this.player.aspectRatio(playConfig.aspectRatio);
@@ -132,7 +136,7 @@ export class VideoPlayer {
                 this.player.addRemoteTextTrack({
                     kind: track.kind,
                     src: track.src,
-                    srclang: track.srclang,
+                    language: track.srclang,
                     label: track.label,
                     enabled: track.srclang === playConfig.subtitleLocale,
                 });
@@ -165,19 +169,6 @@ export class VideoPlayer {
     }
 
     private bindEvents() {
-        // same trick as azure media player; set label to language
-        this.player.on('loadeddata', () => {
-            const audioTracks = this.player.audioTracks();
-
-            for (let i = 0; i < audioTracks.length; i++) {
-                const element = audioTracks[i];
-                try {
-                    // readonly property in some cases
-                    element.label = element.language;
-                } catch (e) {}
-            }
-        });
-
         this.player.on('error', () => {
             this.playerLoggerService.onError(JSON.stringify(this.player.error()));
         });

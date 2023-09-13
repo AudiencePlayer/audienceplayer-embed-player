@@ -3,7 +3,6 @@ declare const videojs: any;
 const PlaybackRateMenuButton = videojs.getComponent('playbackRateMenuButton');
 
 export class CustomPlaybackRateMenuButton extends PlaybackRateMenuButton {
-
     constructor(player: any, options: any) {
         super(player);
     }
