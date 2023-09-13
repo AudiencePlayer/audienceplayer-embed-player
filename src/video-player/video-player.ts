@@ -4,6 +4,7 @@ import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
 import {InitParams, PlayParams} from '../models/play-params';
+import {CustomPlaybackRateMenuButton} from "./plugins/playback-rate-button";
 
 declare const videojs: any;
 
@@ -18,6 +19,8 @@ export class VideoPlayer {
 
     constructor(baseUrl: string, projectId: number) {
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
+
+        videojs.registerComponent('customPlaybackRateMenuButton', CustomPlaybackRateMenuButton);
     }
 
     init(initParams: InitParams) {
@@ -41,6 +44,7 @@ export class VideoPlayer {
 
         const playOptions = {
             fluid: true,
+            responsive: true,
             controls: true,
             controlBar: {
                 pictureInPictureToggle: false,
@@ -63,12 +67,12 @@ export class VideoPlayer {
                     'liveDisplay',
                     //"remainingTimeDisplay",
                     'customControlSpacer',
-                    'playbackRateMenuButton',
+                    'customPlaybackRateMenuButton',
                     'chaptersButton',
                     'descriptionsButton',
                     'subtitlesButton',
                     'captionsButton',
-                    'audioTrackButton',
+                    'customAudioTrackButton',
                     'volumePanel',
                     'fullscreenToggle',
                 ],

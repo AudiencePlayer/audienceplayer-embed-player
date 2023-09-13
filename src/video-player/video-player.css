@@ -1,3 +1,16 @@
+.video-js {
+    font-size: 1rem;
+}
+
+.video-js.vjs-layout-tiny,
+.video-js.vjs-layout-x-small,
+.video-js.vjs-layout-small {
+    font-size: 10px;
+}
+.video-js.vjs-layout-medium {
+    font-size: 12px;
+}
+
 .video-js .vjs-current-time {
     display: block !important;
 }
@@ -22,4 +35,33 @@
 
 .video-js .vjs-button-tooltip {
     display: none !important;
+}
+
+.video-js .vjs-menu-button-popup .vjs-menu {
+    left: -4em;
+    width: 12em;
+}
+
+
+.video-js .vjs-big-play-button {
+    width: 1.6em;
+    height: 1.6em;
+    border: none;
+    border-radius: 1.6em;
+}
+
+.video-js .vjs-control-bar {
+    background: linear-gradient(#0000,#000000bf);
+}
+
+.video-js .vjs-custom-svg-color {
+    fill: #ffffff;
+}
+
+.video-js .vjs-playback-rate-svg {
+    position: absolute;
+    top: 0.5em;
+    left: 1em;
+    width: 2em;
+    height: 2em;
 }

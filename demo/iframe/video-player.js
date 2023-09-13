@@ -18,6 +18,7 @@ import {EmbedPlayer} from '../../dist/bundle.js';
         selector: '.video-wrapper',
         options: {
             autoplay: autoplay && autoplay === 'true',
+            playbackRates: [0.5, 1, 2],
         }
     };
 
