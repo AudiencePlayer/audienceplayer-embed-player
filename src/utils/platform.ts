@@ -1,6 +1,5 @@
-import {parseUserAgent} from 'detect-browser';
+declare const videojs: any;
 
-export function willPlayHls() {
-    const browser = parseUserAgent(navigator.userAgent);
-    return browser && (browser.name === 'safari' || browser.name === 'ios');
+export function supportsHLS() {
+    return videojs.browser.IS_SAFARI || videojs.browser.IS_IOS;
 }

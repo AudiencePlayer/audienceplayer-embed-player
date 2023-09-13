@@ -1,5 +1,5 @@
 import {ArticlePlayConfig} from '../models/play-config';
-import {willPlayHls} from '../utils/platform';
+import {supportsHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
@@ -74,6 +74,12 @@ export class VideoPlayer {
                 ],
             },
             aspectRatio: '16:9',
+            html5: {
+                vhs: {
+                    // do to use videojs-http-streaming
+                    overrideNative: false,
+                },
+            },
             ...initParams.options,
         };
 
@@ -94,7 +100,7 @@ export class VideoPlayer {
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
         const hlsSources = playConfig.entitlements.filter(entitlement => entitlement.type === 'application/vnd.apple.mpegurl');
-        const configureHLSOnly = willPlayHls() && hlsSources.length > 0; // make sure there is actually HLS
+        const configureHLSOnly = supportsHLS() && hlsSources.length > 0; // make sure there is actually HLS
         const playSources = playConfig.entitlements
             .map(entitlement => {
                 const emeOptions = getEmeOptionsFromEntitlement(entitlement);
@@ -105,13 +111,11 @@ export class VideoPlayer {
                 };
             })
             .filter(playOption => {
-                return (playOption.type === 'application/vnd.apple.mpegurl' && configureHLSOnly) || !configureHLSOnly;
+                return (playOption.type === 'application/vnd.apple.mpegurl' && configureHLSOnly) ||
+                       (playOption.type !== 'application/vnd.apple.mpegurl' && !configureHLSOnly);
             });
 
-        if (playConfig.aspectRatio !== '16:9') {
-            this.player.aspectRatio(playConfig.aspectRatio);
-        }
-
+        this.player.aspectRatio(playConfig.aspectRatio);
         this.player.src(playSources);
 
         if (playParams.fullscreen) {
