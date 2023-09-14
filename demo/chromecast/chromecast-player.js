@@ -16,17 +16,34 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     const continueFromPreviousPosition = urlParams.get('continueFromPreviousPosition');
     const tokenParameter = token ? {token} : {};
 
+    const initParam = {
+        selector: '.video-wrapper',
+        options: {
+            autoplay: autoplay && autoplay === 'true',
+        }
+    };
+    if (posterImageUrl) {
+        initParam.options.poster = posterImageUrl;
+    }
+
     const player = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
 
+    const containerEl = document.getElementById('buttons-container');
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('video-button-stop').addEventListener('click', stopCastVideo);
     document.getElementById('video-button-destroy').addEventListener('click', destroyVideo);
 
     player.initChromecast().then(() => {
         const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
-        document.getElementById('cast-wrapper').style.display = 'unset';
+        document.getElementById('cast-wrapper').style.visibility = 'visible';
 
         player.appendChromecastButton('#cast-wrapper');
+
+        controls.onConnectedListener(connected => {
+            player.initVideoPlayer(initParam);
+            console.log('connected ', connected);
+        });
+
     });
 
     function playVideo() {
@@ -40,23 +57,12 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
                 })
                 .catch(error => console.error(error));
         } else {
-            const initParam = {
-                selector: '.video-wrapper',
-                options: {
-                    autoplay: autoplay && autoplay === 'true',
-                }
-            };
-            if (posterImageUrl) {
-                initParam.options.poster = posterImageUrl;
-            }
-
             player
                 .play({
                     ...initParam,
                     articleId,
                     assetId,
                     ...tokenParameter,
-                    fullscreen: true,
                     continueFromPreviousPosition: continueFromPreviousPosition ? continueFromPreviousPosition === 'true' : true,
                 })
                 .catch(error => {

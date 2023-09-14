@@ -104,6 +104,13 @@ export class ChromecastControls {
         });
     }
 
+    onConnectedListener(callback: (connected: boolean) => void) {
+        callback(this.player.isConnected);
+        this.playerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, event => {
+            callback(this.player.isConnected);
+        });
+    }
+
     setPlayButtonClass() {
         const playAndPauseButton = this.getElement('.play-pause-button');
         if (this.currentStatus === chrome.cast.media.PlayerState.PAUSED) {

@@ -6,30 +6,50 @@
         <title>AudiencePlayer Embed Player</title>
         <link href="../../dist/style.css" rel="stylesheet" />
         <style>
-            .buttons-container {
+            body {
+                margin: 0;
+            }
+            .container {
+                position: relative;
+                width: 960px;
+                height: 680px;
+            }
+
+            #buttons-container {
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                height: 140px;
                 display: flex;
                 justify-content: center;
+                align-items: center;
+                background-color: #ccc;
             }
 
             .button {
+                display: flex;
                 margin: 20px;
-                height: 200px;
-                width: 200px;
+                height: 100px;
+                width: 100px;
                 cursor: pointer;
+                align-items: center;
             }
 
             #cast-wrapper {
-                display: none;
+                visibility: collapse;
+
             }
         </style>
     </head>
-    <body style="margin: 0;">
-        <div class="video-wrapper"></div>
-        <div class="buttons-container">
-            <button class="button" id="cast-wrapper"></button>
-            <button class="button" id="video-button-start">Play video</button>
-            <button class="button" id="video-button-stop">Stop casting</button>
-            <button class="button" id="video-button-destroy">Destroy</button>
+    <body>
+        <div class="container">
+            <div class="video-wrapper"></div>
+            <div id="buttons-container">
+                <button class="button" id="video-button-start">Play video</button>
+                <button class="button" id="video-button-stop">Stop casting</button>
+                <button class="button" id="video-button-destroy">Destroy</button>
+                <button class="button" id="cast-wrapper"></button>
+            </div>
         </div>
         <div id="cast-controls"></div>
         <script src="../../dist/video.js"></script>
