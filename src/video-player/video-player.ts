@@ -1,11 +1,12 @@
 import {ArticlePlayConfig} from '../models/play-config';
-import {supportsHLS} from '../utils/platform';
+import {supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
 import {InitParams, PlayParams} from '../models/play-params';
 import {CustomPlaybackRateMenuButton} from './plugins/playback-rate-button';
 import {CustomAudioTrackButton} from './plugins/audio-track-button';
+import {hotkeys} from './hotkeys';
 
 declare const videojs: any;
 
@@ -53,9 +54,6 @@ export class VideoPlayer {
                 currentTimeDisplay: true,
                 durationDisplay: true,
                 timeDivider: false,
-                skipButtons: {
-                    forward: 5,
-                },
                 volumePanel: {
                     inline: false,
                 },
@@ -63,27 +61,23 @@ export class VideoPlayer {
                 children: [
                     'playToggle',
                     'currentTimeDisplay',
-                    //"timeDivider",
                     'progressControl',
                     'durationDisplay',
-                    'liveDisplay',
-                    //"remainingTimeDisplay",
-                    'customControlSpacer',
                     'customPlaybackRateMenuButton',
-                    'chaptersButton',
-                    'descriptionsButton',
                     'subtitlesButton',
-                    'captionsButton',
                     'customAudioTrackButton',
                     'volumePanel',
                     'fullscreenToggle',
                 ],
             },
+            userActions: {
+                hotkeys: hotkeys({backward: -30, forward: 30}),
+            },
             aspectRatio: '16:9',
             html5: {
                 vhs: {
-                    // do to use videojs-http-streaming
-                    overrideNative: false,
+                    // do to use videojs-http-streaming if it's natively supported
+                    overrideNative: !supportsNativeHLS(),
                 },
             },
             ...initParams.options,
@@ -106,7 +100,7 @@ export class VideoPlayer {
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
         const hlsSources = playConfig.entitlements.filter(entitlement => entitlement.type === 'application/vnd.apple.mpegurl');
-        const configureHLSOnly = supportsHLS() && hlsSources.length > 0; // make sure there is actually HLS
+        const configureHLSOnly = supportsNativeHLS() && hlsSources.length > 0; // make sure there is actually HLS
         const playSources = playConfig.entitlements
             .map(entitlement => {
                 const emeOptions = getEmeOptionsFromEntitlement(entitlement);
@@ -136,7 +130,7 @@ export class VideoPlayer {
                 this.player.addRemoteTextTrack({
                     kind: track.kind,
                     src: track.src,
-                    language: track.srclang,
+                    srclang: track.srclang,
                     label: track.label,
                     enabled: track.srclang === playConfig.subtitleLocale,
                 });

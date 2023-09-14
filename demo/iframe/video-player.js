@@ -18,19 +18,14 @@ import {EmbedPlayer} from '../../dist/bundle.js';
         selector: '.video-wrapper',
         options: {
             autoplay: autoplay && autoplay === 'true',
-            playbackRates: [0.5, 1, 2],
         }
     };
+    if (posterImageUrl) {
+        initParam.options.poster = posterImageUrl;
+    }
 
     const embedPlayer = new EmbedPlayer({projectId, apiBaseUrl});
 
-    embedPlayer.initVideoPlayer(initParam);
-
-    if (posterImageUrl) {
-        embedPlayer.setVideoPlayerPoster(posterImageUrl);
-    } else {
-        embedPlayer.setVideoPlayerPosterFromArticle(articleId, {width: 1280, height: 720});
-    }
     embedPlayer
         .play({
             ...initParam,
