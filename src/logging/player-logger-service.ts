@@ -66,7 +66,7 @@ export class PlayerLoggerService {
     }
 
     onPause() {
-        if (this.playerProperties.state !== PlayingState.paused) {
+        if (this.playerProperties.state !== PlayingState.paused && this.playerProperties.state !== PlayingState.idle) {
             this.playerProperties.state = PlayingState.paused;
             this.logEvent(PlayerEventTypes.pause);
         }

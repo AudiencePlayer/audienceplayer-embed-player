@@ -33,6 +33,7 @@ export class PlayerLogProcessor {
         if (this.intervalHandle) {
             clearInterval(this.intervalHandle);
         }
+        this.intervalHandle = null;
     }
 
     processPlaySession(playSession: PlaySession, timeStamp: number) {

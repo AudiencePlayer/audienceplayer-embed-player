@@ -4,7 +4,6 @@ const PlayToggle = videojs.getComponent('PlayToggle');
 
 export function hotkeys(options: {backward: number; forward: number}) {
     return function(event: KeyboardEvent) {
-        console.log('hot', event);
         switch (event.key) {
             case ' ':
                 PlayToggle.prototype.handleClick.call(this, event);
