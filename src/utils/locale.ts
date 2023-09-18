@@ -1,5 +1,5 @@
 // https://raw.githubusercontent.com/vtex/country-iso-3-to-2/master/index.js
-export function getLocaleFromLanguage(countryCode: string) {
+export function getISO2Locale(countryCode: string) {
     const countryISOMapping: any = {
         AFG: 'AF',
         ALA: 'AX',
@@ -266,7 +266,7 @@ export function getLocaleFromLanguage(countryCode: string) {
 }
 
 export function getNativeLanguage(lang: string) {
-    const locale = lang && lang.length === 3 ? getLocaleFromLanguage(lang) : lang;
+    const locale = lang && lang.length === 3 ? getISO2Locale(lang) : lang;
 
     const isoLocales: any = {
         ab: 'аҧсуа',

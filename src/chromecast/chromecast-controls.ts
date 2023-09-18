@@ -104,10 +104,23 @@ export class ChromecastControls {
         });
     }
 
-    onConnectedListener(callback: (connected: boolean) => void) {
-        callback(this.player.isConnected);
+    onConnectedListener(callback: (info: {connected: boolean; friendlyName: string}) => void) {
+        const doCallback = () => {
+            if (this.player.isConnected) {
+                callback({
+                    connected: true,
+                    friendlyName: cast.framework.CastContext.getInstance()
+                        .getCurrentSession()
+                        .getCastDevice().friendlyName,
+                });
+            } else {
+                callback({connected: false, friendlyName: ''});
+            }
+        };
+
+        doCallback();
         this.playerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, event => {
-            callback(this.player.isConnected);
+            doCallback();
         });
     }
 

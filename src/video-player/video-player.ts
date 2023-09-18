@@ -7,6 +7,7 @@ import {InitParams, PlayParams} from '../models/play-params';
 import {CustomPlaybackRateMenuButton} from './plugins/playback-rate-button';
 import {CustomAudioTrackButton} from './plugins/audio-track-button';
 import {hotkeys} from './hotkeys';
+import {getISO2Locale} from '../utils/locale';
 
 declare const videojs: any;
 
@@ -96,6 +97,7 @@ export class VideoPlayer {
             this.init(playParams);
         }
 
+        console.log(playConfig);
         this.articlePlayConfig = playConfig;
 
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
@@ -273,7 +275,8 @@ export class VideoPlayer {
             }
             // it must be split up in to two loops, because two 'showing' items will break
             for (let i = 0; i < tracks.length; i++) {
-                if (tracks[i].language === this.articlePlayConfig.subtitleLocale.toLowerCase() && tracks[i].kind === 'subtitles') {
+                const trackLocale = getISO2Locale(tracks[i].language);
+                if (trackLocale === this.articlePlayConfig.subtitleLocale.toLowerCase() && tracks[i].kind === 'subtitles') {
                     tracks[i].mode = 'showing';
                     break;
                 }
@@ -286,8 +289,9 @@ export class VideoPlayer {
             const audioTracks = this.player.audioTracks();
 
             for (let i = 0; i < audioTracks.length; i++) {
+                const trackLocale = getISO2Locale(audioTracks[i].language);
                 if (
-                    (this.articlePlayConfig.audioLocale && audioTracks[i].language === this.articlePlayConfig.audioLocale.toLowerCase()) ||
+                    (this.articlePlayConfig.audioLocale && trackLocale === this.articlePlayConfig.audioLocale.toLowerCase()) ||
                     (this.articlePlayConfig.audioLocale === '' && i === 0)
                 ) {
                     audioTracks[i].enabled = true;

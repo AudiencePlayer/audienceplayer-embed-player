@@ -13,17 +13,24 @@ export class ChromecastSender {
         return new Promise<void>((resolve, reject) => {
             if (chromecastReceiverAppId) {
                 window['__onGCastApiAvailable'] = (isAvailable: boolean) => {
-                    if (isAvailable && cast && cast.framework) {
-                        this.initializeCastApi(chromecastReceiverAppId);
+                    if (isAvailable && cast && cast.framework && chrome && chrome.cast) {
+                        try {
+                            this.initializeCastApi(chromecastReceiverAppId);
 
-                        //Some Chromecast configurations are taking some time to initialize
-                        setTimeout(() => {
-                            resolve();
-                        }, 1000);
+                            //Some Chromecast configurations are taking some time to initialize
+                            setTimeout(() => {
+                                resolve();
+                            }, 1000);
+                        } catch (e) {
+                            reject(e);
+                        }
+                    } else {
+                        reject('Chromecast not available');
                     }
                 };
 
                 const scriptElement = document.createElement('script');
+                scriptElement.async = true;
                 scriptElement.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
                 document.head.appendChild(scriptElement);
             } else {

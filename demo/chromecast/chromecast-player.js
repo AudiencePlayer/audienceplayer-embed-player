@@ -39,11 +39,13 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
 
         player.appendChromecastButton('#cast-wrapper');
 
-        controls.onConnectedListener(connected => {
+        controls.onConnectedListener(({connected, friendlyName}) => {
+            console.log('CC onConnected', connected, friendlyName);
             player.initVideoPlayer(initParam);
-            console.log('connected ', connected);
         });
 
+    }).catch((e) => {
+        player.initVideoPlayer(initParam);
     });
 
     function playVideo() {
