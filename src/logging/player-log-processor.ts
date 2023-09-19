@@ -87,7 +87,7 @@ export class PlayerLogProcessor {
                 const lastLogEvent = eventStackPayload[eventStackPayload.length - 1];
                 eventStackPayload.splice(MAX_EVENTS - 1);
                 lastLogEvent.event_type = PlayerEventTypePayloads.error;
-                lastLogEvent.event_payload = '{code: 429, message: "Too many events"}'; // runaway
+                lastLogEvent.event_payload = '{"code": 429, "message": "Too many events"}'; // runaway
                 eventStackPayload.push(lastLogEvent);
             }
 
