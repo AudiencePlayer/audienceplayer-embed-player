@@ -90,11 +90,11 @@ export class VideoPlayer {
         this.bindEvents();
     }
 
-    play(playConfig: ArticlePlayConfig, playParams: PlayParams) {
+    play(playConfig: ArticlePlayConfig, initParams: InitParams) {
         this.firstPlayingEvent = true;
         if (!this.player || (this.player && this.player.currentSrc())) {
             this.destroy();
-            this.init(playParams);
+            this.init(initParams);
         }
 
         console.log(playConfig);
@@ -123,7 +123,7 @@ export class VideoPlayer {
         this.player.aspectRatio(playConfig.aspectRatio);
         this.player.src(playSources);
 
-        if (playParams.fullscreen) {
+        if (initParams.fullscreen) {
             this.player.requestFullscreen();
         }
 
