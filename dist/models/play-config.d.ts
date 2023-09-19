@@ -26,10 +26,10 @@ export interface ArticlePlayConfigProtection {
     keyDeliveryUrl: string;
 }
 export declare enum ArticlePlayErrors {
-    noPlayableAsset = 'noPlayableAsset',
-    notAuthenticated = 'notAuthenticated',
-    needEntitlement = 'needEntitlement',
-    serverError = 'serverError',
-    offlineError = 'offlineError',
-    maxConcurrentStreamNumberError = 'maxConcurrentStreamNumberError',
+    noPlayableAsset = "noPlayableAsset",
+    notAuthenticated = "notAuthenticated",
+    needEntitlement = "needEntitlement",
+    serverError = "serverError",
+    offlineError = "offlineError",
+    maxConcurrentStreamNumberError = "maxConcurrentStreamNumberError"
 }

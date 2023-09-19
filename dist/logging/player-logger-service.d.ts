@@ -1,4 +1,4 @@
-import {PlayerDeviceTypes, PlayerEventTypes, PlayerProperties, PlaySession} from '../models/player';
+import { PlayerDeviceTypes, PlayerEventTypes, PlayerProperties, PlaySession } from '../models/player';
 export declare class PlayerLoggerService {
     private playerLogProcessor;
     protected playerProperties: PlayerProperties;
@@ -7,13 +7,7 @@ export declare class PlayerLoggerService {
     constructor(baseUrl: string, projectId: number);
     init(): void;
     destroy(): void;
-    onStart(
-        pulseToken: string,
-        deviceType: PlayerDeviceTypes,
-        localTimeDelta: number,
-        isLive: boolean,
-        onStopCallback?: (appr: number) => void
-    ): void;
+    onStart(pulseToken: string, deviceType: PlayerDeviceTypes, localTimeDelta: number, isLive: boolean, onStopCallback?: (appr: number) => void): void;
     onCurrentTimeUpdated(currentTime: number): void;
     onDurationUpdated(duration: number): void;
     onPlaying(): void;

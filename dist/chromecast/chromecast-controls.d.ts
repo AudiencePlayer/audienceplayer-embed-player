@@ -15,7 +15,10 @@ export declare class ChromecastControls {
     constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string);
     bindEvents(): void;
     createChromecastControlsTemplate(selector?: string): void;
-    onConnectedListener(callback: (info: {connected: boolean; friendlyName: string}) => void): void;
+    onConnectedListener(callback: (info: {
+        connected: boolean;
+        friendlyName: string;
+    }) => void): void;
     setPlayButtonClass(): void;
     bindEventsToControls(): void;
     renderTracksButton(): void;
@@ -24,9 +27,7 @@ export declare class ChromecastControls {
     toggleTracksDialogue(): void;
     getTracksList(tracks: TrackInfo[], type: string): HTMLUListElement;
     getActiveTracksByType(type: string): number[];
-    getTracksByType(
-        type: string
-    ): {
+    getTracksByType(type: string): {
         id: number;
         locale: string;
         active: boolean;

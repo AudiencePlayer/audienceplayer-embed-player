@@ -41,7 +41,7 @@ or if you have used npm:
 Create a new instance of the `embed-player`:
 
 ```javascript
-const apiBaseUrl = '<your-audienceplayer-api-url-here>'; // default: 'https://api.audienceplayer.com' 
+const apiBaseUrl = '<your-audienceplayer-api-url-here>'; // default: 'https://api.audienceplayer.com'
 const projectId = 8; // your AudiencePlayer project id
 
 const player = new EmbedPlayer({apiBaseUrl, projectId});
@@ -56,14 +56,15 @@ This is typically used when playing the video in a modal dialog or from a differ
 ### Default usage with a video player
 
 ```javascript
-
+// in case you want to preload the player and show the poster, call .initVideoPlayer
 player.initVideoPlayer({
     selector: '.video-wrapper', // query selector of an element where you would like to embed your player
     options: {
         poster: 'https://posterImageUrl', // url of image that will be used as the initial player background image
         autoplay: true, // start playing automatically. this will work if play follows from a user event
-    }
+    },
 });
+
 // in case you want to set a different posterImage url after the player was already initialized
 player.setVideoPlayerPoster('https://anotherPosterImageUrl');
 
@@ -71,12 +72,19 @@ player.setVideoPlayerPoster('https://anotherPosterImageUrl');
 // width and height resolution must be an available resize config (see API GraphQL Config.image_resize_resolutions)
 player.setVideoPlayerPosterFromArticle(articleId, {width: 1280, height: 720});
 
+// above initVideoPlayer can be omitted and you can only call .play.
+// In any case, the `selector` and `options` properties should be provided to both methods.
 player
     .play({
-        articleId: 1234,  // the id of an article, to which your intended video asset belongs.
-        assetId: 4321,    // the id of the video asset, you want to play.
-        token: 'some token',        // optional; your authentication token (only necessary if you intend to embed
-        fullscreen: true,  // start play in fullscreen. this will work if play follows from a user event
+        selector: '.video-wrapper', // query selector of an element where you would like to embed your player
+        options: {
+            poster: 'https://posterImageUrl', // url of image that will be used as the initial player background image
+            autoplay: true, // start playing automatically. this will work if play follows from a user event
+        },
+        articleId: 1234, // the id of an article, to which your intended video asset belongs.
+        assetId: 4321, // the id of the video asset, you want to play.
+        token: 'some token', // optional; your authentication token (only necessary if you intend to embed
+        fullscreen: true, // start play in fullscreen. this will work if play follows from a user event
         continueFromPreviousPosition: true, // indicates if your player supports nomadic watching. It is true by default.
     })
     .then(config => {
@@ -85,7 +93,6 @@ player
     .catch(error => {
         console.log('Error', error);
     });
-
 ```
 
 The `Promise` returns a `config` object that can be used for debugging purposes, but is not needed outside the player.
@@ -138,10 +145,9 @@ const player = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId})
 // to the play-button/thumbnail or in the menu.
 player.initChromecast().then(() => {
     const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
-    
+
     // add the chromecast button
     player.appendChromecastButton('#cast-wrapper');
-
 });
 
 // call the playVideo function `onClick` of the play-button/thumbnail
@@ -174,8 +180,8 @@ function playVideo() {
                 continueFromPreviousPosition: true,
             })
             .catch(error => {
-               console.error(error);
-            }); 
+                console.error(error);
+            });
     }
 }
 

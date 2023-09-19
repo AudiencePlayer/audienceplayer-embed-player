@@ -1,4 +1,4 @@
-import {FileData} from './file-data';
+import { FileData } from './file-data';
 export interface Article {
     name: string;
     metas: Array<{

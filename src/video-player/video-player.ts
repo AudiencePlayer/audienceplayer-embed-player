@@ -97,7 +97,6 @@ export class VideoPlayer {
             this.init(initParams);
         }
 
-        console.log(playConfig);
         this.articlePlayConfig = playConfig;
 
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);

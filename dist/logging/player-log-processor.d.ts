@@ -1,11 +1,4 @@
-import {
-    PlayerEventPayload,
-    PlayerEventState,
-    PlayerEventTypePayloads,
-    PlayerEventTypes,
-    PlayerLogPayload,
-    PlaySession,
-} from '../models/player';
+import { PlayerEventPayload, PlayerEventState, PlayerEventTypePayloads, PlayerEventTypes, PlayerLogPayload, PlaySession } from '../models/player';
 export declare class PlayerLogProcessor {
     protected apiUrl: string;
     protected playLogs: PlayerLogPayload[];

@@ -1,4 +1,4 @@
-import {PlayerOptions} from './player-options';
+import { PlayerOptions } from './player-options';
 export interface InitParams {
     selector: string | HTMLElement;
     options: PlayerOptions;

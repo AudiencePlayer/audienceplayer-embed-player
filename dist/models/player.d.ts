@@ -12,7 +12,7 @@ export declare enum PlayingState {
     paused = 2,
     idle = 3,
     buffering = 4,
-    error = 5,
+    error = 5
 }
 export interface PlayerProperties {
     state: PlayingState;
@@ -43,29 +43,29 @@ export interface PlayerEventPayload {
     event_payload?: string;
 }
 export declare enum PlayerEventTypes {
-    playStart = 'playStart',
-    playing = 'playing',
-    pause = 'pause',
-    error = 'error',
-    stopped = 'stopped',
-    timeupdate = 'timeupdate',
-    textTrackChanged = 'textTrackChanged',
-    audioTrackChanged = 'audioTrackChanged',
+    playStart = "playStart",
+    playing = "playing",
+    pause = "pause",
+    error = "error",
+    stopped = "stopped",
+    timeupdate = "timeupdate",
+    textTrackChanged = "textTrackChanged",
+    audioTrackChanged = "audioTrackChanged"
 }
 export declare enum PlayerDeviceTypes {
-    chromecast = 'chromecast',
-    default = '',
+    chromecast = "chromecast",
+    default = ""
 }
 export declare enum PlayerEventTypePayloads {
-    play = 'play',
-    playing = 'playing',
-    paused = 'paused',
-    stop = 'stop',
-    error = 'error',
-    configure = 'configure',
+    play = "play",
+    playing = "playing",
+    paused = "paused",
+    stop = "stop",
+    error = "error",
+    configure = "configure"
 }
 export declare enum PulseMode {
-    live = 'live',
-    archive = 'archive',
-    offline = 'offline',
+    live = "live",
+    archive = "archive",
+    offline = "offline"
 }

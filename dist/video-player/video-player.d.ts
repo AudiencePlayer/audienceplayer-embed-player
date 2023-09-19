@@ -1,5 +1,5 @@
-import {ArticlePlayConfig} from '../models/play-config';
-import {InitParams} from '../models/play-params';
+import { ArticlePlayConfig } from '../models/play-config';
+import { InitParams } from '../models/play-params';
 export declare class VideoPlayer {
     private player;
     private playerLoggerService;
