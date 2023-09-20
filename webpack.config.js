@@ -8,7 +8,7 @@ module.exports = {
             {
                 test: /\.ts?$/,
                 use: 'ts-loader',
-                exclude: /node_modules/,
+                exclude: [/node_modules/, /dist/],
             },
         ],
     },
@@ -45,6 +45,10 @@ module.exports = {
         library: {
             type: 'module',
         },
+    },
+    watchOptions: {
+        ignored: /dist/,
+        aggregateTimeout: 300,
     },
     devtool: 'source-map',
     devServer: {

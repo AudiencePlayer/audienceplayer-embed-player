@@ -3,6 +3,7 @@
         "noImplicitAny": true,
         "sourceMap": false,
         "declaration": true,
+        "declarationDir": "dist",
         "outDir": "dist",
         "module": "es2020",
         "moduleResolution": "node",

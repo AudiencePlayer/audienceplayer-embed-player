@@ -3,11 +3,12 @@ import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
-import {InitParams, PlayParams} from '../models/play-params';
+import {InitParams} from '../models/play-params';
 import {CustomPlaybackRateMenuButton} from './plugins/playback-rate-button';
 import {CustomAudioTrackButton} from './plugins/audio-track-button';
 import {hotkeys} from './hotkeys';
 import {getISO2Locale} from '../utils/locale';
+import {CustomSubtitlesButton, CustomTextTrackButton} from './plugins/subtitles-button';
 
 declare const videojs: any;
 
@@ -24,6 +25,8 @@ export class VideoPlayer {
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
 
         videojs.registerComponent('customAudioTrackButton', CustomAudioTrackButton);
+        videojs.registerComponent('customTextTrackButton', CustomTextTrackButton);
+        videojs.registerComponent('customSubtitlesButton', CustomSubtitlesButton);
         videojs.registerComponent('customPlaybackRateMenuButton', CustomPlaybackRateMenuButton);
     }
 
@@ -65,7 +68,7 @@ export class VideoPlayer {
                     'progressControl',
                     'durationDisplay',
                     'customPlaybackRateMenuButton',
-                    'subtitlesButton',
+                    'customSubtitlesButton',
                     'customAudioTrackButton',
                     'volumePanel',
                     'fullscreenToggle',
@@ -209,7 +212,6 @@ export class VideoPlayer {
                 // set default tracks when available
                 this.setDefaultAudioTrack();
                 this.setDefaultTextTrack();
-
                 this.metadataLoaded = true;
             } else {
                 // unfortunately there is no reliable way to know when iOS native binding to text-tracks is done
@@ -286,7 +288,6 @@ export class VideoPlayer {
     private setDefaultAudioTrack() {
         if (this.articlePlayConfig.audioLocale) {
             const audioTracks = this.player.audioTracks();
-
             for (let i = 0; i < audioTracks.length; i++) {
                 const trackLocale = getISO2Locale(audioTracks[i].language);
                 if (
