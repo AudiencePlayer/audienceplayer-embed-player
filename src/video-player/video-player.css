@@ -50,6 +50,11 @@
     border-radius: 1.6em;
 }
 
+.video-js .vjs-big-play-button .vjs-icon-placeholder:before {
+    top: 2px;
+    font-size: 3.5rem;
+}
+
 .video-js .vjs-control-bar {
     background: linear-gradient(#0000, #000000bf);
 }
