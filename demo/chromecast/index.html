@@ -12,18 +12,20 @@
             .container {
                 position: relative;
                 width: 960px;
-                height: 680px;
+                height: 540px;
             }
 
-            #buttons-container {
+            .splash-overlay {
                 position: absolute;
+                z-index: 1;
                 bottom: 0;
                 width: 100%;
-                height: 140px;
+                height: 100%;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                background-color: #ccc;
+                background-color: #000;
+                background-size: cover;
             }
 
             .button {
@@ -35,23 +37,26 @@
                 align-items: center;
             }
 
-            #cast-wrapper {
-                visibility: collapse;
-
+            .meta {
+                color: #fff;
+                padding: 1rem;
             }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="video-wrapper"></div>
-            <div id="buttons-container">
+            <div class="splash-overlay">
                 <button class="button" id="video-button-start">Play video</button>
-                <button class="button" id="video-button-stop">Stop casting</button>
-                <button class="button" id="video-button-destroy">Destroy</button>
-                <button class="button" id="cast-wrapper"></button>
             </div>
         </div>
-        <div id="cast-controls"></div>
+        <button class="button" id="video-button-destroy">Destroy</button>
+        <div class="button" id="cast-button"></div>
+        <div class="meta">
+            <div>Title</div>
+            <div>Parental</div>
+        </div>
+
         <script src="../../dist/video.js"></script>
         <script src="chromecast-player.js" type="module"></script>
     </body>

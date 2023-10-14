@@ -9,6 +9,7 @@ import {CustomAudioTrackButton} from './plugins/audio-track-button';
 import {hotkeys} from './hotkeys';
 import {getISO2Locale} from '../utils/locale';
 import {CustomSubtitlesButton, CustomTextTrackButton} from './plugins/subtitles-button';
+import {ChromecastButton} from './plugins/chromecast-button';
 
 declare const videojs: any;
 
@@ -28,6 +29,7 @@ export class VideoPlayer {
         videojs.registerComponent('customTextTrackButton', CustomTextTrackButton);
         videojs.registerComponent('customSubtitlesButton', CustomSubtitlesButton);
         videojs.registerComponent('customPlaybackRateMenuButton', CustomPlaybackRateMenuButton);
+        videojs.registerComponent('chromecastButton', ChromecastButton);
     }
 
     init(initParams: InitParams) {
@@ -61,6 +63,7 @@ export class VideoPlayer {
                 volumePanel: {
                     inline: false,
                 },
+                chromecastButton: !!initParams.chromecastButton,
                 // order of elements:
                 children: [
                     'playToggle',
@@ -71,6 +74,7 @@ export class VideoPlayer {
                     'customSubtitlesButton',
                     'customAudioTrackButton',
                     'volumePanel',
+                    'chromecastButton',
                     'fullscreenToggle',
                 ],
             },

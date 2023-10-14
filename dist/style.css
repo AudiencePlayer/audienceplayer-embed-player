@@ -2005,6 +2005,11 @@ video::-webkit-media-text-track-display {
     height: 2em;
 }
 
+.video-js .vjs-chromecast-button {
+    padding: 0.5em;
+    cursor: pointer;
+}
+
 :root {
     --chromecast-main-bg-color: #e7e7e7;
     --chromecast-tracks-dialogue-bg-color: #e9e9e9;
@@ -2012,15 +2017,18 @@ video::-webkit-media-text-track-display {
     --chromecast--track-item-hover-bg-color: #d4d0d0;
 }
 
-.chromecast-controls {
-    height: auto;
-    width: 100%;
-    padding: 20px 15px;
-    background-color: var(--chromecast-main-bg-color);
-    opacity: 0.9;
-    box-sizing: border-box;
+.chromecast-controls.video-js {
     position: absolute;
-    bottom: 0;
+    display: block;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: unset;
+}
+
+.chromecast-controls .vjs-control-bar {
+    display: flex;
 }
 
 .chromecast-controls__title {
@@ -2033,12 +2041,34 @@ video::-webkit-media-text-track-display {
 .chromecast-controls__progress-bar {
     display: flex;
     width: 100%;
-    margin: 0 0 20px 0;
+    align-items: center;
 }
 
 .chromecast-controls__progress-bar__slider {
-    flex: 1 1 100%;
+    height: 4px;
+    width: 100%;
     cursor: pointer;
+    accent-color: #fff;
+}
+
+.chromecast-controls__progress-bar__slider::-webkit-slider-runnable-track {
+    /*background-color: rgba(115, 133, 159, 0.5);*/
+    width: 100%;
+    height: 4px;
+    /*appearance: none;*/
+}
+
+.chromecast-controls__progress-bar__slider::-webkit-slider-container {
+    height: 4px;
+    /*appearance: none;*/
+}
+
+.chromecast-controls__progress-bar__slider::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    margin-top: -6px;
+    /*appearance: none;*/
 }
 
 .chromecast-controls__progress-bar__total {

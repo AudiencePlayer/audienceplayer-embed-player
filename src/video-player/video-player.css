@@ -70,3 +70,8 @@
     width: 2em;
     height: 2em;
 }
+
+.video-js .vjs-chromecast-button {
+    padding: 0.5em;
+    cursor: pointer;
+}

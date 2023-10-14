@@ -3,6 +3,7 @@ export interface InitParams {
     selector: string | HTMLElement;
     options: PlayerOptions;
     fullscreen?: boolean;
+    chromecastButton?: boolean;
 }
 export interface PlayParams extends InitParams {
     articleId: number;

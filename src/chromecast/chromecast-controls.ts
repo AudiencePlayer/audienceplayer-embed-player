@@ -11,14 +11,12 @@ export class ChromecastControls {
     private playerController: cast.framework.RemotePlayerController;
     private player: cast.framework.RemotePlayer;
     private rootElement: HTMLElement;
-    private controlInitialized: boolean;
     private totalDuration: number;
     private currentTime: number;
 
     constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string) {
         this.player = player;
         this.playerController = controller;
-        this.controlInitialized = false;
         this.totalDuration = player.duration || 0;
         this.currentTime = player.currentTime || 0;
         this.currentStatus = player.playerState;
@@ -27,15 +25,12 @@ export class ChromecastControls {
         this.setPlayButtonClass();
         this.bindEventsToControls();
         this.setProgressBarValues();
-        this.setTitle();
     }
 
     bindEvents() {
         this.playerController.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, () => {
             if (this.rootElement && this.player.mediaInfo) {
                 this.renderTracks();
-                this.renderTracksButton();
-                this.setTitle();
             }
         });
 
@@ -61,52 +56,58 @@ export class ChromecastControls {
 
     createChromecastControlsTemplate(selector?: string) {
         const chromecastControlsTemplateString = `
-            <div class="chromecast-controls">
-               <div class="chromecast-controls__title"></div>
+        <div class="chromecast-controls video-js vjs-workinghover">
+            <div class="vjs-control-bar">
+                
+                <button class="play-pause-button vjs-play-control vjs-control vjs-button vjs-paused" type="button" title="Play" aria-disabled="false">
+                    <span class="vjs-icon-placeholder" aria-hidden="true"></span><span class="vjs-control-text" aria-live="polite">Play</span>
+                </button>
+                
                <div class="chromecast-controls__progress-bar">
-                 <div class="chromecast-controls__progress-bar__current"></div>
+                 <div class="chromecast-controls__progress-bar__current vjs-time-control"></div>
                  <input type="range"
                         value="0"
                         class="chromecast-controls__progress-bar__slider" 
                         min="0"
                         max="100"/>
-                 <div class="chromecast-controls__progress-bar__total"></div>
+                 <div class="chromecast-controls__progress-bar__total vjs-time-control"></div>
                </div>
-              <div class="chromecast-controls__buttons">
-                <button class="control-button button__play play-pause-button" type="button"></button>
-                <button class="control-button button__stop" type="button"></button>
-                <div class="buttons-container tracks-button-container" style="display: none">
-                  <button class="control-button button__audio-tracks" type="button"></button>
-                  <div class="chromecast-controls__subtitles" style="display: none">
-                      <div class="chromecast-controls__subtitles__close-icon">&#215;</div>
-                      <div class="container-wrapper container-wrapper_audio-tracks">
-                        <div class="list-title">Audio tracks</div>
-                      </div>
-                      <div class="container-wrapper container-wrapper_text-tracks">
-                        <div class="list-title">Text tracks</div>
-                      </div>
-                  </div>
+                
+                <div class="vjs-subtitles-button vjs-menu-button vjs-menu-button-popup vjs-control vjs-button">
+                    <button class="vjs-subtitles-button vjs-menu-button vjs-menu-button-popup vjs-button" type="button" aria-disabled="false" aria-haspopup="true" aria-expanded="false">
+                        <span class="vjs-icon-placeholder" aria-hidden="true"></span>
+                        <span class="vjs-control-text" aria-live="polite"></span>
+                    </button>
+                    <div class="vjs-menu"></div>
                 </div>
-               </div>
-            </div>
+                
+                <div class="vjs-audio-button vjs-menu-button vjs-menu-button-popup vjs-control vjs-button">
+                    <button class="vjs-audio-button vjs-menu-button vjs-menu-button-popup vjs-button" type="button" aria-disabled="false" title="Audio Track" aria-haspopup="true" aria-expanded="false">
+                        <span class="vjs-icon-placeholder" aria-hidden="true"></span>
+                        <span class="vjs-control-text" aria-live="polite">Audio Track</span>
+                    </button>
+                    <div class="vjs-menu"></div>
+                </div>
+                
+                <div class="vjs-control vjs-button">
+                    <google-cast-launcher></google-cast-launcher>
+                </div>
+           </div>
+        </div>
         `;
 
         const element = !!selector ? document.querySelector(selector) : document.body;
         element.insertAdjacentHTML('beforeend', chromecastControlsTemplateString);
 
         this.rootElement = element.querySelector('.chromecast-controls');
-        this.rootElement.querySelector('.button__audio-tracks').addEventListener('click', () => this.toggleTracksDialogue());
-        this.rootElement
-            .querySelector('.chromecast-controls__subtitles__close-icon')
-            .addEventListener('click', () => this.toggleTracksDialogue());
-        this.rootElement.querySelector('.chromecast-controls__progress-bar__slider').addEventListener('input', event => {
-            this.seek((event.target as HTMLProgressElement).value);
-        });
     }
 
     onConnectedListener(callback: (info: {connected: boolean; friendlyName: string}) => void) {
         const doCallback = () => {
+            console.log('onConnected ', this.player.isConnected);
             if (this.player.isConnected) {
+                console.log(this.rootElement);
+                this.rootElement.style.display = 'block';
                 callback({
                     connected: true,
                     friendlyName: cast.framework.CastContext.getInstance()
@@ -114,6 +115,7 @@ export class ChromecastControls {
                         .getCastDevice().friendlyName,
                 });
             } else {
+                this.rootElement.style.display = 'false';
                 callback({connected: false, friendlyName: ''});
             }
         };
@@ -127,47 +129,45 @@ export class ChromecastControls {
     setPlayButtonClass() {
         const playAndPauseButton = this.getElement('.play-pause-button');
         if (this.currentStatus === chrome.cast.media.PlayerState.PAUSED) {
-            playAndPauseButton.classList.replace('button__pause', 'button__play');
+            playAndPauseButton.classList.replace('vjs-playing', 'vjs-paused');
         } else {
-            playAndPauseButton.classList.replace('button__play', 'button__pause');
+            playAndPauseButton.classList.replace('vjs-paused', 'vjs-playing');
         }
     }
 
     bindEventsToControls() {
         const playAndPauseButton = this.getElement('.play-pause-button');
-        const stopButton = this.getElement('.button__stop');
+        playAndPauseButton.addEventListener('click', () => this.playPause());
 
-        if (!this.controlInitialized) {
-            playAndPauseButton.addEventListener('click', () => this.playPause());
-            stopButton.addEventListener('click', () => this.stop());
-            this.controlInitialized = true;
-        }
+        this.bindEventsToMenu('.vjs-subtitles-button');
+        this.bindEventsToMenu('.vjs-audio-button');
+
+        this.getElement('.chromecast-controls__progress-bar__slider').addEventListener('input', event => {
+            this.seek((event.target as HTMLProgressElement).value);
+        });
     }
 
-    renderTracksButton() {
-        const tracksButtonContainerElement = this.getElement('.tracks-button-container') as HTMLElement;
-        const sessionMediaInfo = cast.framework.CastContext.getInstance()
-            .getCurrentSession()
-            .getMediaSession();
-        let audioTracks = [];
-        let textTracks = [];
-
-        if (this.player.mediaInfo && this.player.mediaInfo.tracks && sessionMediaInfo) {
-            audioTracks = this.getTracksByType('AUDIO');
-            textTracks = this.getTracksByType('TEXT');
-        }
-
-        if (audioTracks.length || textTracks.length) {
-            tracksButtonContainerElement.style.display = 'unset';
-        } else {
-            tracksButtonContainerElement.style.display = 'none';
-        }
+    bindEventsToMenu(buttonSelector: string) {
+        const containerEl = this.getElement(`div${buttonSelector}`);
+        const buttonEl = this.getElement(`button${buttonSelector}`);
+        const menuEl = this.getElement(`${buttonSelector} .vjs-menu`);
+        buttonEl.addEventListener('click', event => {
+            if (!event.defaultPrevented) {
+                this.toggleMenu(menuEl, containerEl);
+            }
+        });
+        buttonEl.addEventListener('mouseenter', () => {
+            containerEl.classList.add('vjs-hover');
+        });
+        containerEl.addEventListener('mouseleave', () => {
+            containerEl.classList.remove('vjs-hover');
+        });
+        menuEl.addEventListener('blur', () => {
+            this.toggleMenu(menuEl, containerEl);
+        });
     }
 
     renderTracks() {
-        this.removeTracks();
-        const audioTracksContainerElement = this.getElement('.container-wrapper_audio-tracks');
-        const textTracksContainerElement = this.getElement('.container-wrapper_text-tracks');
         const sessionMediaInfo = cast.framework.CastContext.getInstance()
             .getCurrentSession()
             .getMediaSession();
@@ -179,46 +179,45 @@ export class ChromecastControls {
             textTracks = this.getTracksByType('TEXT');
         }
 
-        if (audioTracks.length) {
+        const trackButton = this.getElement('.vjs-subtitles-button.vjs-menu-button-popup');
+        if (textTracks.length > 0) {
+            trackButton.classList.remove('vjs-hidden');
+        } else {
+            trackButton.classList.add('vjs-hidden');
+        }
+
+        const audioButton = this.getElement('.vjs-audio-button.vjs-menu-button-popup');
+        if (audioTracks.length > 0) {
+            audioButton.classList.remove('vjs-hidden');
+        } else {
+            audioButton.classList.add('vjs-hidden');
+        }
+
+        const audioTracksContainerElement = this.getElement('.vjs-audio-button .vjs-menu');
+        const textTracksContainerElement = this.getElement('.vjs-subtitles-button .vjs-menu');
+
+        audioTracksContainerElement.innerHTML = '';
+        if (audioTracks.length > 0) {
             audioTracksContainerElement.appendChild(this.getTracksList(audioTracks, 'AUDIO'));
         }
 
-        if (textTracks.length) {
+        textTracksContainerElement.innerHTML = '';
+        if (textTracks.length > 0) {
             textTracksContainerElement.appendChild(this.getTracksList(textTracks, 'TEXT'));
-        }
-    }
-
-    removeTracks() {
-        const tracksListElements = this.rootElement.getElementsByClassName('list-container');
-        if (tracksListElements.length) {
-            Array.from(tracksListElements).forEach(element => {
-                element.remove();
-            });
-        }
-    }
-
-    toggleTracksDialogue() {
-        const tracksContainer = this.getElement('.chromecast-controls__subtitles') as HTMLElement;
-        if (tracksContainer.style.display === 'none') {
-            this.renderTracks();
-            tracksContainer.style.display = 'unset';
-        } else {
-            tracksContainer.style.display = 'none';
-            this.removeTracks();
         }
     }
 
     getTracksList(tracks: TrackInfo[], type: string) {
         const tracksListElement = document.createElement('ul');
-        tracksListElement.classList.add('list-container');
+        tracksListElement.classList.add('vjs-menu-content');
         tracksListElement.addEventListener('click', event => this.setActiveTrack(event, type === 'AUDIO' ? 'AUDIO' : 'TEXT'));
         tracks.forEach(track => {
             const listItemElement = document.createElement('li');
-            listItemElement.classList.add('list-item');
+            listItemElement.classList.add('vjs-menu-item');
             if (track.active) {
-                listItemElement.classList.add('active');
+                listItemElement.classList.add('vjs-selected');
             } else {
-                listItemElement.classList.remove('active');
+                listItemElement.classList.remove('vjs-selected');
             }
             listItemElement.innerText = track.locale;
             listItemElement.value = track.id;
@@ -244,13 +243,6 @@ export class ChromecastControls {
                 locale: track.language,
                 active: sessionMediaInfo.activeTrackIds && sessionMediaInfo.activeTrackIds.indexOf(track.trackId) !== -1,
             }));
-    }
-
-    setTitle() {
-        if (this.player.mediaInfo) {
-            const titleElement = this.getElement('.chromecast-controls__title') as HTMLElement;
-            titleElement.innerText = this.player.mediaInfo.metadata.title;
-        }
     }
 
     getTransformedDurationValue(value: number) {
@@ -316,17 +308,18 @@ export class ChromecastControls {
 
     setActiveTrack(event: MouseEvent, type: string) {
         if (event.target instanceof HTMLLIElement && event.target.nodeName === 'LI') {
+            event.preventDefault();
             event.stopPropagation();
             const selectedTrackId = event.target.value;
             const activeTracks = this.getActiveTracksByType(type === 'AUDIO' ? 'TEXT' : 'AUDIO');
             if (selectedTrackId > 0 && activeTracks.indexOf(selectedTrackId) === -1) {
                 activeTracks.push(selectedTrackId);
             }
-            this.setActiveTracks(activeTracks);
+            this.setActiveTracks(activeTracks, type);
         }
     }
 
-    setActiveTracks(trackIds: number[]) {
+    setActiveTracks(trackIds: number[], type: string) {
         if (this.player && this.player.isConnected) {
             const media = cast.framework.CastContext.getInstance()
                 .getCurrentSession()
@@ -335,10 +328,25 @@ export class ChromecastControls {
             media.editTracksInfo(
                 tracksInfoRequest,
                 () => {
-                    this.toggleTracksDialogue();
+                    this.toggleMenu(
+                        this.getElement(type === 'AUDIO' ? '.vjs-audio-button .vjs-menu' : '.vjs-subtitles-button .vjs-menu'),
+                        this.getElement(type === 'AUDIO' ? 'div.vjs-audio-button' : 'div.vjs-subtitles-button')
+                    );
                 },
                 (error: chrome.cast.Error) => console.error('ChromeCast', error)
             );
+        }
+    }
+
+    toggleMenu(menuEl: HTMLElement, containerEl: HTMLElement) {
+        if (menuEl.classList.contains('vjs-lock-showing') || containerEl.classList.contains('vjs-hover')) {
+            menuEl.classList.remove('vjs-lock-showing');
+            menuEl.removeAttribute('tabindex');
+            containerEl.classList.remove('vjs-hover');
+        } else {
+            menuEl.classList.add('vjs-lock-showing');
+            menuEl.setAttribute('tabindex', '-1');
+            menuEl.focus();
         }
     }
 
