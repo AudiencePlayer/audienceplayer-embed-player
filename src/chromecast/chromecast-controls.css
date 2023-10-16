@@ -164,3 +164,8 @@
     font-weight: bold;
     font-size: 1.2em;
 }
+
+.chromecast-controls .chromecast-button {
+    padding: 0.5em;
+    cursor: pointer;
+}

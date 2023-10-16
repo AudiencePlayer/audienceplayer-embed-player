@@ -1,20 +1,16 @@
-import {getNativeLanguage} from '../../utils/locale';
-
 declare const videojs: any;
 
 const Component = videojs.getComponent('component');
 
-// based on AudioTrackMenuItem
 export class ChromecastButton extends Component {
     constructor(player: any, options: any) {
         super(player, options);
-
-        this.addClass(`vjs-chromecast-button`);
     }
     createEl() {
         const el = super.createEl();
-
-        el.innerHTML = `<google-cast-launcher></google-cast-launcher>`;
+        const castEl = (document as any).createElement('button', 'google-cast-button');
+        castEl.className = 'vjs-chromecast-button';
+        el.appendChild(castEl);
 
         return el;
     }

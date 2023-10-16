@@ -22,7 +22,7 @@ export declare class EmbedPlayer {
     play(playParams: PlayParams): Promise<ArticlePlayConfig>;
     destroy(): void;
     playVideo(config: ArticlePlayConfig, playParams: PlayParams): void;
-    getVideoPlayer(): void;
+    getVideoPlayer(): any;
     initChromecast(): Promise<void>;
     appendChromecastButton(selector: string | Element): void;
     castVideo({ articleId, assetId, token, continueFromPreviousPosition }: PlayParamsChromecast): Promise<ArticlePlayConfig>;

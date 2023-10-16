@@ -21,7 +21,6 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
         options: {
             autoplay: autoplay && autoplay === 'true',
         },
-        chromecastButton: !!chromecastReceiverAppId,
     };
     if (posterImageUrl) {
         initParam.options.poster = posterImageUrl;
@@ -34,9 +33,12 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     document.getElementById('video-button-destroy').addEventListener('click', destroyVideo);
 
     const splashEl = document.querySelector('.splash-overlay');
+    const metaEl = document.querySelector('.meta');
     if (posterImageUrl) {
-        splashEl.style.backgroundImage = `url(${posterImageUrl})`;
+        metaEl.style.backgroundImage = `url(${posterImageUrl})`;
     }
+
+    embedPlayer.initVideoPlayer(initParam);
 
     embedPlayer
         .initChromecast()
@@ -48,16 +50,20 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
 
             controls.onConnectedListener(({connected, friendlyName}) => {
                 console.log('CC onConnected', connected, friendlyName);
-                embedPlayer.initVideoPlayer(initParam);
+                embedPlayer.initVideoPlayer({
+                    ...initParam,
+                    chromecastButton: !!chromecastReceiverAppId,
+                });
                 splashEl.style.display = 'flex';
+                metaEl.style.display = 'block';
             });
         })
         .catch(e => {
             console.log('e', e);
-            embedPlayer.initVideoPlayer(initParam);
         });
 
     function playVideo() {
+        metaEl.style.display = 'block';
         splashEl.style.display = 'none';
 
         if (embedPlayer.isConnected()) {
@@ -70,6 +76,8 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
                 })
                 .catch(error => console.error(error));
         } else {
+            metaEl.style.display = 'none';
+
             embedPlayer
                 .play({
                     ...initParam,
@@ -91,5 +99,6 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     function destroyVideo() {
         embedPlayer.destroy();
         splashEl.style.display = 'flex';
+        metaEl.style.display = 'block';
     }
 })();

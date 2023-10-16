@@ -66,7 +66,7 @@ export class EmbedPlayer {
     }
 
     getVideoPlayer() {
-        this.videoPlayer.getPlayer();
+        return this.videoPlayer.getPlayer();
     }
 
     initChromecast() {

@@ -89,7 +89,7 @@ export class ChromecastControls {
                     <div class="vjs-menu"></div>
                 </div>
                 
-                <div class="vjs-control vjs-button">
+                <div class="vjs-control vjs-button vjs-chromecast-button">
                     <google-cast-launcher></google-cast-launcher>
                 </div>
            </div>
@@ -104,9 +104,7 @@ export class ChromecastControls {
 
     onConnectedListener(callback: (info: {connected: boolean; friendlyName: string}) => void) {
         const doCallback = () => {
-            console.log('onConnected ', this.player.isConnected);
             if (this.player.isConnected) {
-                console.log(this.rootElement);
                 this.rootElement.style.display = 'block';
                 callback({
                     connected: true,

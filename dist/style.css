@@ -2006,8 +2006,11 @@ video::-webkit-media-text-track-display {
 }
 
 .video-js .vjs-chromecast-button {
-    padding: 0.5em;
+    margin: 0.5em;
+    padding: 0;
     cursor: pointer;
+    width: 2em;
+    height: 2em;
 }
 
 :root {
@@ -2175,4 +2178,9 @@ video::-webkit-media-text-track-display {
 .chromecast-controls .list-title {
     font-weight: bold;
     font-size: 1.2em;
+}
+
+.chromecast-controls .chromecast-button {
+    padding: 0.5em;
+    cursor: pointer;
 }
