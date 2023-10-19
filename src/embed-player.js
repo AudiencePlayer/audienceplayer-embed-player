@@ -41,7 +41,9 @@ export default class EmbedPlayer {
              posterImageUrl,
              autoplay,
              fullScreen,
-             continueFromPreviousPosition
+             continueFromPreviousPosition,
+             muted = false,
+             controls = false,
          }) {
         if (!selector) {
             return Promise.reject('selector property is missing');
@@ -70,7 +72,7 @@ export default class EmbedPlayer {
             assetId,
             token
         ).then((config) => {
-            this.playVideo(config, posterImageUrl, !!autoplay, fullScreen, streamLoggingUrl);
+            this.playVideo(config, posterImageUrl, !!autoplay, fullScreen, muted, controls);
             return config;
         });
     }
@@ -87,7 +89,7 @@ export default class EmbedPlayer {
         this.configData = null;
     }
 
-    playVideo(configData, posterUrl, autoplay, fullScreen, logServiceUrl) {
+    playVideo(configData, posterUrl, autoplay, fullScreen, logServiceUrl, muted, controls) {
         this.configData = configData;
         this.playerLoggerService.setApiUrl(logServiceUrl);
         this.playerLoggerService.onStart(
@@ -97,7 +99,8 @@ export default class EmbedPlayer {
         );
         var myOptions = {
             autoplay,
-            controls: true,
+            controls,
+            muted,
             fluid: true,
         };
         if (posterUrl) {
