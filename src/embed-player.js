@@ -43,7 +43,7 @@ export default class EmbedPlayer {
              fullScreen,
              continueFromPreviousPosition,
              muted = false,
-             controls = false,
+             controls = true,
          }) {
         if (!selector) {
             return Promise.reject('selector property is missing');
