@@ -16,11 +16,15 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     const continueFromPreviousPosition = urlParams.get('continueFromPreviousPosition');
     const tokenParameter = token ? {token} : {};
 
+    const splashEl = document.querySelector('.splash-overlay');
+    const metaEl = document.querySelector('.meta');
+
     const initParam = {
         selector: '.video-wrapper',
         options: {
             autoplay: autoplay && autoplay === 'true',
         },
+        overlayElement: metaEl,
     };
     if (posterImageUrl) {
         initParam.options.poster = posterImageUrl;
@@ -32,10 +36,8 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('video-button-destroy').addEventListener('click', destroyVideo);
 
-    const splashEl = document.querySelector('.splash-overlay');
-    const metaEl = document.querySelector('.meta');
     if (posterImageUrl) {
-        metaEl.style.backgroundImage = `url(${posterImageUrl})`;
+        splashEl.style.backgroundImage = `url(${posterImageUrl})`;
     }
 
     embedPlayer.initVideoPlayer(initParam);

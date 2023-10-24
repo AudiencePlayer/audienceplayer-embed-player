@@ -9,10 +9,18 @@
             body {
                 margin: 0;
             }
+
             .container {
                 position: relative;
-                width: 960px;
-                height: 540px;
+                width: 100vw;
+                height: 56.25vw;
+            }
+
+            .video-wrapper {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
             }
 
             .splash-overlay {
@@ -25,6 +33,9 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                background-size: contain;
+                background-position: center;
+                background-repeat: no-repeat;
             }
 
             .button {
@@ -43,8 +54,7 @@
                 bottom: 0;
                 width: 100%;
                 height: 100%;
-                background-color: #000;
-                background-size: cover;
+                background: linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.8) 100%);
             }
         </style>
     </head>

@@ -2013,6 +2013,15 @@ video::-webkit-media-text-track-display {
     height: 2em;
 }
 
+.video-js .vjs-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    pointer-events: none;
+}
+
 :root {
     --chromecast-main-bg-color: #e7e7e7;
     --chromecast-tracks-dialogue-bg-color: #e9e9e9;

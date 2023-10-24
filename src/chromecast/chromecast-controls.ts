@@ -1,5 +1,7 @@
 /// <reference path="../../node_modules/@types/chromecast-caf-sender/index.d.ts" />
 
+import {getNativeLanguage} from '../utils/locale';
+
 interface TrackInfo {
     id: number;
     locale: string;
@@ -217,7 +219,7 @@ export class ChromecastControls {
             } else {
                 listItemElement.classList.remove('vjs-selected');
             }
-            listItemElement.innerText = track.locale;
+            listItemElement.innerText = getNativeLanguage(track.locale);
             listItemElement.value = track.id;
             tracksListElement.appendChild(listItemElement);
         });

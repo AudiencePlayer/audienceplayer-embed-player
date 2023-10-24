@@ -10,6 +10,7 @@ import {hotkeys} from './hotkeys';
 import {getISO2Locale} from '../utils/locale';
 import {CustomSubtitlesButton, CustomTextTrackButton} from './plugins/subtitles-button';
 import {ChromecastButton} from './plugins/chromecast-button';
+import {Overlay} from './plugins/overlay';
 
 declare const videojs: any;
 
@@ -30,6 +31,7 @@ export class VideoPlayer {
         videojs.registerComponent('customSubtitlesButton', CustomSubtitlesButton);
         videojs.registerComponent('customPlaybackRateMenuButton', CustomPlaybackRateMenuButton);
         videojs.registerComponent('chromecastButton', ChromecastButton);
+        videojs.registerComponent('overlay', Overlay);
     }
 
     init(initParams: InitParams) {
@@ -77,6 +79,9 @@ export class VideoPlayer {
                     'chromecastButton',
                     'fullscreenToggle',
                 ],
+            },
+            overlay: {
+                element: initParams.overlayElement ? initParams.overlayElement : null,
             },
             userActions: {
                 hotkeys: hotkeys({backward: -30, forward: 30}),
