@@ -2,6 +2,7 @@ import { ArticlePlayConfig, ArticlePlayErrors } from '../models/play-config';
 import { Article } from '../models/article';
 import { FileData } from '../models/file-data';
 export declare function toPlayConfig(config: any, continueFromPreviousPosition: boolean): ArticlePlayConfig;
+export declare function toArticleMetas(metas: any): any;
 export declare function toArticle(article: any): Article;
 export declare function toFile(file: any): FileData;
 export declare function getMetaValue(metas: any, key: string): any;

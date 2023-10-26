@@ -50,7 +50,8 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
 
             embedPlayer.appendChromecastButton('#cast-button');
 
-            controls.onConnectedListener(({connected, friendlyName}) => {
+            const castSender = embedPlayer.getCastSender();
+            castSender.onConnectedListener(({connected, friendlyName}) => {
                 console.log('CC onConnected', connected, friendlyName);
                 embedPlayer.initVideoPlayer({
                     ...initParam,

@@ -16,7 +16,7 @@ export class ChromecastControls {
     private totalDuration: number;
     private currentTime: number;
 
-    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string) {
+    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string | HTMLElement) {
         this.player = player;
         this.playerController = controller;
         this.totalDuration = player.duration || 0;
@@ -56,7 +56,7 @@ export class ChromecastControls {
         this.checkChromecastContainerVisibility();
     }
 
-    createChromecastControlsTemplate(selector?: string) {
+    createChromecastControlsTemplate(selector?: string | HTMLElement) {
         const chromecastControlsTemplateString = `
         <div class="chromecast-controls video-js vjs-workinghover">
             <div class="vjs-control-bar">
@@ -98,32 +98,10 @@ export class ChromecastControls {
         </div>
         `;
 
-        const element = !!selector ? document.querySelector(selector) : document.body;
+        const element = !!selector ? (selector instanceof HTMLElement ? selector : document.querySelector(selector)) : document.body;
         element.insertAdjacentHTML('beforeend', chromecastControlsTemplateString);
 
         this.rootElement = element.querySelector('.chromecast-controls');
-    }
-
-    onConnectedListener(callback: (info: {connected: boolean; friendlyName: string}) => void) {
-        const doCallback = () => {
-            if (this.player.isConnected) {
-                this.rootElement.style.display = 'block';
-                callback({
-                    connected: true,
-                    friendlyName: cast.framework.CastContext.getInstance()
-                        .getCurrentSession()
-                        .getCastDevice().friendlyName,
-                });
-            } else {
-                this.rootElement.style.display = 'false';
-                callback({connected: false, friendlyName: ''});
-            }
-        };
-
-        doCallback();
-        this.playerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, event => {
-            doCallback();
-        });
     }
 
     setPlayButtonClass() {
@@ -281,9 +259,9 @@ export class ChromecastControls {
 
     checkChromecastContainerVisibility() {
         if (this.currentStatus === chrome.cast.media.PlayerState.IDLE) {
-            this.rootElement.style.display = 'none';
+            this.rootElement.classList.add('chromecast-controls--idle');
         } else {
-            this.rootElement.style.display = 'block';
+            this.rootElement.classList.remove('chromecast-controls--idle');
         }
     }
 

@@ -15,6 +15,10 @@
     background-color: unset;
 }
 
+.chromecast-controls--idle {
+    display: none;
+}
+
 .chromecast-controls .vjs-control-bar {
     display: flex;
 }

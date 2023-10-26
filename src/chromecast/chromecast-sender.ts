@@ -5,9 +5,10 @@ import {Article} from '../models/article';
 import {getArticleTitle} from '../api/converters';
 
 export class ChromecastSender {
-    castContext: cast.framework.CastContext = null;
-    castPlayer: cast.framework.RemotePlayer = null;
-    castPlayerController: cast.framework.RemotePlayerController = null;
+    private castContext: cast.framework.CastContext = null;
+    private castPlayer: cast.framework.RemotePlayer = null;
+    private castPlayerController: cast.framework.RemotePlayerController = null;
+    private supportsHDR = false;
 
     init(chromecastReceiverAppId: string) {
         return new Promise<void>((resolve, reject) => {
@@ -47,6 +48,42 @@ export class ChromecastSender {
         this.castContext = cast.framework.CastContext.getInstance();
         this.castPlayer = new cast.framework.RemotePlayer();
         this.castPlayerController = new cast.framework.RemotePlayerController(this.castPlayer);
+
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, event => {
+            if (this.castPlayer.isConnected) {
+                const castSession = this.castContext.getCurrentSession();
+                castSession.addMessageListener('urn:x-cast:com.audienceplayer.messagebus', (namespace, message) => {
+                    const capabilities = JSON.parse(message);
+                    this.supportsHDR = capabilities.is_hdr_supported;
+                });
+            } else {
+                this.supportsHDR = false;
+            }
+        });
+    }
+
+    onConnectedListener(callback: (info: {connected: boolean; friendlyName: string}) => void) {
+        const doCallback = () => {
+            if (this.castPlayer.isConnected) {
+                const castContext = cast.framework.CastContext.getInstance();
+
+                callback({
+                    connected: true,
+                    friendlyName: castContext.getCurrentSession().getCastDevice().friendlyName,
+                });
+            } else {
+                callback({connected: false, friendlyName: ''});
+            }
+        };
+
+        doCallback();
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, event => {
+            doCallback();
+        });
+    }
+
+    getSupportsHDR() {
+        return this.supportsHDR;
     }
 
     getCastMediaInfo(articlePlayConfig: ArticlePlayConfig, article: Article) {

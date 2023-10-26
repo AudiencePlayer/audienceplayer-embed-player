@@ -106,6 +106,10 @@ export class EmbedPlayer {
             });
     }
 
+    getCastSender() {
+        return this.castSender;
+    }
+
     getCastPlayer() {
         return this.castSender.getCastPlayer();
     }

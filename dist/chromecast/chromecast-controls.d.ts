@@ -11,13 +11,9 @@ export declare class ChromecastControls {
     private rootElement;
     private totalDuration;
     private currentTime;
-    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string);
+    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string | HTMLElement);
     bindEvents(): void;
-    createChromecastControlsTemplate(selector?: string): void;
-    onConnectedListener(callback: (info: {
-        connected: boolean;
-        friendlyName: string;
-    }) => void): void;
+    createChromecastControlsTemplate(selector?: string | HTMLElement): void;
     setPlayButtonClass(): void;
     bindEventsToControls(): void;
     bindEventsToMenu(buttonSelector: string): void;

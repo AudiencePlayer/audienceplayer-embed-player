@@ -79,10 +79,20 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
     };
 }
 
+export function toArticleMetas(metas: any) {
+    return metas.reduce(
+        (metaObj: any, item: any) => ({
+            ...metaObj,
+            [item.key]: item.value,
+        }),
+        {}
+    );
+}
+
 export function toArticle(article: any): Article {
     return {
         name: article.name,
-        metas: article.metas,
+        metas: toArticleMetas(article.metas),
         posters: article.posters.map(toFile),
         images: article.images.map(toFile),
     } as Article;
@@ -98,8 +108,7 @@ export function toFile(file: any): FileData {
 }
 
 export function getMetaValue(metas: any, key: string) {
-    const meta = metas.find((m: any) => m.key === key);
-    return meta ? meta.value : '';
+    return metas[key] ? metas[key] : '';
 }
 
 export function getResizedUrl(fileData: FileData, size: {width: number; height: number}): string {

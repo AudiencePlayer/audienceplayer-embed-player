@@ -1,13 +1,19 @@
-/// <reference types="chromecast-caf-sender" />
 /// <reference types="chrome/chrome-cast" />
+/// <reference types="chromecast-caf-sender" />
 import { ArticlePlayConfig } from '../models/play-config';
 import { Article } from '../models/article';
 export declare class ChromecastSender {
-    castContext: cast.framework.CastContext;
-    castPlayer: cast.framework.RemotePlayer;
-    castPlayerController: cast.framework.RemotePlayerController;
+    private castContext;
+    private castPlayer;
+    private castPlayerController;
+    private supportsHDR;
     init(chromecastReceiverAppId: string): Promise<void>;
     initializeCastApi(chromecastReceiverAppId: string): void;
+    onConnectedListener(callback: (info: {
+        connected: boolean;
+        friendlyName: string;
+    }) => void): void;
+    getSupportsHDR(): boolean;
     getCastMediaInfo(articlePlayConfig: ArticlePlayConfig, article: Article): chrome.cast.media.MediaInfo;
     getLicenseUrlFromSrc(src: string, token: string): {
         licenseUrl: string;

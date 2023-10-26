@@ -54,7 +54,8 @@ export class VideoPlayer {
         videoContainer.appendChild(videoElement);
 
         const playOptions = {
-            fluid: true,
+            fluid: false,
+            fill: true,
             responsive: true,
             controls: true,
             controlBar: {
@@ -86,7 +87,6 @@ export class VideoPlayer {
             userActions: {
                 hotkeys: hotkeys({backward: -30, forward: 30}),
             },
-            aspectRatio: '16:9',
             html5: {
                 vhs: {
                     // do to use videojs-http-streaming if it's natively supported
@@ -131,7 +131,6 @@ export class VideoPlayer {
                 );
             });
 
-        this.player.aspectRatio(playConfig.aspectRatio);
         this.player.src(playSources);
 
         if (initParams.fullscreen) {
