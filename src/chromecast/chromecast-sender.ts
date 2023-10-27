@@ -1,6 +1,6 @@
 /// <reference path="../../node_modules/@types/chromecast-caf-sender/index.d.ts" />
 
-import {ArticlePlayConfig} from '../models/play-config';
+import {PlayConfig} from '../models/play-config';
 import {Article} from '../models/article';
 import {getArticleTitle} from '../api/converters';
 
@@ -19,9 +19,9 @@ export class ChromecastSender {
                             this.initializeCastApi(chromecastReceiverAppId);
 
                             //Some Chromecast configurations are taking some time to initialize
-                            setTimeout(() => {
-                                resolve();
-                            }, 1000);
+                            //setTimeout(() => {
+                            resolve();
+                            //}, 1000);
                         } catch (e) {
                             reject(e);
                         }
@@ -82,11 +82,24 @@ export class ChromecastSender {
         });
     }
 
+    onMediaInfoListener(callback: (info: any) => void) {
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED, () => {
+            if (this.castPlayer.mediaInfo) {
+                const customData: any = this.castPlayer.mediaInfo.customData;
+                if (customData && customData.extraInfo) {
+                    callback(customData.extraInfo);
+                    return;
+                }
+            }
+            callback(null);
+        });
+    }
+
     getSupportsHDR() {
         return this.supportsHDR;
     }
 
-    getCastMediaInfo(articlePlayConfig: ArticlePlayConfig, article: Article) {
+    getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article, extraInfo?: any) {
         if (articlePlayConfig && articlePlayConfig.entitlements && articlePlayConfig.entitlements.length > 0) {
             const tracks = articlePlayConfig.subtitles.map((option, index) => {
                 const trackId = index + 1;
@@ -129,15 +142,17 @@ export class ChromecastSender {
                           ...this.getLicenseUrlFromSrc(protectionConfig.keyDeliveryUrl, token),
                       }
                     : {};
-                const audieLocalePram = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
+                const audieLocaleParam = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
+                const extraInfoParam = extraInfo ? {extraInfo: JSON.stringify(extraInfo)} : {};
                 mediaInfo.customData = {
                     ...licenceUrlParam,
-                    ...audieLocalePram,
+                    ...audieLocaleParam,
+                    ...extraInfoParam,
                     pulseToken: articlePlayConfig.pulseToken,
                 };
-                // @TODO
-                // mediaInfo.currentTime = articlePlayConfig.currentTime;
-                // mediaInfo.autoplay = true;
+
+                // @ts-ignore
+                mediaInfo.currentTime = articlePlayConfig.currentTime;
 
                 return mediaInfo;
             }
@@ -157,10 +172,10 @@ export class ChromecastSender {
         return {};
     }
 
-    castVideo(playConfig: ArticlePlayConfig, article: Article, continueFromPreviousPosition: boolean) {
+    castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean, extraInfo?: any) {
         if (this.isConnected()) {
             const castSession = this.castContext.getCurrentSession();
-            const mediaInfo = this.getCastMediaInfo(playConfig, article);
+            const mediaInfo = this.getCastMediaInfo(playConfig, article, extraInfo);
 
             if (mediaInfo) {
                 const request = new chrome.cast.media.LoadRequest(mediaInfo);

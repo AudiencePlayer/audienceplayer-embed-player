@@ -1,4 +1,4 @@
-import { ArticlePlayConfig } from '../models/play-config';
+import { PlayConfig } from '../models/play-config';
 import { InitParams } from '../models/play-params';
 export declare class VideoPlayer {
     private player;
@@ -10,7 +10,7 @@ export declare class VideoPlayer {
     private metadataLoaded;
     constructor(baseUrl: string, projectId: number);
     init(initParams: InitParams): void;
-    play(playConfig: ArticlePlayConfig, initParams: InitParams): void;
+    play(playConfig: PlayConfig, initParams: InitParams): void;
     setPoster(posterUrl: string): void;
     destroy(): void;
     getPlayer(): any;

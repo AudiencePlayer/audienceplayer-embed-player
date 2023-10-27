@@ -1,7 +1,7 @@
 import {VideoPlayer} from './video-player/video-player';
 import {ChromecastSender} from './chromecast/chromecast-sender';
 import {ApiService} from './api/api-service';
-import {ArticlePlayConfig} from './models/play-config';
+import {PlayConfig} from './models/play-config';
 import {InitParams, PlayParams, PlayParamsChromecast} from './models/play-params';
 import {getArticleBackgroundImage, getResizedUrl, toPlayConfigError} from './api/converters';
 
@@ -61,7 +61,7 @@ export class EmbedPlayer {
         this.videoPlayer.destroy();
     }
 
-    playVideo(config: ArticlePlayConfig, playParams: PlayParams) {
+    playVideo(config: PlayConfig, playParams: PlayParams) {
         this.videoPlayer.play(config, playParams);
     }
 

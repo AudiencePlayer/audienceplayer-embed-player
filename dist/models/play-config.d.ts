@@ -1,25 +1,27 @@
-export interface ArticlePlayConfig {
+export interface PlayConfig {
     pulseToken?: string;
     currentTime?: number;
-    entitlements: ArticlePlayEntitlement[];
-    subtitles: ArticlePlayConfigSubtitle[];
+    entitlements: PlayEntitlement[];
+    subtitles: PlayConfigSubtitle[];
+    articleId: number;
+    assetId: number;
     subtitleLocale: string;
     audioLocale: string;
     aspectRatio: string;
     localTimeDelta?: number;
 }
-export interface ArticlePlayEntitlement {
+export interface PlayEntitlement {
     src: string;
     type: string;
-    protectionInfo: ArticlePlayConfigProtection[] | null;
+    protectionInfo: PlayConfigProtection[] | null;
 }
-export interface ArticlePlayConfigSubtitle {
+export interface PlayConfigSubtitle {
     src: string;
     srclang: string;
     kind: string;
     label: string;
 }
-export interface ArticlePlayConfigProtection {
+export interface PlayConfigProtection {
     type: string;
     authenticationToken: string;
     certificateUrl?: string;

@@ -1,4 +1,4 @@
-import {ArticlePlayConfig} from '../models/play-config';
+import {PlayConfig} from '../models/play-config';
 import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
@@ -17,7 +17,7 @@ declare const videojs: any;
 export class VideoPlayer {
     private player: any = null;
     private playerLoggerService: PlayerLoggerService;
-    private articlePlayConfig: ArticlePlayConfig;
+    private articlePlayConfig: PlayConfig;
     private firstPlayingEvent: boolean;
     private currentTextTrack: string;
     private currentAudioTrack: string;
@@ -102,7 +102,7 @@ export class VideoPlayer {
         this.bindEvents();
     }
 
-    play(playConfig: ArticlePlayConfig, initParams: InitParams) {
+    play(playConfig: PlayConfig, initParams: InitParams) {
         this.firstPlayingEvent = true;
         if (!this.player || (this.player && this.player.currentSrc())) {
             this.destroy();

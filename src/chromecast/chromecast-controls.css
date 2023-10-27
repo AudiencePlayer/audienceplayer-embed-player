@@ -15,7 +15,7 @@
     background-color: unset;
 }
 
-.chromecast-controls--idle {
+.chromecast-controls.video-js.chromecast-controls--idle {
     display: none;
 }
 
