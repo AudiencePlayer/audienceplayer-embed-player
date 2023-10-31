@@ -201,9 +201,11 @@ export class ChromecastSender {
     }
 
     stopCasting() {
-        const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-        if (castSession) {
-            castSession.endSession(true);
+        if (this.castContext) {
+            const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+            if (castSession) {
+                castSession.endSession(true);
+            }
         }
     }
 
