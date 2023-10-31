@@ -207,7 +207,7 @@ export class ChromecastControls {
     getActiveTracksByType(type: string) {
         return this.getTracksByType(type)
             .filter(track => track.active)
-            .map(track => track.id);
+            .map(track => +track.id);
     }
 
     getTracksByType(type: string) {
@@ -288,12 +288,14 @@ export class ChromecastControls {
         if (event.target instanceof HTMLLIElement && event.target.nodeName === 'LI') {
             event.preventDefault();
             event.stopPropagation();
-            const selectedTrackId = event.target.value;
-            const activeTracks = this.getActiveTracksByType(type === 'AUDIO' ? 'TEXT' : 'AUDIO');
-            if (selectedTrackId > 0 && activeTracks.indexOf(selectedTrackId) === -1) {
-                activeTracks.push(selectedTrackId);
+            const selectedTrackId = +event.target.value;
+            const newActiveTracks = this.getActiveTracksByType(type === 'AUDIO' ? 'TEXT' : 'AUDIO');
+            const activeTracksOfType = this.getActiveTracksByType(type);
+            const index = activeTracksOfType.indexOf(selectedTrackId);
+            if (type === 'AUDIO' || (type === 'TEXT' && index === -1)) {
+                newActiveTracks.push(selectedTrackId);
             }
-            this.setActiveTracks(activeTracks, type);
+            this.setActiveTracks(newActiveTracks, type);
         }
     }
 
