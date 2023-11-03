@@ -1980,10 +1980,7 @@ video::-webkit-media-text-track-display {
 }
 */
 .video-js .vjs-big-play-button {
-    width: 1.6em;
-    height: 1.6em;
-    border: none;
-    border-radius: 1.6em;
+   display: none;
 }
 
 .video-js .vjs-big-play-button .vjs-icon-placeholder:before {
@@ -2152,7 +2149,6 @@ video::-webkit-media-text-track-display {
 .chromecast-controls .button__audio-tracks {
     background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCAgZD0iTTIwIDRINGMtMS4xIDAtMiAuOS0yIDJ2MTJjMCAxLjEuOSAyIDIgMmgxNmMxLjEgMCAyLS45IDItMlY2YzAtMS4xLS45LTItMi0yek00IDEyaDR2Mkg0di0yem0xMCA2SDR2LTJoMTB2MnptNiAwaC00di0yaDR2MnptMC00SDEwdi0yaDEwdjJ6Ii8+PC9zdmc+');
 }
-
 
 .chromecast-controls .container-wrapper {
     padding: 10px 0;

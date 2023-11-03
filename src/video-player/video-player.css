@@ -46,10 +46,7 @@
 }
 */
 .video-js .vjs-big-play-button {
-    width: 1.6em;
-    height: 1.6em;
-    border: none;
-    border-radius: 1.6em;
+    display: none;
 }
 
 .video-js .vjs-big-play-button .vjs-icon-placeholder:before {
