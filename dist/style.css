@@ -2028,13 +2028,6 @@ video::-webkit-media-text-track-display {
     opacity: 1;
 }
 
-:root {
-    --chromecast-main-bg-color: #e7e7e7;
-    --chromecast-tracks-dialogue-bg-color: #e9e9e9;
-    --chromecast-tracks-dialogue-shadow-color: rgb(0 0 0 / 20%);
-    --chromecast--track-item-hover-bg-color: #d4d0d0;
-}
-
 .chromecast-controls.video-js {
     position: absolute;
     display: block;
@@ -2080,15 +2073,31 @@ video::-webkit-media-text-track-display {
     align-items: center;
 }
 
+.chromecast-controls__progress-bar-slider-container {
+    position: relative;
+    width: 100%;
+    height: 1.5em;
+}
+
+.chromecast-controls__progress-bar__slider-left {
+    position: absolute;
+    top: 10px;
+    left: 0px;
+    height: 4px;
+    width: 200px;
+    background-color: #fff;
+    pointer-events: none;
+}
+
 .chromecast-controls__progress-bar__slider {
     height: 4px;
     width: 100%;
     cursor: pointer;
-    accent-color: #fff;
+    appearance: none;
 }
 
 .chromecast-controls__progress-bar__slider::-webkit-slider-runnable-track {
-    background-color: rgba(115, 133, 159, 0.5);
+    background-color: rgba(115, 133, 159, 0.9);
     width: 100%;
     height: 4px;
     appearance: none;
@@ -2097,14 +2106,16 @@ video::-webkit-media-text-track-display {
 .chromecast-controls__progress-bar__slider::-webkit-slider-container {
     height: 4px;
     appearance: none;
+    background: unset;
 }
 
 .chromecast-controls__progress-bar__slider::-webkit-slider-thumb {
     width: 16px;
     height: 16px;
-    border-radius: 50%;
+    border-radius: 8px;
     margin-top: -6px;
-    /*appearance: none;*/
+    appearance: none;
+    background: #fff;
 }
 
 .chromecast-controls__progress-bar__total {
@@ -2155,35 +2166,6 @@ video::-webkit-media-text-track-display {
 
 .chromecast-controls .button__audio-tracks {
     background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCAgZD0iTTIwIDRINGMtMS4xIDAtMiAuOS0yIDJ2MTJjMCAxLjEuOSAyIDIgMmgxNmMxLjEgMCAyLS45IDItMlY2YzAtMS4xLS45LTItMi0yek00IDEyaDR2Mkg0di0yem0xMCA2SDR2LTJoMTB2MnptNiAwaC00di0yaDR2MnptMC00SDEwdi0yaDEwdjJ6Ii8+PC9zdmc+');
-}
-
-.chromecast-controls .container-wrapper {
-    padding: 10px 0;
-}
-
-.chromecast-controls .list-container {
-    list-style: none;
-    padding: 0;
-}
-
-.chromecast-controls .list-item {
-    cursor: pointer;
-    width: 100%;
-    padding: 10px 0 10px 40px;
-    position: relative;
-    box-sizing: border-box;
-}
-
-.chromecast-controls .list-item:hover {
-    background-color: var(--chromecast--track-item-hover-bg-color);
-}
-
-.chromecast-controls .list-item.active::before {
-    content: '\2713';
-    left: 0;
-    bottom: 7px;
-    font-size: 20px;
-    position: absolute;
 }
 
 .chromecast-controls .chromecast-button {

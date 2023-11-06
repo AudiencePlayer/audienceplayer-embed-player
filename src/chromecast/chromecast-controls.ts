@@ -67,11 +67,14 @@ export class ChromecastControls {
                 
                <div class="chromecast-controls__progress-bar">
                  <div class="chromecast-controls__progress-bar__current vjs-time-control"></div>
-                 <input type="range"
+                 <div class="chromecast-controls__progress-bar-slider-container">
+                    <input type="range"
                         value="0"
                         class="chromecast-controls__progress-bar__slider" 
                         min="0"
                         max="100"/>
+                    <div class="chromecast-controls__progress-bar__slider-left"></div>
+                </div>    
                  <div class="chromecast-controls__progress-bar__total vjs-time-control"></div>
                </div>
                 
@@ -249,11 +252,14 @@ export class ChromecastControls {
             const currentTimeElement = this.getElement('.chromecast-controls__progress-bar__current') as HTMLElement;
             const totalTimeElement = this.getElement('.chromecast-controls__progress-bar__total') as HTMLElement;
             const progressBarElement = this.getElement('.chromecast-controls__progress-bar__slider') as HTMLProgressElement;
+            const progressLeftEl = this.getElement('.chromecast-controls__progress-bar__slider-left') as HTMLElement;
 
             currentTimeElement.innerText = this.getTransformedDurationValue(this.currentTime);
             totalTimeElement.innerText = this.getTransformedDurationValue(this.totalDuration);
             progressBarElement.max = this.totalDuration;
             progressBarElement.value = this.currentTime;
+
+            progressLeftEl.style.width = (progressBarElement.offsetWidth * this.currentTime) / this.totalDuration + 'px';
         }
     }
 
