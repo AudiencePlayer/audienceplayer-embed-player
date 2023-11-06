@@ -6,16 +6,6 @@ const dom = videojs.dom || videojs;
 export class Overlay extends Component {
     constructor(player: any, options: any) {
         super(player, options);
-
-        if (options.element) {
-            player.on('useractive', () => {
-                this.show();
-            });
-
-            player.on('userinactive', () => {
-                this.hide();
-            });
-        }
     }
 
     createEl() {

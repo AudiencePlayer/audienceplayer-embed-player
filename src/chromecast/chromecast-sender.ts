@@ -82,16 +82,29 @@ export class ChromecastSender {
         });
     }
 
-    onMediaInfoListener(callback: (info: any) => void) {
+    onMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: any) => void) {
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED, () => {
-            if (this.castPlayer.mediaInfo) {
-                const customData: any = this.castPlayer.mediaInfo.customData;
-                if (customData && customData.extraInfo) {
-                    callback(customData.extraInfo);
-                    return;
+            const state = this.castPlayer.playerState;
+            let info: any = null;
+
+            // only when media is loaded, otherwise IDLE state will cause issues
+            if (this.castPlayer.isMediaLoaded) {
+                if (this.castPlayer.mediaInfo) {
+                    const customData: any = this.castPlayer.mediaInfo.customData;
+                    if (customData && customData.extraInfo) {
+                        info = customData.extraInfo;
+                    }
                 }
+                callback(state, info);
             }
-            callback(null);
+        });
+    }
+
+    onCurrentTimeListener(callback: (currentTime: number, duration: number) => void) {
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, () => {
+            if (this.castPlayer.playerState !== chrome.cast.media.PlayerState.IDLE) {
+                callback(this.castPlayer.currentTime, this.castPlayer.duration);
+            }
         });
     }
 
@@ -200,11 +213,20 @@ export class ChromecastSender {
         return this.castPlayer && this.castPlayer.isConnected;
     }
 
-    stopCasting() {
+    stopMedia() {
         if (this.castContext) {
             const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
             if (castSession) {
-                castSession.endSession(true);
+                castSession.getMediaSession().stop(new chrome.cast.media.StopRequest(), () => {}, () => {});
+            }
+        }
+    }
+
+    endSession(stopCasting: boolean) {
+        if (this.castContext) {
+            const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+            if (castSession) {
+                castSession.endSession(stopCasting);
             }
         }
     }

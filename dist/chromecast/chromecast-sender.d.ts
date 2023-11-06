@@ -13,7 +13,8 @@ export declare class ChromecastSender {
         connected: boolean;
         friendlyName: string;
     }) => void): void;
-    onMediaInfoListener(callback: (info: any) => void): void;
+    onMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: any) => void): void;
+    onCurrentTimeListener(callback: (currentTime: number, duration: number) => void): void;
     getSupportsHDR(): boolean;
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article, extraInfo?: any): chrome.cast.media.MediaInfo;
     getLicenseUrlFromSrc(src: string, token: string): {
@@ -25,7 +26,8 @@ export declare class ChromecastSender {
     };
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean, extraInfo?: any): Promise<chrome.cast.ErrorCode>;
     isConnected(): boolean;
-    stopCasting(): void;
+    stopMedia(): void;
+    endSession(stopCasting: boolean): void;
     getCastPlayer(): cast.framework.RemotePlayer;
     getCastPlayerController(): cast.framework.RemotePlayerController;
 }

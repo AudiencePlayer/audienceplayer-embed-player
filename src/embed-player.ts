@@ -122,8 +122,8 @@ export class EmbedPlayer {
         return this.castSender.isConnected();
     }
 
-    stopCasting() {
-        this.castSender.stopCasting();
+    endSession(stopCasting: boolean) {
+        this.castSender.endSession(stopCasting);
     }
 }
 //*** Example of usage ***//

@@ -96,7 +96,7 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     }
 
     function stopCastVideo() {
-        embedPlayer.stopCasting();
+        embedPlayer.endSession(true);
     }
 
     function destroyVideo() {

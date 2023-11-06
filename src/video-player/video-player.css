@@ -85,4 +85,11 @@
     bottom: 0;
     right: 0;
     pointer-events: none;
+    visibility: visible;
+    opacity: 0;
+    transition: visibility 0.3s, opacity 0.3s;
+}
+
+.video-js.vjs-user-active .vjs-overlay {
+    opacity: 1;
 }

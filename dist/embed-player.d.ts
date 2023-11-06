@@ -31,5 +31,5 @@ export declare class EmbedPlayer {
     getCastPlayer(): cast.framework.RemotePlayer;
     getCastPlayerController(): cast.framework.RemotePlayerController;
     isConnected(): boolean;
-    stopCasting(): void;
+    endSession(stopCasting: boolean): void;
 }

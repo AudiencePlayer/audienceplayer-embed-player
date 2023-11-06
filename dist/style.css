@@ -1980,7 +1980,7 @@ video::-webkit-media-text-track-display {
 }
 */
 .video-js .vjs-big-play-button {
-   display: none;
+    display: none;
 }
 
 .video-js .vjs-big-play-button .vjs-icon-placeholder:before {
@@ -2019,6 +2019,13 @@ video::-webkit-media-text-track-display {
     bottom: 0;
     right: 0;
     pointer-events: none;
+    visibility: visible;
+    opacity: 0;
+    transition: visibility 0.3s, opacity 0.3s;
+}
+
+.video-js.vjs-user-active .vjs-overlay {
+    opacity: 1;
 }
 
 :root {
