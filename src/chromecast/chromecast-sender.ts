@@ -17,11 +17,7 @@ export class ChromecastSender {
                     if (isAvailable && cast && cast.framework && chrome && chrome.cast) {
                         try {
                             this.initializeCastApi(chromecastReceiverAppId);
-
-                            //Some Chromecast configurations are taking some time to initialize
-                            //setTimeout(() => {
                             resolve();
-                            //}, 1000);
                         } catch (e) {
                             reject(e);
                         }
@@ -229,6 +225,10 @@ export class ChromecastSender {
                 castSession.endSession(stopCasting);
             }
         }
+    }
+
+    stopCasting() {
+        this.endSession(true);
     }
 
     getCastPlayer() {

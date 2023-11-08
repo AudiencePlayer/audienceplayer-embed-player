@@ -28,6 +28,7 @@ export declare class ChromecastSender {
     isConnected(): boolean;
     stopMedia(): void;
     endSession(stopCasting: boolean): void;
+    stopCasting(): void;
     getCastPlayer(): cast.framework.RemotePlayer;
     getCastPlayerController(): cast.framework.RemotePlayerController;
 }
