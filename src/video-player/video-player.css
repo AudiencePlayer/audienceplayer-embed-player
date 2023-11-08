@@ -45,8 +45,9 @@
     width: 12em;
 }
 */
+
 .video-js .vjs-big-play-button {
-    display: none;
+    border: none;
 }
 
 .video-js .vjs-big-play-button .vjs-icon-placeholder:before {
