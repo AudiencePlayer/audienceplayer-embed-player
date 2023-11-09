@@ -1,7 +1,7 @@
 import {VideoPlayer} from './video-player/video-player';
 import {ChromecastSender} from './chromecast/chromecast-sender';
 import {ApiService} from './api/api-service';
-import {ArticlePlayConfig} from './models/play-config';
+import {PlayConfig} from './models/play-config';
 import {InitParams, PlayParams, PlayParamsChromecast} from './models/play-params';
 import {getArticleBackgroundImage, getResizedUrl, toPlayConfigError} from './api/converters';
 
@@ -61,12 +61,12 @@ export class EmbedPlayer {
         this.videoPlayer.destroy();
     }
 
-    playVideo(config: ArticlePlayConfig, playParams: PlayParams) {
+    playVideo(config: PlayConfig, playParams: PlayParams) {
         this.videoPlayer.play(config, playParams);
     }
 
     getVideoPlayer() {
-        this.videoPlayer.getPlayer();
+        return this.videoPlayer.getPlayer();
     }
 
     initChromecast() {
@@ -106,6 +106,10 @@ export class EmbedPlayer {
             });
     }
 
+    getCastSender() {
+        return this.castSender;
+    }
+
     getCastPlayer() {
         return this.castSender.getCastPlayer();
     }
@@ -118,8 +122,8 @@ export class EmbedPlayer {
         return this.castSender.isConnected();
     }
 
-    stopCasting() {
-        this.castSender.stopCasting();
+    endSession(stopCasting: boolean) {
+        this.castSender.endSession(stopCasting);
     }
 }
 //*** Example of usage ***//

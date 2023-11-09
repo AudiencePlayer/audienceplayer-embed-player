@@ -1,4 +1,4 @@
-import {ArticlePlayConfig} from '../models/play-config';
+import {PlayConfig} from '../models/play-config';
 import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
@@ -9,13 +9,15 @@ import {CustomAudioTrackButton} from './plugins/audio-track-button';
 import {hotkeys} from './hotkeys';
 import {getISO2Locale} from '../utils/locale';
 import {CustomSubtitlesButton, CustomTextTrackButton} from './plugins/subtitles-button';
+import {ChromecastButton} from './plugins/chromecast-button';
+import {Overlay} from './plugins/overlay';
 
 declare const videojs: any;
 
 export class VideoPlayer {
     private player: any = null;
     private playerLoggerService: PlayerLoggerService;
-    private articlePlayConfig: ArticlePlayConfig;
+    private articlePlayConfig: PlayConfig;
     private firstPlayingEvent: boolean;
     private currentTextTrack: string;
     private currentAudioTrack: string;
@@ -28,6 +30,8 @@ export class VideoPlayer {
         videojs.registerComponent('customTextTrackButton', CustomTextTrackButton);
         videojs.registerComponent('customSubtitlesButton', CustomSubtitlesButton);
         videojs.registerComponent('customPlaybackRateMenuButton', CustomPlaybackRateMenuButton);
+        videojs.registerComponent('chromecastButton', ChromecastButton);
+        videojs.registerComponent('overlay', Overlay);
     }
 
     init(initParams: InitParams) {
@@ -50,7 +54,8 @@ export class VideoPlayer {
         videoContainer.appendChild(videoElement);
 
         const playOptions = {
-            fluid: true,
+            fluid: false,
+            fill: true,
             responsive: true,
             controls: true,
             controlBar: {
@@ -61,6 +66,7 @@ export class VideoPlayer {
                 volumePanel: {
                     inline: false,
                 },
+                chromecastButton: !!initParams.chromecastButton,
                 // order of elements:
                 children: [
                     'playToggle',
@@ -71,13 +77,16 @@ export class VideoPlayer {
                     'customSubtitlesButton',
                     'customAudioTrackButton',
                     'volumePanel',
+                    'chromecastButton',
                     'fullscreenToggle',
                 ],
+            },
+            overlay: {
+                element: initParams.overlayElement ? initParams.overlayElement : null,
             },
             userActions: {
                 hotkeys: hotkeys({backward: -30, forward: 30}),
             },
-            aspectRatio: '16:9',
             html5: {
                 vhs: {
                     // do to use videojs-http-streaming if it's natively supported
@@ -93,7 +102,7 @@ export class VideoPlayer {
         this.bindEvents();
     }
 
-    play(playConfig: ArticlePlayConfig, initParams: InitParams) {
+    play(playConfig: PlayConfig, initParams: InitParams) {
         this.firstPlayingEvent = true;
         if (!this.player || (this.player && this.player.currentSrc())) {
             this.destroy();
@@ -122,7 +131,6 @@ export class VideoPlayer {
                 );
             });
 
-        this.player.aspectRatio(playConfig.aspectRatio);
         this.player.src(playSources);
 
         if (initParams.fullscreen) {

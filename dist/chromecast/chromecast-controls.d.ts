@@ -9,22 +9,15 @@ export declare class ChromecastControls {
     private playerController;
     private player;
     private rootElement;
-    private controlInitialized;
     private totalDuration;
     private currentTime;
-    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string);
+    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string | HTMLElement);
     bindEvents(): void;
-    createChromecastControlsTemplate(selector?: string): void;
-    onConnectedListener(callback: (info: {
-        connected: boolean;
-        friendlyName: string;
-    }) => void): void;
+    createChromecastControlsTemplate(selector?: string | HTMLElement): void;
     setPlayButtonClass(): void;
     bindEventsToControls(): void;
-    renderTracksButton(): void;
+    bindEventsToMenu(buttonSelector: string): void;
     renderTracks(): void;
-    removeTracks(): void;
-    toggleTracksDialogue(): void;
     getTracksList(tracks: TrackInfo[], type: string): HTMLUListElement;
     getActiveTracksByType(type: string): number[];
     getTracksByType(type: string): {
@@ -32,7 +25,6 @@ export declare class ChromecastControls {
         locale: string;
         active: boolean;
     }[];
-    setTitle(): void;
     getTransformedDurationValue(value: number): string;
     setProgressBarValues(): void;
     checkChromecastContainerVisibility(): void;
@@ -40,7 +32,8 @@ export declare class ChromecastControls {
     seek(newTime: number): void;
     stop(): void;
     setActiveTrack(event: MouseEvent, type: string): void;
-    setActiveTracks(trackIds: number[]): void;
+    setActiveTracks(trackIds: number[], type: string): void;
+    toggleMenu(menuEl: HTMLElement, containerEl: HTMLElement): void;
     getElement(selector: string): HTMLElement;
 }
 export {};

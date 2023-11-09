@@ -1,19 +1,33 @@
-:root {
-    --chromecast-main-bg-color: #e7e7e7;
-    --chromecast-tracks-dialogue-bg-color: #e9e9e9;
-    --chromecast-tracks-dialogue-shadow-color: rgb(0 0 0 / 20%);
-    --chromecast--track-item-hover-bg-color: #d4d0d0;
+.chromecast-controls.video-js {
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: unset;
+    font-size: 1rem;
 }
 
-.chromecast-controls {
-    height: auto;
-    width: 100%;
-    padding: 20px 15px;
-    background-color: var(--chromecast-main-bg-color);
-    opacity: 0.9;
-    box-sizing: border-box;
-    position: absolute;
-    bottom: 0;
+/* breakpoints consistent with medium and small for videojs */
+@media screen and (max-width: 768px) {
+    .chromecast-controls.video-js {
+        font-size: 10px;
+    }
+}
+
+@media screen and (max-width: 425px) {
+    .chromecast-controls.video-js {
+        font-size: 10px;
+    }
+}
+
+.chromecast-controls.video-js.chromecast-controls--idle {
+    display: none;
+}
+
+.chromecast-controls .vjs-control-bar {
+    display: flex;
 }
 
 .chromecast-controls__title {
@@ -26,12 +40,52 @@
 .chromecast-controls__progress-bar {
     display: flex;
     width: 100%;
-    margin: 0 0 20px 0;
+    align-items: center;
+}
+
+.chromecast-controls__progress-bar-slider-container {
+    position: relative;
+    width: 100%;
+    height: 1.5em;
+}
+
+.chromecast-controls__progress-bar__slider-left {
+    position: absolute;
+    top: 10px;
+    left: 0px;
+    height: 4px;
+    width: 200px;
+    background-color: #fff;
+    pointer-events: none;
 }
 
 .chromecast-controls__progress-bar__slider {
-    flex: 1 1 100%;
+    height: 4px;
+    width: 100%;
     cursor: pointer;
+    appearance: none;
+}
+
+.chromecast-controls__progress-bar__slider::-webkit-slider-runnable-track {
+    background-color: rgba(115, 133, 159, 0.9);
+    width: 100%;
+    height: 4px;
+    appearance: none;
+}
+
+.chromecast-controls__progress-bar__slider::-webkit-slider-container {
+    height: 4px;
+    appearance: none;
+    background: unset;
+}
+
+.chromecast-controls__progress-bar__slider::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    margin-top: -6px;
+    appearance: none;
+    background: #fff;
 }
 
 .chromecast-controls__progress-bar__total {
@@ -84,58 +138,7 @@
     background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCAgZD0iTTIwIDRINGMtMS4xIDAtMiAuOS0yIDJ2MTJjMCAxLjEuOSAyIDIgMmgxNmMxLjEgMCAyLS45IDItMlY2YzAtMS4xLS45LTItMi0yek00IDEyaDR2Mkg0di0yem0xMCA2SDR2LTJoMTB2MnptNiAwaC00di0yaDR2MnptMC00SDEwdi0yaDEwdjJ6Ii8+PC9zdmc+');
 }
 
-.chromecast-controls__subtitles {
-    background-color: var(--chromecast-tracks-dialogue-bg-color);
-    position: absolute;
-    bottom: 75px;
-    right: 0;
-    min-width: 250px;
-    padding: 15px;
-    box-shadow: 0 0 10px 1px var(--chromecast-tracks-dialogue-shadow-color);
-}
-
-.chromecast-controls .container-wrapper {
-    padding: 10px 0;
-}
-
-.chromecast-controls .list-container {
-    list-style: none;
-    padding: 0;
-}
-
-.chromecast-controls .list-item {
+.chromecast-controls .chromecast-button {
+    padding: 0.5em;
     cursor: pointer;
-    width: 100%;
-    padding: 10px 0 10px 40px;
-    position: relative;
-    box-sizing: border-box;
-}
-
-.chromecast-controls .list-item:hover {
-    background-color: var(--chromecast--track-item-hover-bg-color);
-}
-
-.chromecast-controls .list-item.active::before {
-    content: '\2713';
-    left: 0;
-    bottom: 7px;
-    font-size: 20px;
-    position: absolute;
-}
-
-.chromecast-controls .chromecast-controls__subtitles__close-icon {
-    position: absolute;
-    right: 20px;
-    font-size: 20px;
-    top: 10px;
-    cursor: pointer;
-}
-
-.chromecast-controls .buttons-container {
-    position: relative;
-}
-
-.chromecast-controls .list-title {
-    font-weight: bold;
-    font-size: 1.2em;
 }

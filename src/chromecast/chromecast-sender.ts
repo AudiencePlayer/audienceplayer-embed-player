@@ -1,13 +1,14 @@
 /// <reference path="../../node_modules/@types/chromecast-caf-sender/index.d.ts" />
 
-import {ArticlePlayConfig} from '../models/play-config';
+import {PlayConfig} from '../models/play-config';
 import {Article} from '../models/article';
 import {getArticleTitle} from '../api/converters';
 
 export class ChromecastSender {
-    castContext: cast.framework.CastContext = null;
-    castPlayer: cast.framework.RemotePlayer = null;
-    castPlayerController: cast.framework.RemotePlayerController = null;
+    private castContext: cast.framework.CastContext = null;
+    private castPlayer: cast.framework.RemotePlayer = null;
+    private castPlayerController: cast.framework.RemotePlayerController = null;
+    private supportsHDR = false;
 
     init(chromecastReceiverAppId: string) {
         return new Promise<void>((resolve, reject) => {
@@ -16,11 +17,7 @@ export class ChromecastSender {
                     if (isAvailable && cast && cast.framework && chrome && chrome.cast) {
                         try {
                             this.initializeCastApi(chromecastReceiverAppId);
-
-                            //Some Chromecast configurations are taking some time to initialize
-                            setTimeout(() => {
-                                resolve();
-                            }, 1000);
+                            resolve();
                         } catch (e) {
                             reject(e);
                         }
@@ -47,9 +44,71 @@ export class ChromecastSender {
         this.castContext = cast.framework.CastContext.getInstance();
         this.castPlayer = new cast.framework.RemotePlayer();
         this.castPlayerController = new cast.framework.RemotePlayerController(this.castPlayer);
+
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, event => {
+            if (this.castPlayer.isConnected) {
+                const castSession = this.castContext.getCurrentSession();
+                castSession.addMessageListener('urn:x-cast:com.audienceplayer.messagebus', (namespace, message) => {
+                    const capabilities = JSON.parse(message);
+                    this.supportsHDR = capabilities.is_hdr_supported;
+                });
+            } else {
+                this.supportsHDR = false;
+            }
+        });
     }
 
-    getCastMediaInfo(articlePlayConfig: ArticlePlayConfig, article: Article) {
+    onConnectedListener(callback: (info: {connected: boolean; friendlyName: string}) => void) {
+        const doCallback = () => {
+            if (this.castPlayer.isConnected) {
+                const castContext = cast.framework.CastContext.getInstance();
+
+                callback({
+                    connected: true,
+                    friendlyName: castContext.getCurrentSession().getCastDevice().friendlyName,
+                });
+            } else {
+                callback({connected: false, friendlyName: ''});
+            }
+        };
+
+        doCallback();
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, event => {
+            doCallback();
+        });
+    }
+
+    onMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: any) => void) {
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED, () => {
+            const state = this.castPlayer.playerState;
+            let info: any = null;
+
+            // only when media is loaded, otherwise IDLE state will cause issues
+            if (this.castPlayer.isMediaLoaded) {
+                if (this.castPlayer.mediaInfo) {
+                    const customData: any = this.castPlayer.mediaInfo.customData;
+                    if (customData && customData.extraInfo) {
+                        info = customData.extraInfo;
+                    }
+                }
+                callback(state, info);
+            }
+        });
+    }
+
+    onCurrentTimeListener(callback: (currentTime: number, duration: number) => void) {
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, () => {
+            if (this.castPlayer.playerState !== chrome.cast.media.PlayerState.IDLE) {
+                callback(this.castPlayer.currentTime, this.castPlayer.duration);
+            }
+        });
+    }
+
+    getSupportsHDR() {
+        return this.supportsHDR;
+    }
+
+    getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article, extraInfo?: any) {
         if (articlePlayConfig && articlePlayConfig.entitlements && articlePlayConfig.entitlements.length > 0) {
             const tracks = articlePlayConfig.subtitles.map((option, index) => {
                 const trackId = index + 1;
@@ -92,15 +151,17 @@ export class ChromecastSender {
                           ...this.getLicenseUrlFromSrc(protectionConfig.keyDeliveryUrl, token),
                       }
                     : {};
-                const audieLocalePram = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
+                const audieLocaleParam = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
+                const extraInfoParam = extraInfo ? {extraInfo: JSON.stringify(extraInfo)} : {};
                 mediaInfo.customData = {
                     ...licenceUrlParam,
-                    ...audieLocalePram,
+                    ...audieLocaleParam,
+                    ...extraInfoParam,
                     pulseToken: articlePlayConfig.pulseToken,
                 };
-                // @TODO
-                // mediaInfo.currentTime = articlePlayConfig.currentTime;
-                // mediaInfo.autoplay = true;
+
+                // @ts-ignore
+                mediaInfo.currentTime = articlePlayConfig.currentTime;
 
                 return mediaInfo;
             }
@@ -120,10 +181,10 @@ export class ChromecastSender {
         return {};
     }
 
-    castVideo(playConfig: ArticlePlayConfig, article: Article, continueFromPreviousPosition: boolean) {
+    castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean, extraInfo?: any) {
         if (this.isConnected()) {
             const castSession = this.castContext.getCurrentSession();
-            const mediaInfo = this.getCastMediaInfo(playConfig, article);
+            const mediaInfo = this.getCastMediaInfo(playConfig, article, extraInfo);
 
             if (mediaInfo) {
                 const request = new chrome.cast.media.LoadRequest(mediaInfo);
@@ -148,11 +209,26 @@ export class ChromecastSender {
         return this.castPlayer && this.castPlayer.isConnected;
     }
 
-    stopCasting() {
-        const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
-        if (castSession) {
-            castSession.endSession(true);
+    stopMedia() {
+        if (this.castContext) {
+            const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+            if (castSession) {
+                castSession.getMediaSession().stop(new chrome.cast.media.StopRequest(), () => {}, () => {});
+            }
         }
+    }
+
+    endSession(stopCasting: boolean) {
+        if (this.castContext) {
+            const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+            if (castSession) {
+                castSession.endSession(stopCasting);
+            }
+        }
+    }
+
+    stopCasting() {
+        this.endSession(true);
     }
 
     getCastPlayer() {

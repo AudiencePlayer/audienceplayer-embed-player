@@ -16,41 +16,60 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     const continueFromPreviousPosition = urlParams.get('continueFromPreviousPosition');
     const tokenParameter = token ? {token} : {};
 
+    const splashEl = document.querySelector('.splash-overlay');
+    const metaEl = document.querySelector('.meta');
+
     const initParam = {
         selector: '.video-wrapper',
         options: {
             autoplay: autoplay && autoplay === 'true',
-        }
+        },
+        overlayElement: metaEl,
     };
     if (posterImageUrl) {
         initParam.options.poster = posterImageUrl;
     }
 
-    const player = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
+    const embedPlayer = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
 
     const containerEl = document.getElementById('buttons-container');
     document.getElementById('video-button-start').addEventListener('click', playVideo);
-    document.getElementById('video-button-stop').addEventListener('click', stopCastVideo);
     document.getElementById('video-button-destroy').addEventListener('click', destroyVideo);
 
-    player.initChromecast().then(() => {
-        const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
-        document.getElementById('cast-wrapper').style.visibility = 'visible';
+    if (posterImageUrl) {
+        splashEl.style.backgroundImage = `url(${posterImageUrl})`;
+    }
 
-        player.appendChromecastButton('#cast-wrapper');
+    embedPlayer.initVideoPlayer(initParam);
 
-        controls.onConnectedListener(({connected, friendlyName}) => {
-            console.log('CC onConnected', connected, friendlyName);
-            player.initVideoPlayer(initParam);
+    embedPlayer
+        .initChromecast()
+        .then(() => {
+            const controls = new ChromecastControls(embedPlayer.getCastPlayer(), embedPlayer.getCastPlayerController(), '.container');
+            document.getElementById('cast-button').style.visibility = 'visible';
+
+            embedPlayer.appendChromecastButton('#cast-button');
+
+            const castSender = embedPlayer.getCastSender();
+            castSender.onConnectedListener(({connected, friendlyName}) => {
+                embedPlayer.initVideoPlayer({
+                    ...initParam,
+                    chromecastButton: !!chromecastReceiverAppId,
+                });
+                splashEl.style.display = 'flex';
+                metaEl.style.display = 'block';
+            });
+        })
+        .catch(e => {
+            console.log('e', e);
         });
 
-    }).catch((e) => {
-        player.initVideoPlayer(initParam);
-    });
-
     function playVideo() {
-        if (player.isConnected()) {
-            player
+        metaEl.style.display = 'block';
+        splashEl.style.display = 'none';
+
+        if (embedPlayer.isConnected()) {
+            embedPlayer
                 .castVideo({
                     articleId,
                     assetId,
@@ -59,7 +78,9 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
                 })
                 .catch(error => console.error(error));
         } else {
-            player
+            metaEl.style.display = 'none';
+
+            embedPlayer
                 .play({
                     ...initParam,
                     articleId,
@@ -74,10 +95,12 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     }
 
     function stopCastVideo() {
-        player.stopCasting();
+        embedPlayer.endSession(true);
     }
 
     function destroyVideo() {
-        player.destroy();
+        embedPlayer.destroy();
+        splashEl.style.display = 'flex';
+        metaEl.style.display = 'block';
     }
 })();

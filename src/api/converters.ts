@@ -1,10 +1,10 @@
-import {ArticlePlayConfig, ArticlePlayEntitlement, ArticlePlayErrors} from '../models/play-config';
+import {PlayConfig, PlayEntitlement, ArticlePlayErrors} from '../models/play-config';
 import {Article} from '../models/article';
 import {FileData} from '../models/file-data';
 
-export function toPlayConfig(config: any, continueFromPreviousPosition: boolean): ArticlePlayConfig {
+export function toPlayConfig(config: any, continueFromPreviousPosition: boolean): PlayConfig {
     const timeStamp = Date.parse(config.issued_at);
-    const entitlements: ArticlePlayEntitlement[] = [];
+    const entitlements: PlayEntitlement[] = [];
 
     // check if the entitlements contain FPS in order to know when to filter out aes
     const filterAES = !!config.entitlements.find((entitlement: any) => entitlement.encryption_type === 'fps');
@@ -22,7 +22,7 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
     );
 
     configEntitlements.forEach((configEntitlement: any) => {
-        const entitlement: ArticlePlayEntitlement = {
+        const entitlement: PlayEntitlement = {
             src: configEntitlement.manifest,
             type: configEntitlement.mime_type,
             protectionInfo: null,
@@ -72,6 +72,8 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
         subtitles: subtitles,
         pulseToken: config.pulse_token,
         currentTime: continueFromPreviousPosition ? config.appa : 0,
+        articleId: config.article_id,
+        assetId: config.asset_id,
         subtitleLocale: config.user_subtitle_locale,
         audioLocale: config.user_audio_locale,
         localTimeDelta: isNaN(timeStamp) ? 0 : Date.now() - timeStamp,
@@ -79,10 +81,20 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
     };
 }
 
+export function toArticleMetas(metas: any) {
+    return metas.reduce(
+        (metaObj: any, item: any) => ({
+            ...metaObj,
+            [item.key]: item.value,
+        }),
+        {}
+    );
+}
+
 export function toArticle(article: any): Article {
     return {
         name: article.name,
-        metas: article.metas,
+        metas: toArticleMetas(article.metas),
         posters: article.posters.map(toFile),
         images: article.images.map(toFile),
     } as Article;
@@ -98,8 +110,7 @@ export function toFile(file: any): FileData {
 }
 
 export function getMetaValue(metas: any, key: string) {
-    const meta = metas.find((m: any) => m.key === key);
-    return meta ? meta.value : '';
+    return metas[key] ? metas[key] : '';
 }
 
 export function getResizedUrl(fileData: FileData, size: {width: number; height: number}): string {

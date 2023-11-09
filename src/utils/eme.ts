@@ -1,10 +1,10 @@
-import {ArticlePlayConfigProtection, ArticlePlayEntitlement} from '../models/play-config';
+import {PlayConfigProtection, PlayEntitlement} from '../models/play-config';
 import {EmeOptions} from '../models/player-options';
 
 declare const videojs: any;
 
-export function getEmeOptionsFromEntitlement(entitlement: ArticlePlayEntitlement): EmeOptions {
-    let protectionInfo: ArticlePlayConfigProtection = null;
+export function getEmeOptionsFromEntitlement(entitlement: PlayEntitlement): EmeOptions {
+    let protectionInfo: PlayConfigProtection = null;
     let emeOptions: EmeOptions = {};
 
     if (entitlement.protectionInfo) {
