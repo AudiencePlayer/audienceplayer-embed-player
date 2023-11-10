@@ -4,7 +4,6 @@ export interface InitParams {
     options: PlayerOptions;
     fullscreen?: boolean;
     chromecastButton?: boolean;
-    overlayElement?: HTMLElement;
 }
 export interface PlayParams extends InitParams {
     articleId: number;

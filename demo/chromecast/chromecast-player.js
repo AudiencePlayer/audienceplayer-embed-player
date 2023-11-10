@@ -23,8 +23,8 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
         selector: '.video-wrapper',
         options: {
             autoplay: autoplay && autoplay === 'true',
+            overlay: {element: metaEl},
         },
-        overlayElement: metaEl,
     };
     if (posterImageUrl) {
         initParam.options.poster = posterImageUrl;

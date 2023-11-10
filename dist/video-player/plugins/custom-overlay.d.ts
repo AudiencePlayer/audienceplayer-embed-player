@@ -1,5 +1,5 @@
 declare const Component: any;
-export declare class Overlay extends Component {
+export declare class CustomOverlay extends Component {
     createEl(): any;
 }
 export {};
