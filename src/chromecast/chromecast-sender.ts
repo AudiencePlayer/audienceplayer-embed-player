@@ -62,10 +62,11 @@ export class ChromecastSender {
         const doCallback = () => {
             if (this.castPlayer.isConnected) {
                 const castContext = cast.framework.CastContext.getInstance();
+                const device = castContext.getCurrentSession().getCastDevice();
 
                 callback({
                     connected: true,
-                    friendlyName: castContext.getCurrentSession().getCastDevice().friendlyName,
+                    friendlyName: device.friendlyName || 'Chromecast',
                 });
             } else {
                 callback({connected: false, friendlyName: ''});
