@@ -4,4 +4,5 @@ import { ChromecastControls } from './chromecast/chromecast-controls';
 import { ChromecastSender } from './chromecast/chromecast-sender';
 import { InitParams } from './models/play-params';
 import { PlayConfig } from './models/play-config';
-export { EmbedPlayer, VideoPlayer, ChromecastControls, ChromecastSender, InitParams, PlayConfig };
+import { supportsNativeHLS } from './utils/platform';
+export { EmbedPlayer, VideoPlayer, ChromecastControls, ChromecastSender, InitParams, PlayConfig, supportsNativeHLS };
