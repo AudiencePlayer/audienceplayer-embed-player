@@ -5,5 +5,5 @@ export function supportsNativeHLS() {
 }
 
 export function supportsHLS() {
-    return videojs.browser.IS_ANY_SAFARI;
+    return videojs.browser.IS_ANY_SAFARI || videojs.browser.IS_IOS;
 }
