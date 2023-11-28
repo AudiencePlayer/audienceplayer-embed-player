@@ -16,23 +16,20 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     const continueFromPreviousPosition = urlParams.get('continueFromPreviousPosition');
     const tokenParameter = token ? {token} : {};
 
-    const splashEl = document.querySelector('.splash-overlay');
-    const metaEl = document.querySelector('.meta');
+    const containerEl = document.querySelector('.media-player');
+    const splashEl = document.querySelector('.media-player__overlay');
+    const metaEl = document.querySelector('.media-player__meta');
 
     const initParam = {
-        selector: '.video-wrapper',
+        selector: '.media-player__video-player',
         options: {
             autoplay: autoplay && autoplay === 'true',
             overlay: {element: metaEl},
         },
     };
-    if (posterImageUrl) {
-        initParam.options.poster = posterImageUrl;
-    }
 
     const embedPlayer = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
 
-    const containerEl = document.getElementById('buttons-container');
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('video-button-destroy').addEventListener('click', destroyVideo);
 
@@ -45,7 +42,11 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     embedPlayer
         .initChromecast()
         .then(() => {
-            const controls = new ChromecastControls(embedPlayer.getCastPlayer(), embedPlayer.getCastPlayerController(), '.container');
+            const controls = new ChromecastControls(
+                embedPlayer.getCastPlayer(),
+                embedPlayer.getCastPlayerController(),
+                '.media-player__chromecast-controls'
+            );
             document.getElementById('cast-button').style.visibility = 'visible';
 
             embedPlayer.appendChromecastButton('#cast-button');
@@ -56,8 +57,17 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
                     ...initParam,
                     chromecastButton: !!chromecastReceiverAppId,
                 });
-                splashEl.style.display = 'flex';
-                metaEl.style.display = 'block';
+
+                containerEl.classList.remove(connected ? 'media-player--video' : 'media-player--chromecast');
+                containerEl.classList.add(connected ? 'media-player--chromecast' : 'media-player--video');
+            });
+
+            castSender.onCurrentTimeListener((currentTime, duration) => {
+                if (currentTime > 0 && duration > 0 && currentTime + 1 > duration) {
+                    // only update if currentTime > 0 due to chromecast bug sending last event of stream with 0
+                    console.log('cc ended');
+                    destroyVideo();
+                }
             });
         })
         .catch(e => {
@@ -65,8 +75,8 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
         });
 
     function playVideo() {
-        metaEl.style.display = 'block';
-        splashEl.style.display = 'none';
+        containerEl.classList.remove('media-player--overlay');
+        containerEl.classList.add('media-player--loading');
 
         if (embedPlayer.isConnected()) {
             embedPlayer
@@ -76,10 +86,11 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
                     ...tokenParameter,
                     continueFromPreviousPosition: continueFromPreviousPosition ? continueFromPreviousPosition === 'true' : true,
                 })
-                .catch(error => console.error(error));
+                .catch(error => console.error(error))
+                .finally(() => {
+                    containerEl.classList.remove('media-player--loading');
+                });
         } else {
-            metaEl.style.display = 'none';
-
             embedPlayer
                 .play({
                     ...initParam,
@@ -90,7 +101,15 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
                 })
                 .catch(error => {
                     console.error(error);
+                })
+                .finally(() => {
+                    containerEl.classList.remove('media-player--loading');
                 });
+
+            const playerInstance = embedPlayer.getVideoPlayer();
+            playerInstance.on('ended', () => {
+                console.log('video ended');
+            });
         }
     }
 
@@ -100,7 +119,7 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
 
     function destroyVideo() {
         embedPlayer.destroy();
-        splashEl.style.display = 'flex';
-        metaEl.style.display = 'block';
+
+        containerEl.classList.add('media-player--overlay');
     }
 })();

@@ -196,18 +196,8 @@ The manual example implementations can be found in the `demo` folder. Note the d
 
 ### Important to note:
 
-In this demo, the `embed-player` is only used when there is no ChromeCast session.
-The reason for this is that the video player is unaware of the ChromeCast session, so pressing play inside the player will
-always just play the video in the player, regardless of the session.
-
-In the situation where you already show the `embed-player` and want to make used of ChromeCast, we advise to show a thumbnail
-with a play icon instead and use this as the button to cast the video or start the video with the autoplay option to true.
-We also advise to then show the player inside a modal dialog, so that when the dialog is closed, the user will see the thumbnail again.
-
-#### Styling the ChromeCast controls
-
-The chromecast controls have a default styling, which can be changed via the css variables (prefixed with `--chromecast-`).
-Another option is to completely replace the chromecast-controls.css with your own implementation.
+In the demo/chromecast, a number of layers are used and shown depending of the state of the player (e.g. when chromecast is connected the chromecast controls are shown).
+For your own implementation, you can customize this behavior.
 
 ### Supported browsers
 
