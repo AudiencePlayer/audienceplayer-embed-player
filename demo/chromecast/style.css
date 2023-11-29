@@ -1,19 +1,28 @@
 body {
     margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    height: 100%;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 16px;
+}
+
+.page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    max-width: 1024px;
+    min-width: 400px;
+    width: calc(100% - 2rem);
+    margin: 1rem;
 }
 
 .media-player {
     position: relative;
-    width: 960px;
-    height: 540px;
+    width: 100%;
+    padding-top: 56.25%;
 }
 
 .media-player__layer {
@@ -108,7 +117,7 @@ body {
 }
 
 .param-form {
-    margin: 1rem;
+    width: calc(100% - 2rem);
     padding: 1rem;
     background-color: #eee;
 }
@@ -116,10 +125,10 @@ body {
 .param-form input {
     display: block;
     margin: 0.5rem;
-    min-width: 20rem;
+    width: calc(100% - 1rem);
 }
 
 .param-form input[type='checkbox'] {
     display: inline-block;
-    min-width: 2rem;
+    width: 2rem;
 }
