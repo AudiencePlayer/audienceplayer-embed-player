@@ -20,8 +20,22 @@
                 <div class="vjs-loading-spinner"></div>
             </div>
         </div>
+        <form class="param-form">
+            <input type="text" id="projectId" placeholder="project id" />
+            <input type="text" id="apiBaseUrl" placeholder="base url" />
+            <input type="text" id="articleId" placeholder="article id" />
+            <input type="text" id="assetId" placeholder="asset id" />
+            <input type="text" id="posterImageUrl" placeholder="poster url" />
+            <input type="text" id="token" placeholder="token" />
+            <input type="text" id="chromecastReceiverAppId" placeholder="receiver app id" />
+            <div>
+                <input type="checkbox" id="continueFromPreviousPosition" />
+                <label for="continueFromPreviousPosition">continue from previous position</label>
+            </div>
+        </form>
         <div class="button-panel">
-            <button class="button button__back" id="video-button-destroy"></button>
+            <button class="button" id="setButton">Save & reload</button>
+            <button class="button button__back" id="video-button-destroy">destroy</button>
             <button class="button button__play" id="video-button-start"></button>
             <div class="button" id="cast-button"></div>
         </div>

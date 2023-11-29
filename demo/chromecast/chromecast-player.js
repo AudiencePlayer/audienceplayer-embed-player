@@ -2,18 +2,16 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
 // or if you use `npm`: `import {EmbedPlayer, ChromecastControls} from 'audienceplayer-embed-player';`;
 
 (function() {
-    const urlQueryString = window.location.search;
-    const urlParams = new URLSearchParams(urlQueryString);
+    loadValues();
 
-    const articleId = +urlParams.get('articleId');
-    const projectId = +urlParams.get('projectId');
-    const assetId = +urlParams.get('assetId');
-    const apiBaseUrl = urlParams.get('apiBaseUrl');
-    const token = urlParams.get('token');
-    const posterImageUrl = urlParams.get('posterImageUrl');
-    const autoplay = urlParams.get('autoplay');
-    const chromecastReceiverAppId = urlParams.get('chromecastReceiverAppId');
-    const continueFromPreviousPosition = urlParams.get('continueFromPreviousPosition');
+    const articleId = +localStorage.getItem('articleId');
+    const projectId = +localStorage.getItem('projectId');
+    const assetId = +localStorage.getItem('assetId');
+    const apiBaseUrl = localStorage.getItem('apiBaseUrl');
+    const token = localStorage.getItem('token');
+    const posterImageUrl = localStorage.getItem('posterImageUrl');
+    const chromecastReceiverAppId = localStorage.getItem('chromecastReceiverAppId');
+    const continueFromPreviousPosition = localStorage.getItem('continueFromPreviousPosition');
     const tokenParameter = token ? {token} : {};
 
     const containerEl = document.querySelector('.media-player');
@@ -23,20 +21,20 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     const initParam = {
         selector: '.media-player__video-player',
         options: {
-            autoplay: autoplay && autoplay === 'true',
+            autoplay: true,
             overlay: {element: metaEl},
         },
     };
 
-    const embedPlayer = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
-
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('video-button-destroy').addEventListener('click', destroyVideo);
+    document.getElementById('setButton').addEventListener('click', storeValues);
 
     if (posterImageUrl) {
         splashEl.style.backgroundImage = `url(${posterImageUrl})`;
     }
 
+    const embedPlayer = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
     embedPlayer.initVideoPlayer(initParam);
 
     embedPlayer
@@ -121,5 +119,44 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
         embedPlayer.destroy();
 
         containerEl.classList.add('media-player--overlay');
+    }
+
+    function storeProperty(name) {
+        const propertyEl = document.getElementById(name);
+        const value = propertyEl.type === 'checkbox' ? (propertyEl.checked ? 'true' : 'false') : '' + propertyEl.value;
+        localStorage.setItem(name, value);
+    }
+
+    function loadProperty(name) {
+        const propertyEl = document.getElementById(name);
+        if (propertyEl.type === 'checkbox') {
+            propertyEl.checked = localStorage.getItem(name) === 'true';
+        } else {
+            propertyEl.value = localStorage.getItem(name);
+        }
+    }
+
+    function storeValues() {
+        storeProperty('articleId');
+        storeProperty('projectId');
+        storeProperty('assetId');
+        storeProperty('apiBaseUrl');
+        storeProperty('token');
+        storeProperty('posterImageUrl');
+        storeProperty('chromecastReceiverAppId');
+        storeProperty('continueFromPreviousPosition');
+
+        location.reload();
+    }
+
+    function loadValues() {
+        loadProperty('articleId');
+        loadProperty('projectId');
+        loadProperty('assetId');
+        loadProperty('apiBaseUrl');
+        loadProperty('token');
+        loadProperty('posterImageUrl');
+        loadProperty('chromecastReceiverAppId');
+        loadProperty('continueFromPreviousPosition');
     }
 })();

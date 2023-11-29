@@ -14,6 +14,6 @@ export declare class EmeOptions {
         [key: string]: any;
     };
     emeHeaders?: {
-        Authorization: string;
+        [key: string]: any;
     };
 }

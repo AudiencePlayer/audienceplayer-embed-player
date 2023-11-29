@@ -12,8 +12,8 @@ body {
 
 .media-player {
     position: relative;
-    width: 90vw;
-    height: 90vh;
+    width: 960px;
+    height: 540px;
 }
 
 .media-player__layer {
@@ -69,19 +69,18 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    margin: 1rem;
 }
 
 .button {
     position: relative;
     display: inline-block;
     height: 2.5rem;
-    width: 2.5rem;
-    margin: 1rem 0.5rem;
+    min-width: 2.5rem;
+    margin: 0 0.5rem;
     line-height: 2.5rem;
     text-align: center;
     cursor: pointer;
-    font-family: VideoJS;
-    font-size: 2rem;
 }
 
 .button:before {
@@ -90,14 +89,12 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
+    font-family: VideoJS;
+    font-size: 2rem;
 }
 
 .button__play:before {
     content: '\f101';
-}
-
-.button__back {
-    content: '\f115';
 }
 
 .title {
@@ -108,4 +105,21 @@ body {
 
 .parental {
     margin: 1rem;
+}
+
+.param-form {
+    margin: 1rem;
+    padding: 1rem;
+    background-color: #eee;
+}
+
+.param-form input {
+    display: block;
+    margin: 0.5rem;
+    min-width: 20rem;
+}
+
+.param-form input[type='checkbox'] {
+    display: inline-block;
+    min-width: 2rem;
 }
