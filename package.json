@@ -25,7 +25,7 @@
     },
     "homepage": "https://github.com/AudiencePlayer/audienceplayer-embed-player#readme",
     "dependencies": {
-        "video.js": "^8.6.1",
+        "video.js": "^8.7.0",
         "videojs-contrib-eme": "^3.11.1"
     },
     "devDependencies": {
