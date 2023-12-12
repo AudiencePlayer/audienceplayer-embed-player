@@ -2,7 +2,21 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
 // or if you use `npm`: `import {EmbedPlayer, ChromecastControls} from 'audienceplayer-embed-player';`;
 
 (function() {
+    const urlQueryString = window.location.search;
+    const urlParams = new URLSearchParams(urlQueryString);
+    const allProperties = [
+        'articleId',
+        'projectId',
+        'assetId',
+        'apiBaseUrl',
+        'token',
+        'posterImageUrl',
+        'chromecastReceiverAppId',
+        'continueFromPreviousPosition',
+    ];
+
     loadValues();
+    storeValues(false);
 
     const articleId = +localStorage.getItem('articleId');
     const projectId = +localStorage.getItem('projectId');
@@ -28,7 +42,7 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
 
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('video-button-destroy').addEventListener('click', destroyVideo);
-    document.getElementById('setButton').addEventListener('click', storeValues);
+    document.getElementById('setButton').addEventListener('click', () => storeValues(true));
 
     if (posterImageUrl) {
         splashEl.style.backgroundImage = `url(${posterImageUrl})`;
@@ -132,31 +146,24 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
         if (propertyEl.type === 'checkbox') {
             propertyEl.checked = localStorage.getItem(name) === 'true';
         } else {
-            propertyEl.value = localStorage.getItem(name);
+            propertyEl.value = urlParams.get(name) || localStorage.getItem(name) || '';
         }
     }
 
-    function storeValues() {
-        storeProperty('articleId');
-        storeProperty('projectId');
-        storeProperty('assetId');
-        storeProperty('apiBaseUrl');
-        storeProperty('token');
-        storeProperty('posterImageUrl');
-        storeProperty('chromecastReceiverAppId');
-        storeProperty('continueFromPreviousPosition');
+    function storeValues(reload) {
+        allProperties.forEach(name => {
+            storeProperty(name);
+        });
 
-        location.reload();
+        if (reload) {
+            const qs = allProperties.map(name => name + '=' + encodeURIComponent(localStorage.getItem(name))).join('&');
+            location.href = `${location.protocol}//${location.host}${location.pathname}?${qs}&${Math.random()}`;
+        }
     }
 
     function loadValues() {
-        loadProperty('articleId');
-        loadProperty('projectId');
-        loadProperty('assetId');
-        loadProperty('apiBaseUrl');
-        loadProperty('token');
-        loadProperty('posterImageUrl');
-        loadProperty('chromecastReceiverAppId');
-        loadProperty('continueFromPreviousPosition');
+        allProperties.forEach(name => {
+            loadProperty(name);
+        });
     }
 })();

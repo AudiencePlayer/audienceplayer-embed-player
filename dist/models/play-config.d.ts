@@ -1,9 +1,9 @@
 export interface PlayConfig {
-    pulseToken?: string;
+    pulseToken: string;
     currentTime?: number;
     entitlements: PlayEntitlement[];
     subtitles: PlayConfigSubtitle[];
-    articleId: number;
+    articleId?: number;
     assetId: number;
     subtitleLocale: string;
     audioLocale: string;
