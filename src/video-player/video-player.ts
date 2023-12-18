@@ -1,5 +1,5 @@
 import {PlayConfig} from '../models/play-config';
-import {supportsHLS, supportsNativeHLS} from '../utils/platform';
+import {supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
@@ -113,7 +113,7 @@ export class VideoPlayer {
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
         const hlsSources = playConfig.entitlements.filter(entitlement => entitlement.type === 'application/vnd.apple.mpegurl');
-        const configureHLSOnly = supportsHLS() && hlsSources.length > 0; // make sure there is actually HLS
+        const configureHLSOnly = supportsNativeHLS() && hlsSources.length > 0; // make sure there is actually HLS
         const playSources = playConfig.entitlements
             .map(entitlement => {
                 const emeOptions = getEmeOptionsFromEntitlement(entitlement);
