@@ -43,7 +43,7 @@ switch (testCase) {
         });
         break;
     case 2:
-        testCaseText = 'Case 2. Video with Widevine; Does NOT work an Android 14 devices.';
+        testCaseText = 'Case 2. Video with Widevine; Does NOT work on Android 14 devices.';
         playSources.push({
             src:
                 'https://audienceplayer.streaming.mediaservices.windows.net/5e1075e2-2acf-47e6-a9a0-938f784db7f6/triangle-of-sadness-trailer-wide.ism/manifest(format=mpd-time-csf,encryption=cenc).mpd',
@@ -72,5 +72,5 @@ switch (testCase) {
 
 player.src(playSources);
 
-console.log(`Testcase  ${testCase}`);
+console.log(`Testcase  ${testCase}; videojs.VERSION ${videojs.VERSION}`);
 testCaseElement.innerHTML = testCaseText;
