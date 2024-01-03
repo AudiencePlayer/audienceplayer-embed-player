@@ -20,10 +20,7 @@ module.exports = {
             bundles: [
                 {
                     dest: './dist/video.js',
-                    src: [
-                        './node_modules/video.js/dist/video.min.js',
-                        './node_modules/videojs-contrib-eme/dist/videojs-contrib-eme.min.js',
-                    ],
+                    src: ['./node_modules/video.js/dist/video.js', './node_modules/videojs-contrib-eme/dist/videojs-contrib-eme.js'],
                 },
                 {
                     dest: './dist/style.css',
