@@ -72,5 +72,5 @@ switch (testCase) {
 
 player.src(playSources);
 
-console.log(`Testcase  ${testCase}; videojs.VERSION ${videojs.VERSION}`);
+console.log(`Testcase  ${testCase}; videojs.VERSION ${videojs.VERSION}, eme ${videojs.getPlugins().eme.VERSION}`);
 testCaseElement.innerHTML = testCaseText;
