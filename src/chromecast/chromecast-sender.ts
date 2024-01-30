@@ -122,12 +122,32 @@ export class ChromecastSender {
                 }
             });
 
+            // the HLS manifest contains the tracks, but otherwise add them
+            const tracks: Array<chrome.cast.media.Track> =
+                contentType === 'application/vnd.apple.mpegurl'
+                    ? []
+                    : articlePlayConfig.subtitles.map((option, index) => {
+                          const trackId = index + 1;
+                          const castTrack = new chrome.cast.media.Track(trackId, chrome.cast.media.TrackType.TEXT);
+                          castTrack.trackContentId = option.src;
+                          castTrack.trackContentType = 'text/vtt';
+                          castTrack.subtype = chrome.cast.media.TextTrackType.SUBTITLES;
+                          castTrack.name = option.label;
+                          castTrack.language = option.srclang;
+                          castTrack.customData = null;
+                          return castTrack;
+                      });
+
             if (entitlement) {
                 const mediaInfo = new chrome.cast.media.MediaInfo(entitlement.src, contentType);
                 mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
                 mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
                 mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
                 mediaInfo.metadata.title = getArticleTitle(article);
+
+                if (tracks.length > 0) {
+                    mediaInfo.tracks = tracks;
+                }
 
                 const audieLocaleParam = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
                 const extraInfoParam = extraInfo ? {extraInfo: JSON.stringify(extraInfo)} : {};
