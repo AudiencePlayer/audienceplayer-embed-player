@@ -149,10 +149,12 @@ export class ChromecastSender {
                     mediaInfo.tracks = tracks;
                 }
 
-                const audieLocaleParam = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
+                const audioLocaleParam = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
+                const textTrackParam = articlePlayConfig.subtitleLocale ? {preferredTextLocale: articlePlayConfig.subtitleLocale} : {};
                 const extraInfoParam = extraInfo ? {extraInfo: JSON.stringify(extraInfo)} : {};
                 mediaInfo.customData = {
-                    ...audieLocaleParam,
+                    ...audioLocaleParam,
+                    ...textTrackParam,
                     ...extraInfoParam,
                     pulseToken: articlePlayConfig.pulseToken,
                 };
@@ -186,15 +188,6 @@ export class ChromecastSender {
             if (mediaInfo) {
                 const request = new chrome.cast.media.LoadRequest(mediaInfo);
                 request.currentTime = continueFromPreviousPosition ? playConfig.currentTime : 0;
-                if (playConfig.subtitleLocale) {
-                    // can NOT use .filter on tracks because the cast library has patched the Array.
-                    const textTrack = mediaInfo.tracks.find(
-                        (track: chrome.cast.media.Track) => track.language === playConfig.subtitleLocale
-                    );
-                    if (textTrack) {
-                        request.activeTrackIds = [textTrack.trackId];
-                    }
-                }
                 return castSession.loadMedia(request);
             } else {
                 throw {message: 'Unexpected manifest format in articlePlayConfig'};
