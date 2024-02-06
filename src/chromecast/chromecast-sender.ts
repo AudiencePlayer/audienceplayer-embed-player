@@ -111,19 +111,8 @@ export class ChromecastSender {
 
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article, extraInfo?: any) {
         if (articlePlayConfig && articlePlayConfig.entitlements && articlePlayConfig.entitlements.length > 0) {
-            const tracks = articlePlayConfig.subtitles.map((option, index) => {
-                const trackId = index + 1;
-                const castTrack = new chrome.cast.media.Track(trackId, chrome.cast.media.TrackType.TEXT);
-                castTrack.trackContentId = option.src;
-                castTrack.trackContentType = 'text/vtt';
-                castTrack.subtype = chrome.cast.media.TextTrackType.SUBTITLES;
-                castTrack.name = option.label;
-                castTrack.language = option.srclang;
-                castTrack.customData = null;
-                return castTrack;
-            });
             let contentType = null;
-            const supportedContentTypes = ['application/vnd.ms-sstr+xml', 'video/mp4'];
+            const supportedContentTypes = ['application/vnd.apple.mpegurl', 'video/mp4'];
             const entitlement = articlePlayConfig.entitlements.find(item => {
                 if (supportedContentTypes.includes(item.type)) {
                     contentType = item.type;
@@ -132,31 +121,40 @@ export class ChromecastSender {
                     return false;
                 }
             });
-            let protectionConfig = null;
+
+            // the HLS manifest contains the tracks, but otherwise add them
+            const tracks: Array<chrome.cast.media.Track> =
+                contentType === 'application/vnd.apple.mpegurl'
+                    ? []
+                    : articlePlayConfig.subtitles.map((option, index) => {
+                          const trackId = index + 1;
+                          const castTrack = new chrome.cast.media.Track(trackId, chrome.cast.media.TrackType.TEXT);
+                          castTrack.trackContentId = option.src;
+                          castTrack.trackContentType = 'text/vtt';
+                          castTrack.subtype = chrome.cast.media.TextTrackType.SUBTITLES;
+                          castTrack.name = option.label;
+                          castTrack.language = option.srclang;
+                          castTrack.customData = null;
+                          return castTrack;
+                      });
 
             if (entitlement) {
-                if (entitlement.protectionInfo) {
-                    protectionConfig = entitlement.protectionInfo.find(protection => {
-                        return protection.type === 'PlayReady';
-                    });
-                }
-                const token = protectionConfig ? protectionConfig.authenticationToken : null;
                 const mediaInfo = new chrome.cast.media.MediaInfo(entitlement.src, contentType);
                 mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
                 mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
                 mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
                 mediaInfo.metadata.title = getArticleTitle(article);
-                mediaInfo.tracks = tracks;
-                const licenceUrlParam = token
-                    ? {
-                          ...this.getLicenseUrlFromSrc(protectionConfig.keyDeliveryUrl, token),
-                      }
-                    : {};
-                const audieLocaleParam = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
+
+                if (tracks.length > 0) {
+                    mediaInfo.tracks = tracks;
+                }
+
+                const audioLocaleParam = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
+                const textTrackParam = articlePlayConfig.subtitleLocale ? {preferredTextLocale: articlePlayConfig.subtitleLocale} : {};
                 const extraInfoParam = extraInfo ? {extraInfo: JSON.stringify(extraInfo)} : {};
                 mediaInfo.customData = {
-                    ...licenceUrlParam,
-                    ...audieLocaleParam,
+                    ...audioLocaleParam,
+                    ...textTrackParam,
                     ...extraInfoParam,
                     pulseToken: articlePlayConfig.pulseToken,
                 };
@@ -190,15 +188,6 @@ export class ChromecastSender {
             if (mediaInfo) {
                 const request = new chrome.cast.media.LoadRequest(mediaInfo);
                 request.currentTime = continueFromPreviousPosition ? playConfig.currentTime : 0;
-                if (playConfig.subtitleLocale) {
-                    // can NOT use .filter on tracks because the cast library has patched the Array.
-                    const textTrack = mediaInfo.tracks.find(
-                        (track: chrome.cast.media.Track) => track.language === playConfig.subtitleLocale
-                    );
-                    if (textTrack) {
-                        request.activeTrackIds = [textTrack.trackId];
-                    }
-                }
                 return castSession.loadMedia(request);
             } else {
                 throw {message: 'Unexpected manifest format in articlePlayConfig'};
