@@ -38,34 +38,44 @@ export function getEmeOptionsFromEntitlement(entitlement: PlayEntitlement): EmeO
             case 'application/vnd.apple.mpegurl':
                 protectionInfo = entitlement.protectionInfo.find(p => p.type === 'FairPlay');
                 if (protectionInfo) {
-                    emeOptions = {
-                        keySystems: {
-                            'com.apple.fps.1_0': {
-                                certificateUri: protectionInfo.certificateUrl,
-                                getContentId: function() {
-                                    return getHostnameFromUri(protectionInfo.keyDeliveryUrl);
-                                },
-                                getLicense: function(emeOptions: any, contentId: string, keyMessage: any, callback: any) {
-                                    const payload = 'spc=' + binaryToBase64(keyMessage) + '&assetId=' + encodeURIComponent(contentId);
-                                    videojs.xhr(
-                                        {
-                                            uri: protectionInfo.keyDeliveryUrl,
-                                            method: 'post',
-                                            headers: {
-                                                'Content-type': 'application/x-www-form-urlencoded',
-                                                Authorization: protectionInfo.authenticationToken,
+                    if (protectionInfo.encryptionProvider === 'azl') {
+                        emeOptions = {
+                            keySystems: {
+                                'com.apple.fps.1_0': {
+                                    certificateUri: protectionInfo.certificateUrl,
+                                    getContentId: function() {
+                                        return getHostnameFromUri(protectionInfo.keyDeliveryUrl);
+                                    },
+                                    getLicense: function(emeArg: any, contentId: string, keyMessage: any, callback: any) {
+                                        const payload = 'spc=' + binaryToBase64(keyMessage) + '&assetId=' + encodeURIComponent(contentId);
+                                        videojs.xhr(
+                                            {
+                                                uri: protectionInfo.keyDeliveryUrl,
+                                                method: 'post',
+                                                headers: {
+                                                    'Content-type': 'application/x-www-form-urlencoded',
+                                                    Authorization: protectionInfo.authenticationToken,
+                                                },
+                                                body: payload,
+                                                responseType: 'arraybuffer',
                                             },
-                                            body: payload,
-                                            responseType: 'arraybuffer',
-                                        },
-                                        videojs.xhr.httpHandler(function(err: any, response: ArrayBuffer) {
-                                            callback(null, parseLicenseResponse(response));
-                                        }, true)
-                                    );
+                                            videojs.xhr.httpHandler(function(err: any, response: ArrayBuffer) {
+                                                callback(null, parseLicenseResponse(response));
+                                            }, true)
+                                        );
+                                    },
                                 },
                             },
-                        },
-                    };
+                        };
+                    } else {
+                        emeOptions = {
+                            keySystems: {
+                                'com.apple.fps.1_0': {
+                                    certificateUri: protectionInfo.certificateUrl,
+                                },
+                            },
+                        };
+                    }
                 }
                 break;
         }

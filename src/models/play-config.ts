@@ -29,6 +29,7 @@ export interface PlayConfigProtection {
     authenticationToken: string;
     certificateUrl?: string;
     keyDeliveryUrl: string;
+    encryptionProvider: string;
 }
 
 export enum ArticlePlayErrors {

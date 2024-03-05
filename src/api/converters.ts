@@ -36,6 +36,7 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
                         type: 'Widevine',
                         authenticationToken: 'Bearer ' + dashWidevine.token,
                         keyDeliveryUrl: dashWidevine.key_delivery_url,
+                        encryptionProvider: configEntitlement.encryption_provider,
                     });
                 }
 
@@ -44,6 +45,7 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
                         type: 'PlayReady',
                         authenticationToken: 'Bearer=' + mssPlayReady.token,
                         keyDeliveryUrl: mssPlayReady.key_delivery_url,
+                        encryptionProvider: configEntitlement.encryption_provider,
                     });
                 }
             } else if (configEntitlement.encryption_type === 'fps') {
@@ -53,6 +55,7 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
                         authenticationToken: 'Bearer ' + configEntitlement.token,
                         certificateUrl: config.fairplay_certificate_url,
                         keyDeliveryUrl: configEntitlement.key_delivery_url,
+                        encryptionProvider: configEntitlement.encryption_provider,
                     },
                 ];
             }

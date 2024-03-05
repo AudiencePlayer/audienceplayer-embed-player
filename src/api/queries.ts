@@ -10,6 +10,7 @@ export const articleAssetPlayMutation = `
                 token
                 encryption_type
                 key_delivery_url
+                encryption_provider
             }
             subtitles {
                 url
