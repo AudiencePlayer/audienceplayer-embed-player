@@ -130,6 +130,7 @@ export class VideoPlayer {
                 );
             });
 
+        console.log('playSources', playSources);
         this.player.src(playSources);
 
         if (initParams.fullscreen) {
