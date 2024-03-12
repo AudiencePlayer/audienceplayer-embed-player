@@ -25,11 +25,12 @@ export interface PlayConfigSubtitle {
 }
 
 export interface PlayConfigProtection {
-    type: string;
-    authenticationToken: string;
+    type: 'Widevine' | 'PlayReady' | 'FairPlay';
+    authenticationToken?: string;
     certificateUrl?: string;
     keyDeliveryUrl: string;
     encryptionProvider: string;
+    contentId?: string;
 }
 
 export enum ArticlePlayErrors {

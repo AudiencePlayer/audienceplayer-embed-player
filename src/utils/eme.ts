@@ -32,9 +32,12 @@ export function getEmeOptionsFromEntitlement(entitlement: PlayEntitlement): EmeO
                         keySystems: {
                             'com.microsoft.playready': protectionInfo.keyDeliveryUrl,
                         },
-                        emeHeaders: {
-                            Authorization: protectionInfo.authenticationToken,
-                        },
+                        emeHeaders:
+                            protectionInfo.encryptionProvider === 'azl'
+                                ? {
+                                      Authorization: protectionInfo.authenticationToken,
+                                  }
+                                : {},
                     };
                 }
                 break;
@@ -76,16 +79,15 @@ export function getEmeOptionsFromEntitlement(entitlement: PlayEntitlement): EmeO
                                 'com.apple.fps.1_0': {
                                     certificateUri: protectionInfo.certificateUrl,
                                     getContentId: function(args: any) {
-                                        console.log('getContendId', args);
-                                        return '61ed392e-d829-4ea4-a550-45e62c6a2161'; // skd://;
+                                        console.log('getContentId', protectionInfo.contentId);
+                                        return protectionInfo.contentId;
                                     },
                                     getLicense: function(emeArg: any, contentId: string, keyMessage: any, callback: any) {
                                         const payload = keyMessage;
-                                        console.log('getLicense', emeArg, payload);
+                                        console.log('getLicense', protectionInfo.keyDeliveryUrl, payload);
                                         videojs.xhr(
                                             {
-                                                uri:
-                                                    'https://drm-fairplay-licensing.axprod.net/AcquireLicense?AxDrmMessage=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2ZXJzaW9uIjogMSwKImJlZ2luX2RhdGUiOiAiMjAwMC0wMS0wMVQxNjoxODo0MCswMzowMCIsCiJleHBpcmF0aW9uX2RhdGUiOiAiMjAyNS0xMi0zMVQyMzo1OTo0MCswMzowMCIsCiJjb21fa2V5X2lkIjogIjljNmVkOWJkLWIxOGEtNDczOC04ZjlhLWIwYjEwMTA0NzJlNyIsCiJtZXNzYWdlIjogewogICJ0eXBlIjogImVudGl0bGVtZW50X21lc3NhZ2UiLAogICJ2ZXJzaW9uIjogMiwKICAibGljZW5zZSI6IHsKICAgICJkdXJhdGlvbiI6IDMxNTM2MDAwMAogIH0sCiAgImNvbnRlbnRfa2V5c19zb3VyY2UiOiB7CiAgICAiaW5saW5lIjogWwogICAgICB7CiAgICAgICAgImlkIjogIjYxRUQzOTJFLUQ4MjktNEVBNC1BNTUwLTQ1RTYyQzZBMjE2MSIKICAgICAgfQogICAgXQogIH0KfX0.jIMMyVdiJcYBGco5El_xy8LpH7hPe9_sQxoqTCtswBs',
+                                                uri: protectionInfo.keyDeliveryUrl,
                                                 method: 'post',
                                                 headers: {
                                                     'Content-type': 'application/octet-stream',
