@@ -79,12 +79,10 @@ export function getEmeOptionsFromEntitlement(entitlement: PlayEntitlement): EmeO
                                 'com.apple.fps.1_0': {
                                     certificateUri: protectionInfo.certificateUrl,
                                     getContentId: function(args: any) {
-                                        console.log('getContentId', protectionInfo.contentId);
-                                        return protectionInfo.contentId;
+                                        return protectionInfo.contentId.replace('skd://', '');
                                     },
                                     getLicense: function(emeArg: any, contentId: string, keyMessage: any, callback: any) {
                                         const payload = keyMessage;
-                                        console.log('getLicense', protectionInfo.keyDeliveryUrl, payload);
                                         videojs.xhr(
                                             {
                                                 uri: protectionInfo.keyDeliveryUrl,
