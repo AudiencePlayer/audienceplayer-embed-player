@@ -103,8 +103,6 @@ export function getEmeOptionsFromEntitlement(entitlement: PlayEntitlement): EmeO
                             },
                             emeHeaders: {},
                         };
-
-                        console.log('going for ', emeOptions);
                     }
                 }
                 break;

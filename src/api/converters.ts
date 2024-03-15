@@ -56,6 +56,7 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
                         certificateUrl: config.fairplay_certificate_url,
                         keyDeliveryUrl: configEntitlement.key_delivery_url,
                         encryptionProvider: configEntitlement.encryption_provider,
+                        // contentId: configEntitlement.content_id, // @TODO
                     },
                 ];
             }
