@@ -11,6 +11,7 @@ export const articleAssetPlayMutation = `
                 encryption_type
                 key_delivery_url
                 encryption_provider
+                content_key_id
             }
             subtitles {
                 url
