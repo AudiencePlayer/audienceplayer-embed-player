@@ -30,7 +30,7 @@ export interface PlayConfigProtection {
     certificateUrl?: string;
     keyDeliveryUrl: string;
     encryptionProvider: string;
-    contentId?: string;
+    contentKeyId?: string;
 }
 
 export enum ArticlePlayErrors {
