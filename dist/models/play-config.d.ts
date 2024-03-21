@@ -27,7 +27,7 @@ export interface PlayConfigProtection {
     certificateUrl?: string;
     keyDeliveryUrl: string;
     encryptionProvider: string;
-    contentId?: string;
+    contentKeyId?: string;
 }
 export declare enum ArticlePlayErrors {
     noPlayableAsset = "noPlayableAsset",
