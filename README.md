@@ -191,6 +191,10 @@ function stopCastVideo() {
 
 The manual example implementations can be found in the `demo` folder. Note the difference in `import` statement when used with `npm`, so these examples are applicable there as well.
 
+### hosted demo
+
+A hosted demo can be found here: https://static.audienceplayer.com/embed-demo/demo/chromecast/
+
 ### Important to note:
 
 In the demo/chromecast, a number of layers are used and shown depending of the state of the player (e.g. when chromecast is connected the chromecast controls are shown).
