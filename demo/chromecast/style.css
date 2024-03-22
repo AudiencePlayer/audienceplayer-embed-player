@@ -1,0 +1,141 @@
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    max-width: 1024px;
+    min-width: 400px;
+    width: calc(100% - 2rem);
+    margin: 1rem;
+}
+
+.media-player {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+}
+
+.media-player__layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.media-player__video-player {
+    z-index: 0;
+}
+
+.media-player__overlay {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #000;
+    opacity: 0;
+}
+
+.media-player__meta {
+    color: #fff;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%);
+}
+
+.media-player--chromecast .media-player__overlay,
+.media-player--loading .media-player__overlay,
+.media-player--overlay .media-player__overlay {
+    opacity: 1;
+    z-index: 2;
+}
+
+.media-player--chromecast .media-player__meta,
+.media-player--overlay .media-player__meta {
+    z-index: 3;
+}
+
+.media-player--chromecast .media-player__chromecast-controls {
+    z-index: 3;
+}
+
+.media-player--video .media-player__video-player {
+    z-index: 1;
+}
+
+.media-player--loading .media-player__loader {
+    z-index: 4;
+}
+
+.button-panel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 1rem;
+}
+
+.button {
+    position: relative;
+    display: inline-block;
+    height: 2.5rem;
+    min-width: 2.5rem;
+    margin: 0 0.5rem;
+    line-height: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.button:before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-family: VideoJS;
+    font-size: 2rem;
+}
+
+.button__play:before {
+    content: '\f101';
+}
+
+.title {
+    margin: 1rem;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.parental {
+    margin: 1rem;
+}
+
+.param-form {
+    width: calc(100% - 2rem);
+    padding: 1rem;
+    background-color: #eee;
+}
+
+.param-form input {
+    display: inline-block;
+    margin: 0.5rem;
+    width: calc(100% - 10rem);
+}
+
+.param-form input[type='checkbox'] {
+    display: inline-block;
+    width: auto;
+}
+
+.param-form label {
+    width: 8rem;
+    display: inline-block;
+    text-align: right;
+    font-size: 0.75rem;
+}

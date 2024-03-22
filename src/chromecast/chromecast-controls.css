@@ -1,0 +1,144 @@
+.chromecast-controls.video-js {
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: unset;
+    font-size: 1rem;
+}
+
+/* breakpoints consistent with medium and small for videojs */
+@media screen and (max-width: 768px) {
+    .chromecast-controls.video-js {
+        font-size: 10px;
+    }
+}
+
+@media screen and (max-width: 425px) {
+    .chromecast-controls.video-js {
+        font-size: 10px;
+    }
+}
+
+.chromecast-controls.video-js.chromecast-controls--idle {
+    display: none;
+}
+
+.chromecast-controls .vjs-control-bar {
+    display: flex;
+}
+
+.chromecast-controls__title {
+    text-align: center;
+    margin: 0 auto 20px;
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+.chromecast-controls__progress-bar {
+    display: flex;
+    width: 100%;
+    align-items: center;
+}
+
+.chromecast-controls__progress-bar-slider-container {
+    position: relative;
+    width: 100%;
+    height: 1.5em;
+}
+
+.chromecast-controls__progress-bar__slider-left {
+    position: absolute;
+    top: 0.625em;
+    left: 0px;
+    height: 0.25em;
+    width: 0;
+    background-color: #fff;
+    pointer-events: none;
+}
+
+.chromecast-controls__progress-bar__slider {
+    height: 0.25em;
+    width: 100%;
+    cursor: pointer;
+    appearance: none;
+}
+
+.chromecast-controls__progress-bar__slider::-webkit-slider-runnable-track {
+    background-color: rgba(115, 133, 159, 0.9);
+    width: 100%;
+    height: 0.25em;
+    appearance: none;
+}
+
+.chromecast-controls__progress-bar__slider::-webkit-slider-container {
+    height: 0.25em;
+    appearance: none;
+    background: unset;
+}
+
+.chromecast-controls__progress-bar__slider::-webkit-slider-thumb {
+    width: 1em;
+    height: 1em;
+    border-radius: 0.5em;
+    margin-top: -0.375em;
+    appearance: none;
+    background: #fff;
+}
+
+.chromecast-controls__progress-bar__total {
+    flex: 0 1 auto;
+    padding: 0 0 0 15px;
+}
+
+.chromecast-controls__progress-bar__current {
+    flex: 0 1 auto;
+    padding: 0 15px 0 0;
+}
+
+.chromecast-controls__buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.chromecast-controls__buttons > .control-button {
+    margin: 0 15px;
+}
+
+.chromecast-controls .control-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background-repeat: no-repeat;
+    background-position: center;
+    outline: none;
+}
+
+.chromecast-controls .control-button:hover {
+    transform: scale(1.1);
+}
+
+.chromecast-controls .button__play {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCAgZD0iTTggNXYxNGwxMS03eiIvPjwvc3ZnPg==');
+}
+
+.chromecast-controls .button__stop {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCAgZD0iTTYgNmgxMnYxMkg2eiIvPjwvc3ZnPg==');
+}
+
+.chromecast-controls .button__pause {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCAgZD0iTTYgMTloNFY1SDZ2MTR6bTgtMTR2MTRoNFY1aC00eiIvPjwvc3ZnPg==');
+}
+
+.chromecast-controls .button__audio-tracks {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCAgZD0iTTIwIDRINGMtMS4xIDAtMiAuOS0yIDJ2MTJjMCAxLjEuOSAyIDIgMmgxNmMxLjEgMCAyLS45IDItMlY2YzAtMS4xLS45LTItMi0yek00IDEyaDR2Mkg0di0yem0xMCA2SDR2LTJoMTB2MnptNiAwaC00di0yaDR2MnptMC00SDEwdi0yaDEwdjJ6Ii8+PC9zdmc+');
+}
+
+.chromecast-controls .chromecast-button {
+    padding: 0.5em;
+    cursor: pointer;
+}

@@ -1,19 +1,10 @@
 {
+    "rules": {
+        "no-console": 0
+    },
     "env": {
         "es6": true,
-        "browser": true
-    },
-    "rules": {
-        "quotes": [1, "single"]
-    },
-    "parserOptions": {
-        "ecmaVersion": 2018,
-        "sourceType": "module"
-    },
-    "globals": {
-        "amp": "readonly",
-        "cast": "readonly",
-        "chrome": "readonly"
+        "node": true
     },
     "extends": "eslint:recommended"
 }

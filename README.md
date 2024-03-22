@@ -1,6 +1,6 @@
 # Audienceplayer Embed Player
 
-This library allows you to play your AudiencePlayer videos assets on your website, via the "headless" solution of the [AudiencePlayer video platform](https://www.audienceplayer.com). 
+This library allows you to play your AudiencePlayer videos assets on your website, via the "headless" solution of the [AudiencePlayer video platform](https://www.audienceplayer.com).
 
 ## Installation
 
@@ -9,90 +9,83 @@ There is no npm package, so install from the GitHub link:
 
 Check below section `Example of usage` or check out the example project https://github.com/AudiencePlayer/audienceplayer-embed-player-projects
 
-Please mind that the Azure Media Player library should be treated using "static files", meaning that they should be included directly into your HTML instead of a framework (e.g. Angular) or build tool (e.g. Webpack)
-
+Please mind that `dist/video.js` and `dist/style.css` from this library should be treated as "static files". They should be included directly into your HTML or added as static files via a framework (e.g. Angular, Webpack).
+The library comes with a compiled `dist/bundle.js`, so no `npm prepare` or more dependencies are needed or installed.
 
 ## Manual implementation without dependency management
 
-Copy all files and folders from `src/` to your project, next to your `index.html`.
+Copy all files from `dist/` to your project, next to your `index.html`. (in our `demo` folders we link to `../../dist` for simplicity)
 
-Include the Azure Media Player and this library in your `index.html`:
-
-```html
-<script src="azure-media-player-[version]/amp.min.js"></script>
-<script src="embed-player.js" type="module"></script>
-```
-
-The Azure Media Player comes with default css:
+Include the static scripts in your `index.html`:
 
 ```html
-<link href="azure-media-player-[version]/amp.min.css" rel="stylesheet" />
-<link href="azure-media-player-[version]/amp-flush.min.css" rel="stylesheet" />
-<link href="embed-player.css" rel="stylesheet" />
+<script src="video.js"></script>
 ```
 
-Mind to replace the [version] with the latest (or desired) version
+The player comes with default css:
 
+```html
+<link href="style.css" rel="stylesheet" />
+```
 
 Import `embed-player` in your javascript code:
+
+`import {EmbedPlayer} from 'bundle.js';`
+
+or if you have used npm:
+
+`import {EmbedPlayer} from 'audienceplayer-embed-player';`
 
 ## Methods
 
 Create a new instance of the `embed-player`:
 
 ```javascript
-const player = new EmbedPlayer();
+const apiBaseUrl = '<your-audienceplayer-api-url-here>'; // default: 'https://api.audienceplayer.com'
+const projectId = 8; // your AudiencePlayer project id
+
+const player = new EmbedPlayer({apiBaseUrl, projectId});
 ```
 
-Once created it is ready for use on your website. To play an asset, just call the `play()` method, and pass the following parameters:
+The `play()` method provides a promise that, in case of successful asset fetch will return the player's config, otherwise - an error will be thrown.
 
--   **selector** - query selector of an element where you would like to embed your player
-    (e.g. `.video-wrapper`, `#video-wrapper`, etc).
--   **apiBaseUrl** - the url where your articles and assets are hosted on.
--   **articleId** - the id of an article, to which your intended video asset belongs.
--   **assetId** - the id of the video asset, you want to play.
--   **token (optional)** - your authentication token (only necessary if you intend to embed
-    video assets that require authentication/authorization)
--   **posterImageUrl (optional)** - image that will be used as the initial player background image.
--   **autoplay (optional)** - if true, player will start playing once loaded (mobile devices may have this disabled to protect bandwidth)
--   **fullScreen (optional)** - if true, player will start in full screen once loaded
--   **continueFromPreviousPosition (option)** - indicates if your player supports nomadic watching. It is true by default.
-
-The `play()` method mentioned before provides a promise that, in case of successful asset fetch will return the player's config, otherwise - the error occurred.
-
-The `destroy()` method will clean-up the underlying Azure Media Player, so that you can safely remove the element referred by the `selector` from the DOM.
+The `destroy()` method will clean-up the player, so that you can safely remove the element referred by the `selector` from the DOM.
 This is typically used when playing the video in a modal dialog or from a different element in the DOM.
 ####important: call .destroy() to make sure the `finish` stream-pulse is sent, so that the user will continue playing on an accurate position.
 
-## Example of usage
-
-Import the class; 
-
-using npm
-
-```js
-import {EmbedPlayer} from 'embed-player';
-```
-
-or via the manual implementation
-```javascript
-import EmbedPlayer from 'embed-player.js';
-```
-
-
 ### Default usage with a video player
-```javascript
-const player = new EmbedPlayer();
 
+```javascript
+// in case you want to preload the player and show the poster, call .initVideoPlayer
+player.initVideoPlayer({
+    selector: '.video-wrapper', // query selector of an element where you would like to embed your player
+    options: {
+        poster: 'https://posterImageUrl', // url of image that will be used as the initial player background image
+        autoplay: true, // start playing automatically. this will work if play follows from a user event
+    },
+});
+
+// in case you want to set a different posterImage url after the player was already initialized
+player.setVideoPlayerPoster('https://anotherPosterImageUrl');
+
+// or in case you want to use the poster image that comes with the Article
+// width and height resolution must be an available resize config (see API GraphQL Config.image_resize_resolutions)
+player.setVideoPlayerPosterFromArticle(articleId, {width: 1280, height: 720});
+
+// above initVideoPlayer can be omitted and you can only call .play.
+// In any case, the `selector` and `options` properties should be provided to both methods.
 player
     .play({
-        selector: '.video-wrapper',
-        apiBaseUrl: '<your-audienceplayer-api-url-here>', // default: 'https://api.audienceplayer.com'
-        projectId: 4,
-        articleId: 1234,
-        assetId: 4321,
-        token: '',
-        continueFromPreviousPosition: true
+        selector: '.video-wrapper', // query selector of an element where you would like to embed your player
+        options: {
+            poster: 'https://posterImageUrl', // url of image that will be used as the initial player background image
+            autoplay: true, // start playing automatically. this will work if play follows from a user event
+        },
+        articleId: 1234, // the id of an article, to which your intended video asset belongs.
+        assetId: 4321, // the id of the video asset, you want to play.
+        token: 'some token', // optional; your authentication token (only necessary if you intend to embed
+        fullscreen: true, // start play in fullscreen. this will work if play follows from a user event
+        continueFromPreviousPosition: true, // indicates if your player supports nomadic watching. It is true by default.
     })
     .then(config => {
         console.log('Config', config);
@@ -104,14 +97,14 @@ player
 
 The `Promise` returns a `config` object that can be used for debugging purposes, but is not needed outside the player.
 
-When an error occurs, the `error` object will contain the message and error code returned by the API. If the `error` is not an object, the API was not reachable.   
+When an error occurs, the `error` object will contain the message and error code returned by the API. If the `error` is not an object, the API was not reachable.
 
 To destroy the player:
 
-````javascript
+```javascript
 player.destroy();
-// DOM element refered by the selector, e.g. `.video-wrapper` can now safely be removed. 
-````
+// DOM element refered by the selector, e.g. `.video-wrapper` can now safely be removed.
+```
 
 An example of this can be found in https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/main/src, where the queryString params can be used to set the needed variables.
 
@@ -119,9 +112,9 @@ Please take note that it is possible to create multiple instances of the EmbedPl
 
 ## Usage with ChromeCast
 
-Besides just using the embedded player, when you have an AudiencePlayer ChromeCast receiver application, you can offer 
+Besides just using the embedded player, when you have an AudiencePlayer ChromeCast receiver application, you can offer
 video playout via a ChromeCast device that is on the same local network.
-In the below example, it is shown how you can set this up with the `chromecast receiver app id` which you will then have 
+In the below example, it is shown how you can set this up with the `chromecast receiver app id` which you will then have
 received from AudiencePlayer.
 
 Add the `ChromecastControls` class;
@@ -133,32 +126,29 @@ import {ChromecastControls} from 'embed-player';
 ```
 
 ### manual implementation
-In the manual implementation make sure to add the extra dependencies in `index.html`
 
-```html
-<script src="chromecast-controls.js" type="module"></script>
-<link href="chromecast-controls.css" rel="stylesheet" />
-```
-
-and import via the js module:
+In the manual implementation the ChromecastControls are available from the main bundle.
 
 ```javascript
-import ChromecastControls from 'chromecast-controls.js';
+import {ChromecastControls} from 'bundle.js';
 ```
 
 ### example
 
 ```javascript
-
 const chromecastReceiverAppId = `000000`; // replace with the receiver app id
-const player = new EmbedPlayer();
+const token = ''; // replace with your JWT access token or do not provide the `token` property
+const posterImageUrl = 'https://path/to/image'; // or do not provide the `posterImageUrl` property
+const player = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
+
 // the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognisable spot next
 // to the play-button/thumbnail or in the menu.
-player
-    .setupChromecast('#cast-wrapper', chromecastReceiverAppId)
-    .then(() => {
-            const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
-    });
+player.initChromecast().then(() => {
+    const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
+
+    // add the chromecast button
+    player.appendChromecastButton('#cast-wrapper');
+});
 
 // call the playVideo function `onClick` of the play-button/thumbnail
 function playVideo() {
@@ -166,29 +156,27 @@ function playVideo() {
         // there is a ChromeCast connection; cast the video
         player
             .castVideo({
-                apiBaseUrl,
                 articleId,
-                projectId,
                 assetId,
-                ...tokenParameter,
-              continueFromPreviousPosition: true
+                token,
+                continueFromPreviousPosition: true,
             })
-            .catch((error) => console.error(error));
+            .catch(error => console.error(error));
     } else {
         // ChromeCast is not connected; play the video directly
         player
             .play({
                 selector: '.video-wrapper',
-                apiBaseUrl,
+                options: {
+                    poster: posterImageUrl,
+                    autoplay: true,
+                },
                 articleId,
-                projectId,
                 assetId,
-                ...tokenParameter,
-                ...posterImageUrlParameter,
-                autoplay: autoplay && autoplay === 'true',
-                continueFromPreviousPosition: true
+                token,
+                continueFromPreviousPosition: true,
             })
-            .catch((error) => {
+            .catch(error => {
                 console.error(error);
             });
     }
@@ -201,30 +189,22 @@ function stopCastVideo() {
 }
 ```
 
-A complete implementation example of the above can be found here:
+The manual example implementations can be found in the `demo` folder. Note the difference in `import` statement when used with `npm`, so these examples are applicable there as well.
 
-https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/main/src/demo
+### hosted demo
 
-### Important to note: 
- 
-In this demo, the `embed-player` is only used when there is no ChromeCast session. 
-The reason for this is that the Azure Media Player is unaware of the ChromeCast session, so pressing play inside the player will
-always just play the video in the player, regardless of the session.
+A hosted demo can be found here: https://static.audienceplayer.com/embed-demo/demo/chromecast/
 
-In the situation where you already show the `embed-player` and want to make used of ChromeCast, we advise to show a thumbnail
-with a play icon instead and use this as the button to cast the video or start the video with the autoplay option to true.
-We also advise to then show the player inside a modal dialog, so that when the dialog is closed, the user will see the thumbnail again. 
+### Important to note:
 
-#### Styling the ChromeCast controls
-
-The chromecast controls have a default styling, which can be changed via the css variables (prefixed with `--chromecast-`).
-Another option is to completely replace the chromecast-controls.css with your own implementation.
+In the demo/chromecast, a number of layers are used and shown depending of the state of the player (e.g. when chromecast is connected the chromecast controls are shown).
+For your own implementation, you can customize this behavior.
 
 ### Supported browsers
+
 The latest versions of the following browsers are supported:
 
-* Microsoft Edge
-* Chrome (supports Chromecast)
-* Firefox
-* Safari
-
+-   Microsoft Edge
+-   Chrome (supports Chromecast)
+-   Firefox
+-   Safari

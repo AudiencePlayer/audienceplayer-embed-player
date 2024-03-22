@@ -1,0 +1,29 @@
+{
+    "extends": [
+        "stylelint-config-standard"
+    ],
+    "rules": {
+        "indentation": 4,
+        "block-no-empty": null,
+        "declaration-empty-line-before": "never",
+        "selector-max-compound-selectors": 10,
+        "at-rule-no-unknown": [
+            true,
+            {
+                "ignore": ["include"]
+            }
+        ],
+        "selector-type-no-unknown": [
+            true,
+            {
+                "ignore": ["custom-elements"]
+            }
+        ],
+        "selector-pseudo-element-no-unknown": [
+            true,
+            {
+                "ignore": ["::ng-deep"]
+            }
+        ]
+    }
+}
