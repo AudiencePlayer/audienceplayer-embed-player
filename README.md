@@ -156,9 +156,7 @@ function playVideo() {
         // there is a ChromeCast connection; cast the video
         player
             .castVideo({
-                apiBaseUrl,
                 articleId,
-                projectId,
                 assetId,
                 token,
                 continueFromPreviousPosition: true,
@@ -174,7 +172,6 @@ function playVideo() {
                     autoplay: true,
                 },
                 articleId,
-                projectId,
                 assetId,
                 token,
                 continueFromPreviousPosition: true,
