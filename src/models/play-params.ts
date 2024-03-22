@@ -5,6 +5,7 @@ export interface InitParams {
     options: PlayerOptions;
     fullscreen?: boolean;
     chromecastButton?: boolean;
+    defaultSkinClass?: string;
 }
 
 export interface PlayParams extends InitParams {

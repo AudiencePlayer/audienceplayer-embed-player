@@ -15,49 +15,55 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
         : config.entitlements;
 
     const dashWidevine = configEntitlements.find(
-        (entitlement: any) => !!entitlement.token && entitlement.encryption_type === 'cenc' && entitlement.protocol.indexOf('dash') === 0
+        (entitlement: any) => entitlement.encryption_type === 'cenc' && entitlement.protocol.indexOf('dash') === 0
     );
     const mssPlayReady = configEntitlements.find(
-        (entitlement: any) => !!entitlement.token && entitlement.encryption_type === 'cenc' && entitlement.protocol.indexOf('mss') === 0
+        (entitlement: any) => entitlement.encryption_type === 'cenc' && entitlement.protocol.indexOf('mss') === 0
     );
 
-    configEntitlements.forEach((configEntitlement: any) => {
-        const entitlement: PlayEntitlement = {
-            src: configEntitlement.manifest,
-            type: configEntitlement.mime_type,
+    configEntitlements.forEach((entitlement: any) => {
+        const entitlementConfig: PlayEntitlement = {
+            src: entitlement.manifest,
+            type: entitlement.mime_type,
             protectionInfo: null,
         };
 
-        if (configEntitlement.token) {
-            entitlement.protectionInfo = [];
-            if (configEntitlement.encryption_type === 'cenc') {
+        if (entitlement.encryption_type) {
+            entitlementConfig.protectionInfo = [];
+
+            // add *both* dashWidevine and mssPlayReady to the protectionInfo for all protocols with cenc.
+            if (entitlement.encryption_type === 'cenc') {
                 if (!!dashWidevine) {
-                    entitlement.protectionInfo.push({
+                    entitlementConfig.protectionInfo.push({
                         type: 'Widevine',
-                        authenticationToken: 'Bearer ' + dashWidevine.token,
+                        authenticationToken: dashWidevine.encryption_provider === 'azl' ? 'Bearer ' + dashWidevine.token : '',
                         keyDeliveryUrl: dashWidevine.key_delivery_url,
+                        encryptionProvider: entitlement.encryption_provider,
                     });
                 }
 
                 if (!!mssPlayReady) {
-                    entitlement.protectionInfo.push({
+                    entitlementConfig.protectionInfo.push({
                         type: 'PlayReady',
-                        authenticationToken: 'Bearer=' + mssPlayReady.token,
+                        authenticationToken: mssPlayReady.encryption_provider === 'azl' ? 'Bearer=' + mssPlayReady.token : '',
                         keyDeliveryUrl: mssPlayReady.key_delivery_url,
+                        encryptionProvider: entitlement.encryption_provider,
                     });
                 }
-            } else if (configEntitlement.encryption_type === 'fps') {
-                entitlement.protectionInfo = [
+            } else if (entitlement.encryption_type === 'fps') {
+                entitlementConfig.protectionInfo = [
                     {
                         type: 'FairPlay',
-                        authenticationToken: 'Bearer ' + configEntitlement.token,
+                        authenticationToken: entitlement.encryption_provider === 'azl' ? 'Bearer ' + entitlement.token : '',
                         certificateUrl: config.fairplay_certificate_url,
-                        keyDeliveryUrl: configEntitlement.key_delivery_url,
+                        keyDeliveryUrl: entitlement.key_delivery_url,
+                        encryptionProvider: entitlement.encryption_provider,
+                        contentKeyId: entitlement.content_key_id,
                     },
                 ];
             }
         }
-        entitlements.push(entitlement);
+        entitlements.push(entitlementConfig);
     });
 
     const subtitles = config.subtitles.map((item: any) => ({

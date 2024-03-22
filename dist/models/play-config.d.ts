@@ -22,10 +22,12 @@ export interface PlayConfigSubtitle {
     label: string;
 }
 export interface PlayConfigProtection {
-    type: string;
-    authenticationToken: string;
+    type: 'Widevine' | 'PlayReady' | 'FairPlay';
+    authenticationToken?: string;
     certificateUrl?: string;
     keyDeliveryUrl: string;
+    encryptionProvider: string;
+    contentKeyId?: string;
 }
 export declare enum ArticlePlayErrors {
     noPlayableAsset = "noPlayableAsset",

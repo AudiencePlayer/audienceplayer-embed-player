@@ -156,9 +156,7 @@ function playVideo() {
         // there is a ChromeCast connection; cast the video
         player
             .castVideo({
-                apiBaseUrl,
                 articleId,
-                projectId,
                 assetId,
                 token,
                 continueFromPreviousPosition: true,
@@ -174,7 +172,6 @@ function playVideo() {
                     autoplay: true,
                 },
                 articleId,
-                projectId,
                 assetId,
                 token,
                 continueFromPreviousPosition: true,
@@ -193,6 +190,10 @@ function stopCastVideo() {
 ```
 
 The manual example implementations can be found in the `demo` folder. Note the difference in `import` statement when used with `npm`, so these examples are applicable there as well.
+
+### hosted demo
+
+A hosted demo can be found here: https://static.audienceplayer.com/embed-demo/demo/chromecast/
 
 ### Important to note:
 

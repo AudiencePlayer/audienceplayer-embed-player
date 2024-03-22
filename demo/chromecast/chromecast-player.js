@@ -115,6 +115,7 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
                     console.error(error);
                 })
                 .finally(() => {
+                    containerEl.classList.add('media-player--video');
                     containerEl.classList.remove('media-player--loading');
                 });
 
@@ -132,6 +133,8 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
     function destroyVideo() {
         embedPlayer.destroy();
 
+        containerEl.classList.remove('media-player--video');
+        containerEl.classList.remove('media-player--chromecast');
         containerEl.classList.add('media-player--overlay');
     }
 

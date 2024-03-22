@@ -48,7 +48,10 @@ export class VideoPlayer {
         this.playerLoggerService.init();
 
         const videoElement = document.createElement('video');
-        videoElement.setAttribute('class', ['video-js', 'vjs-default-skin'].join(' '));
+        videoElement.setAttribute(
+            'class',
+            ['video-js', initParams.defaultSkinClass ? initParams.defaultSkinClass : 'vjs-default-skin'].join(' ')
+        );
         videoElement.setAttribute('tabIndex', '0');
         videoElement.setAttribute('width', '100%');
         videoElement.setAttribute('height', '100%');
