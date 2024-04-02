@@ -1,5 +1,5 @@
 import {PlayConfig} from '../models/play-config';
-import {supportsHLS, supportsNativeHLS} from '../utils/platform';
+import {isChrome, supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
@@ -55,6 +55,7 @@ export class VideoPlayer {
         videoElement.setAttribute('tabIndex', '0');
         videoElement.setAttribute('width', '100%');
         videoElement.setAttribute('height', '100%');
+        videoElement.disableRemotePlayback = !supportsNativeHLS(); // this will hide the chromecast button. We want to keep Airplay
 
         videoContainer.appendChild(videoElement);
 
