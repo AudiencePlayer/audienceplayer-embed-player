@@ -25,8 +25,8 @@
     },
     "homepage": "https://github.com/AudiencePlayer/audienceplayer-embed-player#readme",
     "dependencies": {
-        "video.js": "^8.6.1",
-        "videojs-contrib-eme": "^3.11.1"
+        "video.js": "^8.10.0",
+        "videojs-contrib-eme": "^5.1.2"
     },
     "devDependencies": {
         "@types/chromecast-caf-sender": "^1.0.5",
