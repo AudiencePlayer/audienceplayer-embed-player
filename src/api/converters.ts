@@ -73,11 +73,13 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
         label: item.locale_label,
     }));
 
+    const currentTime = continueFromPreviousPosition && config.appa < config.time_marker_end ? config.appa : 0;
+
     return {
         entitlements: entitlements,
         subtitles: subtitles,
         pulseToken: config.pulse_token,
-        currentTime: continueFromPreviousPosition ? config.appa : 0,
+        currentTime: currentTime,
         articleId: config.article_id,
         assetId: config.asset_id,
         subtitleLocale: config.user_subtitle_locale,

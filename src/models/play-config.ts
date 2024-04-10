@@ -1,6 +1,6 @@
 export interface PlayConfig {
     pulseToken: string;
-    currentTime?: number;
+    currentTime: number;
     entitlements: PlayEntitlement[];
     subtitles: PlayConfigSubtitle[];
     articleId?: number;

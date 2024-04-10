@@ -26,6 +26,7 @@ export const articleAssetPlayMutation = `
             user_audio_locale
             aspect_ratio
             issued_at
+            time_marker_end
         }
     }
 `;
