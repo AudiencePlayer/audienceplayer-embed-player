@@ -26,6 +26,7 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
             src: entitlement.manifest,
             type: entitlement.mime_type,
             protectionInfo: null,
+            mediaProvider: entitlement.media_provider,
         };
 
         if (entitlement.encryption_type) {

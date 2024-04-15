@@ -1,5 +1,5 @@
 import {PlayConfig} from '../models/play-config';
-import {isChrome, supportsHLS, supportsNativeHLS} from '../utils/platform';
+import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
