@@ -157,6 +157,7 @@ export class ChromecastSender {
                     ...textTrackParam,
                     ...extraInfoParam,
                     pulseToken: articlePlayConfig.pulseToken,
+                    mediaProvider: entitlement.mediaProvider,
                 };
 
                 // @ts-ignore
