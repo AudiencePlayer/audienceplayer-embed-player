@@ -45,6 +45,7 @@ module.exports = {
         library: {
             type: 'module',
         },
+        clean: true,
     },
     watchOptions: {
         ignored: /dist/,

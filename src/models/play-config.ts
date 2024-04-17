@@ -15,6 +15,7 @@ export interface PlayEntitlement {
     src: string;
     type: string;
     protectionInfo: PlayConfigProtection[] | null;
+    mediaProvider: string;
 }
 
 export interface PlayConfigSubtitle {
