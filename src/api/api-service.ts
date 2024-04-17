@@ -16,19 +16,16 @@ export class ApiService {
     }
 
     getArticleAssetPlayConfig(articleId: number, assetId: number, continueFromPreviousPosition: boolean) {
-        return graphRequest(
-            this.apiFetchUrl,
-            articleAssetPlayMutation,
-            {articleId, assetId, protocols: ['dash', 'mss', 'hls']},
-            this.token
-        ).then((response: any) => {
-            if (!response || !response.data || response.errors) {
-                const {message, code} = response.errors[0];
-                throw {message, code}; // @TODO to play config error
-            }
+        return graphRequest(this.apiFetchUrl, articleAssetPlayMutation, {articleId, assetId, protocols: ['dash', 'hls']}, this.token).then(
+            (response: any) => {
+                if (!response || !response.data || response.errors) {
+                    const {message, code} = response.errors[0];
+                    throw {message, code}; // @TODO to play config error
+                }
 
-            return toPlayConfig(response.data.ArticleAssetPlay, continueFromPreviousPosition);
-        });
+                return toPlayConfig(response.data.ArticleAssetPlay, continueFromPreviousPosition);
+            }
+        );
     }
 
     getArticle(articleId: number) {
