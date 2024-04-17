@@ -36,7 +36,7 @@
         "pre-commit": "^1.2.2",
         "prettier": "1.16.4",
         "script-loader": "^0.7.2",
-        "stylelint": "^9.1.1",
+        "stylelint": "^16.3.1",
         "stylelint-config-standard": "^18.1.0",
         "ts-loader": "^9.4.4",
         "tslint": "~6.1.0",
