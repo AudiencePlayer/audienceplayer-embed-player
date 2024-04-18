@@ -38,6 +38,8 @@ import {VideoPlayer} from '../../dist/bundle.js';
     const videoPlayer = new VideoPlayer();
     videoPlayer.init(initParam);
 
+    outputConfig.innerText = 'videojs.VERSION: ' + videojs.VERSION;
+
     function playVideo() {
         storeValues(false);
 
