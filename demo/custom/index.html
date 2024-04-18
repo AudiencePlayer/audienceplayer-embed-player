@@ -15,9 +15,10 @@
             <form class="param-form">
                 <label for="protocol">Protocol</label>
                 <select id="protocol">
-                    <option value="application/dash+xml">DASH</option>
-                    <option value="application/vnd.apple.mpegurl">HLS</option>
-                    <option value="application/vnd.ms-sstr+xml">MS Smooth</option>
+                    <option value="application/dash+xml">MPEG-DASH [application/dash+xml]</option>
+                    <option value="application/vnd.apple.mpegurl">HLS [application/vnd.apple.mpegurl]</option>
+                    <option value="application/vnd.ms-sstr+xml">MS Smooth [application/vnd.ms-sstr+xml]</option>
+                    <option value="video/mp4">Progressive download [video/mp4]</option>
                 </select>
 
                 <label for="src">Source (manifest)</label>
@@ -29,6 +30,9 @@
                     <option value="jetstream">Jet-Stream</option>
                     <option value="aws">AWS</option>
                 </select>
+
+                <label for="muted">Start muted</label>
+                <input type="checkbox" id="muted" />
 
                 <hr />
                 <label for="encryptionProvider">Encryption provider</label>
@@ -56,7 +60,9 @@
                 <button class="button button__back" id="video-button-destroy">destroy</button>
                 <button class="button button__play" id="video-button-start"></button>
             </div>
-            <pre id="output"></pre>
+            <pre id="outputConfig"></pre>
+            <pre id="outputAudio"></pre>
+            <pre id="outputMessage"></pre>
         </div>
         <script src="../../dist/video.js"></script>
         <script src="custom-player.js" type="module"></script>

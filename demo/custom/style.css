@@ -95,6 +95,10 @@ body {
 }
 
 pre {
+    width: calc(100% - 2rem);
+    padding: 1rem;
+    background-color: #eee;
+    border: 1px solid #000;
     font-family: monospace;
     font-size: 12px;
 }

@@ -12,27 +12,22 @@ import {VideoPlayer} from '../../dist/bundle.js';
         'token',
         'certificateUrl',
         'contentKeyId',
+        'muted',
     ];
 
     loadValues();
     storeValues(false);
 
-    const protocol = localStorage.getItem('protocol');
-    const src = localStorage.getItem('src');
-    const mediaProvider = localStorage.getItem('mediaProvider');
-    const encryptionProvider = localStorage.getItem('encryptionProvider');
-    const keyDeliveryUrl = localStorage.getItem('keyDeliveryUrl');
-    const token = localStorage.getItem('token');
-    const certificateUrl = localStorage.getItem('certificateUrl');
-    const contentKeyId = localStorage.getItem('contentKeyId');
+    const muted = localStorage.getItem('muted');
 
-    const tokenParameter = token ? {token} : {};
-    const output = document.querySelector('#output');
+    const outputConfig = document.querySelector('#outputConfig');
+    const outputAudio = document.querySelector('#outputAudio');
+    const outputMessage = document.querySelector('#outputMessage');
 
     const initParam = {
         selector: '.media-player__video-player',
         options: {
-            autoplay: true,
+            autoplay: muted === 'true' ? 'muted' : true,
         },
     };
 
@@ -44,6 +39,20 @@ import {VideoPlayer} from '../../dist/bundle.js';
     videoPlayer.init(initParam);
 
     function playVideo() {
+        storeValues(false);
+
+        const protocol = localStorage.getItem('protocol');
+        const src = localStorage.getItem('src');
+        const mediaProvider = localStorage.getItem('mediaProvider');
+        const encryptionProvider = localStorage.getItem('encryptionProvider');
+        const keyDeliveryUrl = localStorage.getItem('keyDeliveryUrl');
+        const token = localStorage.getItem('token');
+        const certificateUrl = localStorage.getItem('certificateUrl');
+        const contentKeyId = localStorage.getItem('contentKeyId');
+
+        const protectionType =
+            protocol === 'application/dash+xml' ? 'Widevine' : protocol === 'application/vnd.apple.mpegurl' ? 'FairPlay' : 'PlayReady';
+
         const config = {
             pulseToken: null,
             entitlements: [
@@ -53,13 +62,16 @@ import {VideoPlayer} from '../../dist/bundle.js';
                     protectionInfo:
                         encryptionProvider === 'none'
                             ? null
-                            : {
-                                  encryptionProvider: encryptionProvider,
-                                  keyDeliveryUrl: keyDeliveryUrl,
-                                  token: token,
-                                  certificateUrl: certificateUrl,
-                                  contentKeyId: contentKeyId,
-                              },
+                            : [
+                                  {
+                                      type: protectionType,
+                                      encryptionProvider: encryptionProvider,
+                                      keyDeliveryUrl: keyDeliveryUrl,
+                                      token: token,
+                                      certificateUrl: certificateUrl,
+                                      contentKeyId: contentKeyId,
+                                  },
+                              ],
                     mediaProvider: mediaProvider,
                 },
             ],
@@ -67,14 +79,13 @@ import {VideoPlayer} from '../../dist/bundle.js';
             audioLocale: '',
         };
 
-        //
+        outputConfig.innerText = JSON.stringify(config, null, 4);
 
         videoPlayer.play(config, initParam);
 
         const playerInstance = videoPlayer.getPlayer();
 
         playerInstance.on('loadedmetadata', () => {
-            output.innerText = 'Loaded metadata';
             const audioTracks = playerInstance.audioTracks();
             const out = [];
             if (audioTracks) {
@@ -85,7 +96,15 @@ import {VideoPlayer} from '../../dist/bundle.js';
                     });
                 }
             }
-            output.innerText = 'Audio tracks \n' + JSON.stringify(out, null, 4);
+            outputAudio.innerText = 'Audio tracks \n' + JSON.stringify(out, null, 4);
+        });
+
+        playerInstance.on('error', e => {
+            outputMessage.innerText = JSON.stringify(playerInstance.error(), null, 4);
+        });
+
+        playerInstance.on('durationchange', () => {
+            outputMessage.innerText = 'Duration change: ' + playerInstance.duration();
         });
     }
 
