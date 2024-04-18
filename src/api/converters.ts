@@ -42,7 +42,10 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
                         certificateUrl: config.fairplay_certificate_url,
                         keyDeliveryUrl: entitlement.key_delivery_url,
                         encryptionProvider: entitlement.encryption_provider,
-                        contentKeyId: entitlement.content_key_id,
+                        contentKeyId:
+                            entitlement.encryption_provider === 'azl'
+                                ? entitlement.key_delivery_url.replace('https://', 'skd://')
+                                : entitlement.content_key_id,
                     },
                 ];
             }
