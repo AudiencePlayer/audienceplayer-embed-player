@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>AudiencePlayer Embed Player - Custom</title>
+        <link href="../../dist/style.css" rel="stylesheet" />
+        <link href="style.css" rel="stylesheet" />
+    </head>
+    <body>
+        <div class="page">
+            <div class="media-player">
+                <div class="media-player__layer media-player__video-player"></div>
+            </div>
+            <form class="param-form">
+                <label for="protocol">Protocol</label>
+                <select id="protocol">
+                    <option value="application/dash+xml">MPEG-DASH [application/dash+xml]</option>
+                    <option value="application/vnd.apple.mpegurl">HLS [application/vnd.apple.mpegurl]</option>
+                    <option value="application/vnd.ms-sstr+xml">MS Smooth [application/vnd.ms-sstr+xml]</option>
+                    <option value="video/mp4">Progressive download [video/mp4]</option>
+                </select>
+
+                <label for="src">Source (manifest)</label>
+                <input type="text" id="src" placeholder="https://" />
+
+                <label for="src">Media provider</label>
+                <select id="mediaProvider">
+                    <option value="azure">Azure</option>
+                    <option value="jetstream">Jet-Stream</option>
+                    <option value="aws">AWS</option>
+                </select>
+
+                <label for="muted">Start muted</label>
+                <input type="checkbox" id="muted" />
+
+                <hr />
+                <label for="encryptionProvider">Encryption provider</label>
+                <select id="encryptionProvider">
+                    <option value="none">None</option>
+                    <option value="azl">azl [Azure legacy]</option>
+                    <option value="axi">Axinom</option>
+                    <option value="ezd">EZDrm</option>
+                </select>
+
+                <label for="keyDeliveryUrl">Key delivery URL</label>
+                <input type="text" id="keyDeliveryUrl" placeholder="" />
+
+                <label for="token">Token</label>
+                <input type="text" id="token" placeholder="" />
+
+                <label for="certificateUrl">FPS Certificate URL</label>
+                <input type="text" id="certificateUrl" placeholder="https://" />
+
+                <label for="contentKeyId">HLS Key URI</label>
+                <input type="text" id="contentKeyId" placeholder="" />
+            </form>
+            <div class="button-panel">
+                <button class="button" id="setButton">Save & reload</button>
+                <button class="button button__back" id="video-button-destroy">destroy</button>
+                <button class="button button__play" id="video-button-start"></button>
+            </div>
+            <pre id="outputConfig"></pre>
+            <pre id="outputAudio"></pre>
+            <pre id="outputMessage"></pre>
+        </div>
+        <script src="../../dist/video.js"></script>
+        <script src="custom-player.js" type="module"></script>
+    </body>
+</html>
