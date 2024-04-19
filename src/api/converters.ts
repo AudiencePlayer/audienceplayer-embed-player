@@ -45,7 +45,7 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
                         contentKeyId:
                             entitlement.encryption_provider === 'azl'
                                 ? entitlement.key_delivery_url.replace('https://', 'skd://')
-                                : entitlement.content_key_id,
+                                : entitlement.hls_key_uri,
                     },
                 ];
             }
