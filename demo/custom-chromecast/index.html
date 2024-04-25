@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>AudiencePlayer Embed Player - Custom Chromecast</title>
+        <link href="../../dist/style.css" rel="stylesheet" />
+        <link href="style.css" rel="stylesheet" />
+    </head>
+    <body>
+        <div class="page">
+            <form class="param-form">
+                <label for="chromecastReceiver">Chromecast receiver ID</label>
+                <input type="text" id="chromecastReceiver" placeholder=0A..." />
+
+                <label for="protocol">Protocol</label>
+                <select id="protocol">
+                    <option value="application/dash+xml">MPEG-DASH [application/dash+xml]</option>
+                    <option value="application/vnd.apple.mpegurl">HLS [application/vnd.apple.mpegurl]</option>
+                    <option value="application/vnd.ms-sstr+xml">MS Smooth [application/vnd.ms-sstr+xml]</option>
+                    <option value="video/mp4">Progressive download [video/mp4]</option>
+                </select>
+
+                <label for="src">Source (manifest)</label>
+                <input type="text" id="src" placeholder="https://" />
+
+                <label for="src">Media provider</label>
+                <select id="mediaProvider">
+                    <option value="azure">Azure</option>
+                    <option value="jetstream">Jet-Stream</option>
+                    <option value="aws">AWS</option>
+                </select>
+            </form>
+            <div class="button-panel">
+                <button class="button" id="setButton">Save & reload</button>
+                <button class="button button__play" id="video-button-start"></button>
+                <div class="button" id="cast-button"></div>
+            </div>
+            <pre id="output"></pre>
+        </div>
+        <script src="../../dist/video.js"></script>
+        <script src="custom-chromecast.js" type="module"></script>
+    </body>
+</html>
