@@ -112,7 +112,7 @@ export class ChromecastSender {
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article, extraInfo?: any) {
         if (articlePlayConfig && articlePlayConfig.entitlements && articlePlayConfig.entitlements.length > 0) {
             let contentType = null;
-            const supportedContentTypes = ['application/vnd.apple.mpegurl', 'video/mp4'];
+            const supportedContentTypes = ['application/dash+xml', 'video/mp4'];
             const entitlement = articlePlayConfig.entitlements.find(item => {
                 if (supportedContentTypes.includes(item.type)) {
                     contentType = item.type;
