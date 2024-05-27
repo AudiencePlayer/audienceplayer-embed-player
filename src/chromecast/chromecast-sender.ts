@@ -152,10 +152,12 @@ export class ChromecastSender {
                 const audioLocaleParam = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
                 const textTrackParam = articlePlayConfig.subtitleLocale ? {preferredTextLocale: articlePlayConfig.subtitleLocale} : {};
                 const extraInfoParam = extraInfo ? {extraInfo: JSON.stringify(extraInfo)} : {};
+
                 mediaInfo.customData = {
                     ...audioLocaleParam,
                     ...textTrackParam,
                     ...extraInfoParam,
+                    entitlements: articlePlayConfig.entitlements,
                     pulseToken: articlePlayConfig.pulseToken,
                     mediaProvider: entitlement.mediaProvider,
                 };
