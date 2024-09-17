@@ -8,6 +8,7 @@ export declare class VideoPlayer {
     private currentTextTrack;
     private currentAudioTrack;
     private metadataLoaded;
+    private currentTime;
     constructor(baseUrl: string, projectId: number);
     init(initParams: InitParams): void;
     play(playConfig: PlayConfig, initParams: InitParams): void;

@@ -199,6 +199,7 @@ export class PlayerLogProcessor {
             event_type: eventType,
             appa: playerEvent.playPosition,
             appr: Math.min(playerEvent.playPosition / playerEvent.mediaDuration, 1),
+            resolution_tag: playerEvent.resolution,
         };
     }
 
