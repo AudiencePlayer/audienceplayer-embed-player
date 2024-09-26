@@ -23,6 +23,7 @@ export interface PlayerProperties {
     playPosition: number;
     audioTrack: string;
     textTrack: string;
+    resolution: string;
 }
 
 export interface PlayerEventState extends PlayerProperties {
@@ -46,6 +47,7 @@ export interface PlayerEventPayload {
     subtitle_locale?: string;
     audio_locale?: string;
     event_payload?: string;
+    resolution_tag?: string;
 }
 
 // generic abstraction of player events that are taken from the video player, Chromecast and mobile implementations

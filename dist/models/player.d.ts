@@ -21,6 +21,7 @@ export interface PlayerProperties {
     playPosition: number;
     audioTrack: string;
     textTrack: string;
+    resolution: string;
 }
 export interface PlayerEventState extends PlayerProperties {
     eventType: PlayerEventTypes;
@@ -41,6 +42,7 @@ export interface PlayerEventPayload {
     subtitle_locale?: string;
     audio_locale?: string;
     event_payload?: string;
+    resolution_tag?: string;
 }
 export declare enum PlayerEventTypes {
     playStart = "playStart",

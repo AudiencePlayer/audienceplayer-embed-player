@@ -23,6 +23,7 @@ export class VideoPlayer {
     private currentTextTrack: string;
     private currentAudioTrack: string;
     private metadataLoaded: boolean;
+    private currentTime: number;
 
     constructor(baseUrl: string, projectId: number) {
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
@@ -172,6 +173,9 @@ export class VideoPlayer {
 
         this.playerLoggerService.destroy();
         this.player = null;
+        this.currentAudioTrack = null;
+        this.currentTextTrack = null;
+        this.currentTime = -1;
     }
 
     getPlayer(): any {
@@ -207,9 +211,13 @@ export class VideoPlayer {
         });
 
         this.player.on('timeupdate', () => {
-            this.checkSelectedTracks();
+            const tempTime = Math.ceil(this.player.currentTime()) || 0;
+            if (this.currentTime !== tempTime) {
+                this.currentTime = tempTime;
+                this.checkSelectedTracks();
 
-            this.playerLoggerService.onCurrentTimeUpdated(this.player.currentTime() || 0);
+                this.playerLoggerService.onCurrentTimeUpdated(this.currentTime);
+            }
         });
 
         this.player.on('durationchange', () => {
@@ -243,6 +251,14 @@ export class VideoPlayer {
 
         let selectedAudioTrack = '';
         let selectedTextTrack = '';
+        let selectedResolution = null;
+
+        const videoWidth = this.player.videoWidth();
+        const videoHeight = this.player.videoHeight();
+
+        if (videoWidth > 0 && videoHeight > 0) {
+            selectedResolution = videoWidth + 'x' + videoHeight;
+        }
 
         const tracks = this.player.textTracks() as any;
         for (let i = 0; i < tracks.length; i++) {
@@ -262,6 +278,7 @@ export class VideoPlayer {
         this.playerLoggerService.updateProperties({
             textTrack: selectedTextTrack,
             audioTrack: selectedAudioTrack,
+            resolution: selectedResolution,
         });
 
         if (this.currentTextTrack !== null && this.currentTextTrack !== selectedTextTrack) {

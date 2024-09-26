@@ -152,6 +152,7 @@ export class PlayerLoggerService {
             playPosition: 0,
             audioTrack: null,
             textTrack: null,
+            resolution: null,
         };
     }
 

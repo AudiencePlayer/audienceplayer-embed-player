@@ -1,3 +1,11 @@
+# 2.1
+
+Added resolution to logging
+
+# 2.0.4
+
+Updated video.js to 8.11.8
+
 # 2.0
 
 The base player has changed from `azure-media-player` to `video-js`.
