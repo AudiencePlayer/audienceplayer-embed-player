@@ -13,7 +13,7 @@ export interface PlayConfig {
 
 export interface PlayEntitlement {
     src: string;
-    type: string;
+    type: MimeType;
     protectionInfo: PlayConfigProtection[] | null;
     mediaProvider: string;
 }
@@ -42,3 +42,5 @@ export enum ArticlePlayErrors {
     offlineError = 'offlineError',
     maxConcurrentStreamNumberError = 'maxConcurrentStreamNumberError',
 }
+
+export type MimeType = 'application/x-mpegURL' | 'application/dash+xml' | 'application/vnd.ms-sstr+xml' | 'video/mp4';

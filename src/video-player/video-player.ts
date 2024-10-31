@@ -117,7 +117,7 @@ export class VideoPlayer {
 
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
-        const hlsSources = playConfig.entitlements.filter(entitlement => entitlement.type === 'application/vnd.apple.mpegurl');
+        const hlsSources = playConfig.entitlements.filter(entitlement => entitlement.type === 'application/x-mpegURL');
         const configureHLSOnly = supportsHLS() && hlsSources.length > 0; // make sure there is actually HLS
         const playSources = playConfig.entitlements
             .map(entitlement => {
@@ -129,10 +129,7 @@ export class VideoPlayer {
                 };
             })
             .filter(playOption => {
-                return (
-                    (playOption.type === 'application/vnd.apple.mpegurl' && configureHLSOnly) ||
-                    (playOption.type !== 'application/vnd.apple.mpegurl' && !configureHLSOnly)
-                );
+                return (playOption.type === 'application/x-mpegURL' && configureHLSOnly) || !configureHLSOnly;
             });
 
         this.player.src(playSources);

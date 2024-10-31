@@ -53,7 +53,7 @@ import {VideoPlayer} from '../../dist/bundle.js';
         const contentKeyId = localStorage.getItem('contentKeyId');
 
         const protectionType =
-            protocol === 'application/dash+xml' ? 'Widevine' : protocol === 'application/vnd.apple.mpegurl' ? 'FairPlay' : 'PlayReady';
+            protocol === 'application/dash+xml' ? 'Widevine' : protocol === 'application/x-mpegURL' ? 'FairPlay' : 'PlayReady';
 
         const config = {
             pulseToken: null,

@@ -41,7 +41,7 @@ export function getEmeOptionsFromEntitlement(entitlement: PlayEntitlement): EmeO
                     };
                 }
                 break;
-            case 'application/vnd.apple.mpegurl':
+            case 'application/x-mpegURL':
                 protectionInfo = entitlement.protectionInfo.find(p => p.type === 'FairPlay');
                 if (protectionInfo) {
                     if (protectionInfo.encryptionProvider === 'azl') {

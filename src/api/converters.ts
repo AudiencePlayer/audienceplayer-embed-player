@@ -1,4 +1,4 @@
-import {PlayConfig, PlayEntitlement, ArticlePlayErrors} from '../models/play-config';
+import {PlayConfig, PlayEntitlement, ArticlePlayErrors, MimeType} from '../models/play-config';
 import {Article} from '../models/article';
 import {FileData} from '../models/file-data';
 
@@ -17,7 +17,7 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
     configEntitlements.forEach((entitlement: any) => {
         const entitlementConfig: PlayEntitlement = {
             src: entitlement.manifest,
-            type: entitlement.mime_type,
+            type: toMimeType(entitlement.mime_type),
             protectionInfo: null,
             mediaProvider: entitlement.media_provider,
         };
@@ -147,5 +147,19 @@ export function toPlayConfigError(code: number): ArticlePlayErrors {
 
         default:
             return ArticlePlayErrors.serverError;
+    }
+}
+
+export function toMimeType(mimeType: string): MimeType {
+    switch (mimeType) {
+        case 'application/x-mpegURL':
+        case 'application/dash+xml':
+        case 'video/mp4':
+            return mimeType;
+        case 'application/vnd.apple.mpegurl': // convert legacy HLS mime-type
+            return 'application/x-mpegURL';
+        default:
+            console.warn(`Unknown mime-type ${mimeType}, defaulting to mp4`);
+            return 'video/mp4';
     }
 }
