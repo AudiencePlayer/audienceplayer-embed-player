@@ -26,7 +26,7 @@ export interface PlayConfigSubtitle {
 }
 
 export interface PlayConfigProtection {
-    type: 'Widevine' | 'PlayReady' | 'FairPlay';
+    type: DrmType;
     authenticationToken?: string;
     certificateUrl?: string;
     keyDeliveryUrl: string;
@@ -43,4 +43,7 @@ export enum ArticlePlayErrors {
     maxConcurrentStreamNumberError = 'maxConcurrentStreamNumberError',
 }
 
-export type MimeType = 'application/x-mpegURL' | 'application/dash+xml' | 'application/vnd.ms-sstr+xml' | 'video/mp4';
+export type DrmType = 'Widevine' | 'PlayReady' | 'FairPlay';
+export type MimeType = 'application/x-mpegURL' | 'application/dash+xml' | 'video/mp4';
+export const MimeTypeHls = 'application/x-mpegURL';
+export const MimTypeDash = 'application/dash+xml';

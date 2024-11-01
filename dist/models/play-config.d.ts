@@ -23,7 +23,7 @@ export interface PlayConfigSubtitle {
     label: string;
 }
 export interface PlayConfigProtection {
-    type: 'Widevine' | 'PlayReady' | 'FairPlay';
+    type: DrmType;
     authenticationToken?: string;
     certificateUrl?: string;
     keyDeliveryUrl: string;
@@ -38,4 +38,7 @@ export declare enum ArticlePlayErrors {
     offlineError = "offlineError",
     maxConcurrentStreamNumberError = "maxConcurrentStreamNumberError"
 }
-export declare type MimeType = 'application/x-mpegURL' | 'application/dash+xml' | 'application/vnd.ms-sstr+xml' | 'video/mp4';
+export declare type DrmType = 'Widevine' | 'PlayReady' | 'FairPlay';
+export declare type MimeType = 'application/x-mpegURL' | 'application/dash+xml' | 'video/mp4';
+export declare const MimeTypeHls = "application/x-mpegURL";
+export declare const MimTypeDash = "application/dash+xml";

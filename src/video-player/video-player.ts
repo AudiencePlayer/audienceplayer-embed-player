@@ -1,4 +1,4 @@
-import {PlayConfig} from '../models/play-config';
+import {MimeTypeHls, PlayConfig} from '../models/play-config';
 import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
@@ -117,7 +117,7 @@ export class VideoPlayer {
 
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
-        const hlsSources = playConfig.entitlements.filter(entitlement => entitlement.type === 'application/x-mpegURL');
+        const hlsSources = playConfig.entitlements.filter(entitlement => entitlement.type === MimeTypeHls);
         const configureHLSOnly = supportsHLS() && hlsSources.length > 0; // make sure there is actually HLS
         const playSources = playConfig.entitlements
             .map(entitlement => {
@@ -129,7 +129,7 @@ export class VideoPlayer {
                 };
             })
             .filter(playOption => {
-                return (playOption.type === 'application/x-mpegURL' && configureHLSOnly) || !configureHLSOnly;
+                return (playOption.type === MimeTypeHls && configureHLSOnly) || !configureHLSOnly;
             });
 
         this.player.src(playSources);
