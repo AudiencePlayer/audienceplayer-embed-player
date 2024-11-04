@@ -112,7 +112,7 @@ export class ChromecastSender {
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article, extraInfo?: any) {
         if (articlePlayConfig && articlePlayConfig.entitlements && articlePlayConfig.entitlements.length > 0) {
             let contentType = null;
-            const supportedContentTypes = ['application/vnd.apple.mpegurl', 'video/mp4'];
+            const supportedContentTypes = ['application/x-mpegURL', 'application/vnd.apple.mpegurl', 'video/mp4'];
             const entitlement = articlePlayConfig.entitlements.find(item => {
                 if (supportedContentTypes.includes(item.type)) {
                     contentType = item.type;
@@ -193,7 +193,7 @@ export class ChromecastSender {
                 request.currentTime = continueFromPreviousPosition ? playConfig.currentTime : 0;
                 return castSession.loadMedia(request);
             } else {
-                throw {message: 'Unexpected manifest format in articlePlayConfig'};
+                throw {message: 'Unexpected manifest format in articlePlayConfig ' + JSON.stringify(playConfig)};
             }
         }
     }

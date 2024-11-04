@@ -118,6 +118,7 @@ export class VideoPlayer {
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
         const hlsSources = playConfig.entitlements.filter(entitlement => entitlement.type === MimeTypeHls);
+        // @TODO filter out types based on unsupported encryption (e.g. HLS ok, but not with FPS for Chrome)
         const configureHLSOnly = supportsHLS() && hlsSources.length > 0; // make sure there is actually HLS
         const playSources = playConfig.entitlements
             .map(entitlement => {
