@@ -1,4 +1,4 @@
-import {PlayConfig, PlayEntitlement, ArticlePlayErrors, MimeType} from '../models/play-config';
+import {PlayConfig, PlayEntitlement, ArticlePlayErrors, MimeType, MimeTypeHls, MimeTypeDash, MimeTypeMp4} from '../models/play-config';
 import {Article} from '../models/article';
 import {FileData} from '../models/file-data';
 
@@ -153,14 +153,14 @@ export function toPlayConfigError(code: number): ArticlePlayErrors {
 
 export function toMimeType(mimeType: string): MimeType {
     switch (mimeType) {
-        case 'application/x-mpegURL':
-        case 'application/dash+xml':
-        case 'video/mp4':
+        case MimeTypeHls:
+        case MimeTypeDash:
+        case MimeTypeMp4:
             return mimeType;
         case 'application/vnd.apple.mpegurl': // convert legacy HLS mime-type
-            return 'application/x-mpegURL';
+            return MimeTypeHls;
         default:
             console.warn(`Unknown mime-type ${mimeType}, defaulting to mp4`);
-            return 'video/mp4';
+            return MimeTypeMp4;
     }
 }
