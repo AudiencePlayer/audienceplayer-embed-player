@@ -1,4 +1,4 @@
-import {VideoPlayer, MimeTypeHls, MimTypeDash} from '../../dist/bundle.js';
+import {VideoPlayer, MimeTypeHls, MimeTypeDash} from '../../dist/bundle.js';
 
 (function() {
     const urlQueryString = window.location.search;
@@ -52,7 +52,7 @@ import {VideoPlayer, MimeTypeHls, MimTypeDash} from '../../dist/bundle.js';
         const certificateUrl = localStorage.getItem('certificateUrl');
         const contentKeyId = localStorage.getItem('contentKeyId');
 
-        const protectionType = protocol === MimTypeDash ? 'Widevine' : protocol === MimeTypeHls ? 'FairPlay' : 'PlayReady';
+        const protectionType = protocol === MimeTypeDash ? 'Widevine' : protocol === MimeTypeHls ? 'FairPlay' : 'PlayReady';
 
         const config = {
             pulseToken: null,

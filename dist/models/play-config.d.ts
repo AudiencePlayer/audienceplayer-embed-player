@@ -13,6 +13,7 @@ export interface PlayConfig {
 export interface PlayEntitlement {
     src: string;
     type: MimeType;
+    isLive: boolean;
     protectionInfo: PlayConfigProtection[] | null;
     mediaProvider: string;
 }
@@ -41,4 +42,5 @@ export declare enum ArticlePlayErrors {
 export declare type DrmType = 'Widevine' | 'PlayReady' | 'FairPlay';
 export declare type MimeType = 'application/x-mpegURL' | 'application/dash+xml' | 'video/mp4';
 export declare const MimeTypeHls = "application/x-mpegURL";
-export declare const MimTypeDash = "application/dash+xml";
+export declare const MimeTypeDash = "application/dash+xml";
+export declare const MimeTypeMp4 = "video/mp4";

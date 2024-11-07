@@ -1,4 +1,4 @@
-import {PlayConfigProtection, PlayEntitlement, MimTypeDash, MimeTypeHls} from '../models/play-config';
+import {PlayConfigProtection, PlayEntitlement, MimeTypeDash, MimeTypeHls} from '../models/play-config';
 import {EmeOptions} from '../models/player-options';
 
 declare const videojs: any;
@@ -9,7 +9,7 @@ export function getEmeOptionsFromEntitlement(entitlement: PlayEntitlement): EmeO
 
     if (entitlement.protectionInfo) {
         switch (entitlement.type) {
-            case MimTypeDash:
+            case MimeTypeDash:
                 protectionInfo = entitlement.protectionInfo.find(p => p.type === 'Widevine');
                 if (protectionInfo) {
                     emeOptions = {

@@ -18,6 +18,7 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
         const entitlementConfig: PlayEntitlement = {
             src: entitlement.manifest,
             type: toMimeType(entitlement.mime_type),
+            isLive: entitlement.is_live,
             protectionInfo: null,
             mediaProvider: entitlement.media_provider,
         };

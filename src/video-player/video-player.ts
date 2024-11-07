@@ -1,4 +1,4 @@
-import {MimeTypeHls, PlayConfig} from '../models/play-config';
+import {MimeTypeDash, MimeTypeHls, MimeTypeMp4, PlayConfig} from '../models/play-config';
 import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
@@ -117,9 +117,20 @@ export class VideoPlayer {
 
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
-        const hlsSources = playConfig.entitlements.filter(entitlement => entitlement.type === MimeTypeHls);
-        // @TODO filter out types based on unsupported encryption (e.g. HLS ok, but not with FPS for Chrome)
-        const configureHLSOnly = supportsHLS() && hlsSources.length > 0; // make sure there is actually HLS
+        // simple assumption: eigher support FPS or Widevine
+        const supportsFPS = supportsHLS();
+        const supportsWidevine = !supportsFPS;
+        // usable HLS sources are supported without DRM (protectionInfo) or when FPS is supported
+        const hlsSources = playConfig.entitlements.filter(
+            entitlement => entitlement.type === MimeTypeHls && (supportsFPS || entitlement.protectionInfo === null)
+        );
+        // usable Dash sources are supported without DRM or when Widevine is supported
+        const dashSources = playConfig.entitlements.filter(
+            entitlement => entitlement.type === MimeTypeDash && (supportsWidevine || entitlement.protectionInfo === null)
+        );
+        const mp4Sources = playConfig.entitlements.filter(entitlement => entitlement.type === MimeTypeMp4);
+        // configure HLS only in case of `supportsHLS` or when no other sources available.
+        const configureHLSOnly = (supportsHLS() || (dashSources.length === 0 && mp4Sources.length === 0)) && hlsSources.length > 0;
         const playSources = playConfig.entitlements
             .map(entitlement => {
                 const emeOptions = getEmeOptionsFromEntitlement(entitlement);
