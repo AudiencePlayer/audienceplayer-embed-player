@@ -80,6 +80,7 @@ export class VideoPlayer {
                     'currentTimeDisplay',
                     'progressControl',
                     'durationDisplay',
+                    {name: 'spacer'},
                     'customPlaybackRateMenuButton',
                     'customSubtitlesButton',
                     'customAudioTrackButton',

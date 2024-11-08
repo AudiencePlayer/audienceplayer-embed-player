@@ -25,6 +25,14 @@
     display: block !important;
 }
 
+.video-js.vjs-live .vjs-control-bar .vjs-spacer {
+    flex-grow: 1;
+}
+
+.video-js.vjs-live .vjs-control-bar .vjs-duration {
+    display: none !important;
+}
+
 /* removing background from subtitles */
 .video-js .vjs-text-track-display > div > div > div {
     background-color: transparent !important;
