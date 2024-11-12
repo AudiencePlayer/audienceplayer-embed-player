@@ -1,4 +1,4 @@
-import {PlayConfig, PlayEntitlement, ArticlePlayErrors} from '../models/play-config';
+import {PlayConfig, PlayEntitlement, ArticlePlayErrors, MimeType, MimeTypeHls, MimeTypeDash, MimeTypeMp4} from '../models/play-config';
 import {Article} from '../models/article';
 import {FileData} from '../models/file-data';
 
@@ -17,7 +17,8 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
     configEntitlements.forEach((entitlement: any) => {
         const entitlementConfig: PlayEntitlement = {
             src: entitlement.manifest,
-            type: entitlement.mime_type,
+            type: toMimeType(entitlement.mime_type),
+            isLive: entitlement.is_live,
             protectionInfo: null,
             mediaProvider: entitlement.media_provider,
         };
@@ -147,5 +148,19 @@ export function toPlayConfigError(code: number): ArticlePlayErrors {
 
         default:
             return ArticlePlayErrors.serverError;
+    }
+}
+
+export function toMimeType(mimeType: string): MimeType {
+    switch (mimeType) {
+        case MimeTypeHls:
+        case MimeTypeDash:
+        case MimeTypeMp4:
+            return mimeType;
+        case 'application/vnd.apple.mpegurl': // convert legacy HLS mime-type
+            return MimeTypeHls;
+        default:
+            console.warn(`Unknown mime-type ${mimeType}, defaulting to mp4`);
+            return MimeTypeMp4;
     }
 }

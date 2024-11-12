@@ -1,4 +1,4 @@
-import {PlayConfigProtection, PlayEntitlement} from '../models/play-config';
+import {PlayConfigProtection, PlayEntitlement, MimeTypeDash, MimeTypeHls} from '../models/play-config';
 import {EmeOptions} from '../models/player-options';
 
 declare const videojs: any;
@@ -9,7 +9,7 @@ export function getEmeOptionsFromEntitlement(entitlement: PlayEntitlement): EmeO
 
     if (entitlement.protectionInfo) {
         switch (entitlement.type) {
-            case 'application/dash+xml':
+            case MimeTypeDash:
                 protectionInfo = entitlement.protectionInfo.find(p => p.type === 'Widevine');
                 if (protectionInfo) {
                     emeOptions = {
@@ -25,23 +25,7 @@ export function getEmeOptionsFromEntitlement(entitlement: PlayEntitlement): EmeO
                     };
                 }
                 break;
-            case 'application/vnd.ms-sstr+xml':
-                protectionInfo = entitlement.protectionInfo.find(p => p.type === 'PlayReady');
-                if (protectionInfo) {
-                    emeOptions = {
-                        keySystems: {
-                            'com.microsoft.playready': protectionInfo.keyDeliveryUrl,
-                        },
-                        emeHeaders:
-                            protectionInfo.encryptionProvider === 'azl'
-                                ? {
-                                      Authorization: protectionInfo.authenticationToken,
-                                  }
-                                : {},
-                    };
-                }
-                break;
-            case 'application/vnd.apple.mpegurl':
+            case MimeTypeHls:
                 protectionInfo = entitlement.protectionInfo.find(p => p.type === 'FairPlay');
                 if (protectionInfo) {
                     if (protectionInfo.encryptionProvider === 'azl') {

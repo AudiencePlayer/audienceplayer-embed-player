@@ -7,6 +7,7 @@ export const articleAssetPlayMutation = `
                 mime_type
                 protocol
                 manifest
+                is_live
                 token
                 encryption_type
                 key_delivery_url

@@ -1,4 +1,4 @@
-import { PlayConfig, ArticlePlayErrors } from '../models/play-config';
+import { PlayConfig, ArticlePlayErrors, MimeType } from '../models/play-config';
 import { Article } from '../models/article';
 import { FileData } from '../models/file-data';
 export declare function toPlayConfig(config: any, continueFromPreviousPosition: boolean): PlayConfig;
@@ -13,3 +13,4 @@ export declare function getResizedUrl(fileData: FileData, size: {
 export declare function getArticleTitle(article: Article): any;
 export declare function getArticleBackgroundImage(article: Article): FileData;
 export declare function toPlayConfigError(code: number): ArticlePlayErrors;
+export declare function toMimeType(mimeType: string): MimeType;
