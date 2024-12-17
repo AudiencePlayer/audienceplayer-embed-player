@@ -160,6 +160,14 @@ export class ChromecastControls {
             textTracks = this.getTracksByType('TEXT');
         }
 
+        if (sessionMediaInfo && sessionMediaInfo.media) {
+            if (sessionMediaInfo.media.streamType === chrome.cast.media.StreamType.LIVE) {
+                this.rootElement.classList.add('vjs-live');
+            } else {
+                this.rootElement.classList.remove('vjs-live');
+            }
+        }
+
         const trackButton = this.getElement('.vjs-subtitles-button.vjs-menu-button-popup');
         if (textTracks.length > 0) {
             trackButton.classList.remove('vjs-hidden');

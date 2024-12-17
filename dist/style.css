@@ -1945,7 +1945,7 @@ video::-webkit-media-text-track-display {
 }
 
 .video-js .vjs-current-time {
-    display: block !important;
+    /* display: block !important; // why? */
 }
 
 .video-js .vjs-time-divider {
@@ -2078,6 +2078,10 @@ video::-webkit-media-text-track-display {
     display: flex;
     width: 100%;
     align-items: center;
+}
+
+.vjs-live .chromecast-controls__progress-bar {
+    visibility: hidden;
 }
 
 .chromecast-controls__progress-bar-slider-container {

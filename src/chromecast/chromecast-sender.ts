@@ -140,7 +140,7 @@ export class ChromecastSender {
 
             if (entitlement) {
                 const mediaInfo = new chrome.cast.media.MediaInfo(entitlement.src, contentType);
-                mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
+                mediaInfo.streamType = entitlement.isLive ? chrome.cast.media.StreamType.LIVE : chrome.cast.media.StreamType.BUFFERED;
                 mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
                 mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
                 mediaInfo.metadata.title = getArticleTitle(article);

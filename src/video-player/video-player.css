@@ -14,7 +14,7 @@
 }
 
 .video-js .vjs-current-time {
-    display: block !important;
+    /* display: block !important; // why? */
 }
 
 .video-js .vjs-time-divider {
