@@ -1,3 +1,7 @@
+# 2.1.1
+
+Hide progress bar and time when it's a LIVE stream
+
 # 2.1
 
 Added resolution to logging

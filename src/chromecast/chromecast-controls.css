@@ -43,6 +43,10 @@
     align-items: center;
 }
 
+.vjs-live .chromecast-controls__progress-bar {
+    visibility: hidden;
+}
+
 .chromecast-controls__progress-bar-slider-container {
     position: relative;
     width: 100%;

@@ -13,10 +13,6 @@
     font-size: 12px;
 }
 
-.video-js .vjs-current-time {
-    display: block !important;
-}
-
 .video-js .vjs-time-divider {
     display: block !important;
 }
@@ -46,13 +42,6 @@
 .video-js .vjs-button-tooltip {
     display: none !important;
 }
-
-/*
-.video-js .vjs-menu-button-popup .vjs-menu {
-    left: -4em;
-    width: 12em;
-}
-*/
 
 .video-js .vjs-big-play-button {
     border: none;
