@@ -1,3 +1,14 @@
+# 2.2.0
+
+Expanded the `InitParam` with the video.js `skipButtons` configuration.
+The below example shows a configuration with 10 seconds skip for both forward and backward buttons.
+
+```
+{
+    skipButtons: {forward: 10, backward: 10}
+}
+```
+
 # 2.1.1
 
 Hide progress bar and time when it's a LIVE stream
