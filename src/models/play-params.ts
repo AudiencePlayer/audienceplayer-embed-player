@@ -6,6 +6,7 @@ export interface InitParams {
     fullscreen?: boolean;
     chromecastButton?: boolean;
     defaultSkinClass?: string;
+    skipButtons?: {forward: number; backward: number} | false;
 }
 
 export interface PlayParams extends InitParams {

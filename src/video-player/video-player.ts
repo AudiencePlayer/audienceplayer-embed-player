@@ -67,6 +67,7 @@ export class VideoPlayer {
             controls: true,
             controlBar: {
                 pictureInPictureToggle: false,
+                skipButtons: initParams.skipButtons || false,
                 currentTimeDisplay: true,
                 durationDisplay: true,
                 timeDivider: false,
@@ -76,7 +77,9 @@ export class VideoPlayer {
                 chromecastButton: !!initParams.chromecastButton,
                 // order of elements:
                 children: [
+                    'skipBackward',
                     'playToggle',
+                    'skipForward',
                     'currentTimeDisplay',
                     'progressControl',
                     'durationDisplay',
