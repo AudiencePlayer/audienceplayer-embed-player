@@ -9,6 +9,8 @@ The below example shows a configuration with 10 seconds skip for both forward an
 }
 ```
 
+`skipButtons` is optional, and can also have the value `false` to explicitly not set the skipButtons.
+
 # 2.1.1
 
 Hide progress bar and time when it's a LIVE stream
