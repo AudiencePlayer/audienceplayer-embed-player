@@ -2024,6 +2024,24 @@ video::-webkit-media-text-track-display {
     opacity: 1;
 }
 
+.video-js .vjs-skip-intro-button {
+    position: absolute;
+    z-index: 2;
+    bottom: 3em;
+    left: 2em;
+    height: 2em;
+
+}
+
+.video-js .vjs-skip-intro-button .vjs-icon-placeholder:before {
+    content: "\f101";
+    font-family: VideoJS;
+}
+
+.video-js.vjs-user-active {
+
+}
+
 .chromecast-controls.video-js {
     position: absolute;
     display: block;

@@ -12,6 +12,7 @@ import {CustomSubtitlesButton, CustomTextTrackButton} from './plugins/subtitles-
 import {ChromecastButton} from './plugins/chromecast-button';
 import {Overlay} from './plugins/overlay';
 import {CustomOverlay} from './plugins/custom-overlay';
+import {SkipIntro} from './plugins/skip-intro';
 
 declare const videojs: any;
 
@@ -35,6 +36,7 @@ export class VideoPlayer {
         videojs.registerComponent('chromecastButton', ChromecastButton);
         videojs.registerComponent('overlay', Overlay);
         videojs.registerComponent('customOverlay', CustomOverlay);
+        videojs.registerComponent('skipIntro', SkipIntro);
     }
 
     init(initParams: InitParams) {
@@ -223,6 +225,8 @@ export class VideoPlayer {
             this.playerLoggerService.onStop();
         });
 
+        const skipIntroComponent = this.player.skipIntro;
+
         this.player.on('timeupdate', () => {
             const tempTime = Math.ceil(this.player.currentTime()) || 0;
             if (this.currentTime !== tempTime) {
@@ -230,8 +234,26 @@ export class VideoPlayer {
                 this.checkSelectedTracks();
 
                 this.playerLoggerService.onCurrentTimeUpdated(this.currentTime);
+
+                if (!!this.articlePlayConfig.skipIntro && skipIntroComponent) {
+                    const seconds = this.currentTime / 1000;
+                    if (
+                        this.articlePlayConfig.skipIntro.start <= this.currentTime &&
+                        this.articlePlayConfig.skipIntro.end >= this.currentTime
+                    ) {
+                        skipIntroComponent.trigger('show');
+                    } else {
+                        skipIntroComponent.trigger('hide');
+                    }
+                }
             }
         });
+
+        if (skipIntroComponent) {
+            skipIntroComponent.on('skip', () => {
+                this.player.currentTime(this.articlePlayConfig.skipIntro.end);
+            });
+        }
 
         this.player.on('durationchange', () => {
             this.checkSelectedTracks();

@@ -9,6 +9,11 @@ export interface PlayConfig {
     audioLocale: string;
     aspectRatio: string;
     localTimeDelta?: number;
+    skipIntro?: {
+        start: number;
+        end: number;
+        label: string;
+    };
 }
 
 export interface PlayEntitlement {
