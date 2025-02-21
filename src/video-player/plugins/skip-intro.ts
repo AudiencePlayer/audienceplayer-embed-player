@@ -9,35 +9,45 @@ export class SkipIntro extends ClickableComponent {
 
         let timeoutHandle = 0;
         let insideIntro = false;
+        let userActive = false;
         let showing = false;
-        let hiddenAfterTimeout = false;
+        let firstShowWithTimeout = false;
 
         const show = () => {
-            showing = true;
-            this.removeClass('vjs-hidden');
+            if (!showing) {
+                showing = true;
+                this.removeClass('vjs-hidden');
+            }
+        };
 
+        const hide = () => {
+            if (showing) {
+                showing = false;
+                this.addClass('vjs-hidden');
+            }
+        };
+
+        const showWithTimeout = () => {
+            firstShowWithTimeout = true;
+            show();
             clearTimeout(timeoutHandle);
             // @ts-ignore timout handle
             timeoutHandle = setTimeout(function() {
                 hide();
-                hiddenAfterTimeout = true;
-            }, 5000);
-        };
-
-        const hide = () => {
-            showing = false;
-            this.addClass('vjs-hidden');
+                timeoutHandle = 0;
+            }, 10000);
         };
 
         const activeHandler = () => {
-            hiddenAfterTimeout = false;
+            userActive = true;
             if (insideIntro) {
                 show();
             }
         };
 
         const inactiveHandler = () => {
-            if (showing && !insideIntro) {
+            userActive = false;
+            if (timeoutHandle === 0) {
                 hide();
             }
         };
@@ -45,13 +55,15 @@ export class SkipIntro extends ClickableComponent {
         const showHandler = () => {
             insideIntro = true;
 
-            if (!showing && !hiddenAfterTimeout) {
-                show();
+            if (!firstShowWithTimeout) {
+                showWithTimeout();
             }
         };
 
         const hideHandler = () => {
             insideIntro = false;
+            firstShowWithTimeout = false;
+            hide();
         };
 
         player.on('useractive', activeHandler);

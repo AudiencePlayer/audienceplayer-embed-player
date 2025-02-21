@@ -2028,7 +2028,7 @@ video::-webkit-media-text-track-display {
     position: absolute;
     display: flex;
     z-index: 2;
-    bottom: 3em;
+    bottom: 5em;
     left: 1em;
     height: 3em;
     line-height: 3em;
@@ -2053,7 +2053,6 @@ video::-webkit-media-text-track-display {
     line-height: inherit;
     text-align: center;
 }
-
 
 .chromecast-controls.video-js {
     position: absolute;
