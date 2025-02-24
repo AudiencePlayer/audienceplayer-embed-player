@@ -16,14 +16,14 @@ export class SkipIntro extends ClickableComponent {
         const show = () => {
             if (!showing) {
                 showing = true;
-                this.removeClass('vjs-hidden');
+                this.removeClass('vjs-skip-intro-button--hidden');
             }
         };
 
         const hide = () => {
             if (showing) {
                 showing = false;
-                this.addClass('vjs-hidden');
+                this.addClass('vjs-skip-intro-button--hidden');
             }
         };
 
@@ -83,7 +83,7 @@ export class SkipIntro extends ClickableComponent {
 
     createEl() {
         const el = super.createEl('div', {
-            className: 'vjs-skip-intro-button vjs-hidden',
+            className: 'vjs-skip-intro-button vjs-skip-intro-button--hidden',
         });
 
         // Create the text label

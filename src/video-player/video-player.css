@@ -97,6 +97,8 @@
     position: absolute;
     display: flex;
     z-index: 2;
+    opacity: 1;
+    transition: visibility 0.3s, opacity 0.3s;
     bottom: 5em;
     left: 1em;
     height: 3em;
@@ -105,6 +107,10 @@
     border: 1px solid #fff;
     border-radius: 0.5em;
     cursor: pointer;
+}
+
+.video-js .vjs-skip-intro-button.vjs-skip-intro-button--hidden {
+    opacity: 0;
 }
 
 .video-js .vjs-skip-intro-button-text {
