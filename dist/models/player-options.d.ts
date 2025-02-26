@@ -8,6 +8,9 @@ export declare class PlayerOptions {
     customOverlay?: {
         element: HTMLElement;
     };
+    skipIntro?: {
+        label: string;
+    };
 }
 export declare class EmeOptions {
     keySystems?: {

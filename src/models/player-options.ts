@@ -5,6 +5,7 @@ export class PlayerOptions {
     playbackRates?: number[];
     overlay?: {element: HTMLElement};
     customOverlay?: {element: HTMLElement};
+    skipIntro?: {label: string};
 }
 
 export class EmeOptions {

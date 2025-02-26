@@ -1,6 +1,21 @@
+# 2.4.0
+
+Extended the `PlayConfig` with new optional `skipIntro` property to be able to show a "skip the intro button", which is implemented as a `ClickableComponent` videojs plugin.
+
+```
+skipIntro?: {
+    start: number;
+    end: number;
+    label: string;
+};
+```
+
+`start` and `end` in seconds.
+The `label` contains the text for the skp button label.
+
 # 2.3.0
 
-Expanded the `InitParam` with the video.js `skipButtons` configuration.
+Extended the `InitParam` with the video.js `skipButtons` configuration.
 The below example shows a configuration with 10 seconds skip for both forward and backward buttons.
 
 ```
