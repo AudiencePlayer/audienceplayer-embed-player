@@ -2,7 +2,7 @@
     "name": "audienceplayer-embed-player",
     "version": "1.0.0",
     "engines": {
-        "node": ">=20.0.0"
+        "node": ">=10.0.0"
     },
     "description": "This library allows you to play your AudiencePlayer videos assets on your website, via the \"headless\" solution of the [AudiencePlayer video platform](https://www.audienceplayer.com).",
     "main": "dist/bundle.js",
