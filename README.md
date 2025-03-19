@@ -11,8 +11,11 @@ There is no npm package, so install from the GitHub link:
 
 ### Usage with dependency management `npm`
 
-The dependencies are set up in such a way that they are peer dependencies. So make sure that your project contains 'video.js' and 'videojs-contrib-eme' in it's package.json.
+The dependencies are set up in such a way that they should be peer dependencies in your project. So make sure that your project contains 'video.js' and 'videojs-contrib-eme' in it's package.json with matching versions.
 You can also use the pre-packaged javascript if you do not want to use it as peer dependencies; then instead of adding the peer dependenices, the `dist/videojs-packaged.js` can also be included in a way that suits you.
+
+N.B. make sure to NOT use the videojs-packaged.js when you have set up the peer dependencies.
+
 E.g. for javascript:
 
 ```javascript
@@ -56,7 +59,7 @@ Create a new instance of the `embed-player`:
 const apiBaseUrl = '<your-audienceplayer-api-url-here>'; // default: 'https://api.audienceplayer.com'
 const projectId = 8; // your AudiencePlayer project id
 
-const player = new EmbedPlayer(videojs, {apiBaseUrl, projectId});
+const player = new EmbedPlayer(videojs /* global instance of videojs */, {apiBaseUrl, projectId});
 ```
 
 The `play()` method provides a promise that, in case of successful asset fetch will return the player's config, otherwise - an error will be thrown.
