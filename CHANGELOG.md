@@ -1,3 +1,11 @@
+# 2.6.0
+
+Changes to handling with the global instance of `videojs` to enable projects to add 'videojs' as peer dependencies.
+
+Split videojs packaged css and css that belongs to the library, allowing projects to completely use another theme and have a way to still leverage the css that is belongs to this library.
+
+`EmbedPlayer` and `VideoPlayer` constructor now exprt to get an instance of `videojs`.
+
 # 2.5.0
 
 Update `node` to `v22.14.0`, typescript to `5.4.5`

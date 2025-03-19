@@ -48,7 +48,7 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
         splashEl.style.backgroundImage = `url(${posterImageUrl})`;
     }
 
-    const embedPlayer = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
+    const embedPlayer = new EmbedPlayer(videojs, {projectId, apiBaseUrl, chromecastReceiverAppId});
     embedPlayer.initVideoPlayer(initParam);
 
     embedPlayer

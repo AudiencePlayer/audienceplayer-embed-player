@@ -1,9 +1,7 @@
-declare const videojs: any;
-
-export function supportsNativeHLS() {
+export function supportsNativeHLS(videojs: any) {
     return (videojs.browser.IS_ANY_SAFARI && videojs.browser.IS_IOS) || videojs.browser.IS_SAFARI;
 }
 
-export function supportsHLS() {
+export function supportsHLS(videojs: any) {
     return videojs.browser.IS_ANY_SAFARI || videojs.browser.IS_IOS;
 }

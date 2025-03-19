@@ -1,9 +1,11 @@
-declare const videojs: any;
+export function createCustomOverlaykPlugin(videojsInstance: any) {
+    const Component = videojsInstance.getComponent('Component');
 
-const Component = videojs.getComponent('Component');
-
-export class CustomOverlay extends Component {
-    createEl() {
-        return this.options_.element;
+    class CustomOverlay extends Component {
+        createEl() {
+            return this.options_.element;
+        }
     }
+
+    videojsInstance.registerComponent('customOverlay', CustomOverlay);
 }

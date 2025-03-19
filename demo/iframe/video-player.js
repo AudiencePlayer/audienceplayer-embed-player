@@ -18,13 +18,13 @@ import {EmbedPlayer} from '../../dist/bundle.js';
         selector: '.video-wrapper',
         options: {
             autoplay: autoplay && autoplay === 'true',
-        }
+        },
     };
     if (posterImageUrl) {
         initParam.options.poster = posterImageUrl;
     }
 
-    const embedPlayer = new EmbedPlayer({projectId, apiBaseUrl});
+    const embedPlayer = new EmbedPlayer(videojs, {projectId, apiBaseUrl});
 
     embedPlayer
         .play({
@@ -33,7 +33,8 @@ import {EmbedPlayer} from '../../dist/bundle.js';
             assetId,
             ...tokenParameter,
             continueFromPreviousPosition: continueFromPreviousPosition ? continueFromPreviousPosition === 'true' : true,
-        }).catch(error => {
+        })
+        .catch(error => {
             console.error(error);
         });
 })();

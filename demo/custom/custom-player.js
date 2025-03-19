@@ -35,7 +35,7 @@ import {VideoPlayer, MimeTypeHls, MimeTypeDash} from '../../dist/bundle.js';
     document.getElementById('video-button-destroy').addEventListener('click', destroyVideo);
     document.getElementById('setButton').addEventListener('click', () => storeValues(true));
 
-    const videoPlayer = new VideoPlayer();
+    const videoPlayer = new VideoPlayer(videojs);
     videoPlayer.init(initParam);
 
     outputConfig.innerText = 'videojs.VERSION: ' + videojs.VERSION;

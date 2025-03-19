@@ -9,7 +9,7 @@ export declare class EmbedPlayer {
     private videoPlayer;
     private castSender;
     private apiService;
-    constructor(properties: {
+    constructor(videojsInstance: any, properties: {
         projectId: number;
         apiBaseUrl: string;
         chromecastReceiverAppId: string;
