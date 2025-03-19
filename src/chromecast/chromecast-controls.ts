@@ -1,5 +1,3 @@
-/// <reference path="../../node_modules/@types/chromecast-caf-sender/index.d.ts" />
-
 import {getNativeLanguage} from '../utils/locale';
 
 interface TrackInfo {

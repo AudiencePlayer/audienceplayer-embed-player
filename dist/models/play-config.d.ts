@@ -44,8 +44,8 @@ export declare enum ArticlePlayErrors {
     offlineError = "offlineError",
     maxConcurrentStreamNumberError = "maxConcurrentStreamNumberError"
 }
-export declare type DrmType = 'Widevine' | 'PlayReady' | 'FairPlay';
-export declare type MimeType = 'application/x-mpegURL' | 'application/dash+xml' | 'video/mp4';
+export type DrmType = 'Widevine' | 'PlayReady' | 'FairPlay';
+export type MimeType = 'application/x-mpegURL' | 'application/dash+xml' | 'video/mp4';
 export declare const MimeTypeHls = "application/x-mpegURL";
 export declare const MimeTypeDash = "application/dash+xml";
 export declare const MimeTypeMp4 = "video/mp4";
