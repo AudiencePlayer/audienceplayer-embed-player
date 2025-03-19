@@ -1,102 +1,104 @@
-declare const videojs: any;
+export function createSkipIntroPlugin(videojsInstance: any) {
+    const ClickableComponent = videojsInstance.getComponent('ClickableComponent');
+    const dom = videojsInstance.dom || videojsInstance;
 
-const ClickableComponent = videojs.getComponent('ClickableComponent');
-const dom = videojs.dom || videojs;
+    class SkipIntro extends ClickableComponent {
+        constructor(player: any, options: any) {
+            super(player, options);
 
-export class SkipIntro extends ClickableComponent {
-    constructor(player: any, options: any) {
-        super(player, options);
+            let timeoutHandle = 0;
+            let insideIntro = false;
+            let userActive = false;
+            let showing = false;
+            let firstShowWithTimeout = false;
 
-        let timeoutHandle = 0;
-        let insideIntro = false;
-        let userActive = false;
-        let showing = false;
-        let firstShowWithTimeout = false;
+            const show = () => {
+                if (!showing) {
+                    showing = true;
+                    this.removeClass('vjs-skip-intro-button--hidden');
+                }
+            };
 
-        const show = () => {
-            if (!showing) {
-                showing = true;
-                this.removeClass('vjs-skip-intro-button--hidden');
-            }
-        };
+            const hide = () => {
+                if (showing) {
+                    showing = false;
+                    this.addClass('vjs-skip-intro-button--hidden');
+                }
+            };
 
-        const hide = () => {
-            if (showing) {
-                showing = false;
-                this.addClass('vjs-skip-intro-button--hidden');
-            }
-        };
-
-        const showWithTimeout = () => {
-            firstShowWithTimeout = true;
-            show();
-            clearTimeout(timeoutHandle);
-            // @ts-ignore timout handle
-            timeoutHandle = setTimeout(function() {
-                hide();
-                timeoutHandle = 0;
-            }, 10000);
-        };
-
-        const activeHandler = () => {
-            userActive = true;
-            if (insideIntro) {
+            const showWithTimeout = () => {
+                firstShowWithTimeout = true;
                 show();
-            }
-        };
+                clearTimeout(timeoutHandle);
+                // @ts-ignore timout handle
+                timeoutHandle = setTimeout(function() {
+                    hide();
+                    timeoutHandle = 0;
+                }, 10000);
+            };
 
-        const inactiveHandler = () => {
-            userActive = false;
-            if (timeoutHandle === 0) {
+            const activeHandler = () => {
+                userActive = true;
+                if (insideIntro) {
+                    show();
+                }
+            };
+
+            const inactiveHandler = () => {
+                userActive = false;
+                if (timeoutHandle === 0) {
+                    hide();
+                }
+            };
+
+            const showHandler = () => {
+                insideIntro = true;
+
+                if (!firstShowWithTimeout) {
+                    showWithTimeout();
+                }
+            };
+
+            const hideHandler = () => {
+                insideIntro = false;
+                firstShowWithTimeout = false;
                 hide();
-            }
-        };
+            };
 
-        const showHandler = () => {
-            insideIntro = true;
+            player.on('useractive', activeHandler);
+            player.on('userinactive', inactiveHandler);
 
-            if (!firstShowWithTimeout) {
-                showWithTimeout();
-            }
-        };
+            this.on('show', showHandler);
+            this.on('hide', hideHandler);
 
-        const hideHandler = () => {
-            insideIntro = false;
-            firstShowWithTimeout = false;
-            hide();
-        };
+            this.on('dispose', function() {
+                this.off('show', showHandler);
+                this.off('hide', hideHandler);
 
-        player.on('useractive', activeHandler);
-        player.on('userinactive', inactiveHandler);
+                player.off('useractive', activeHandler);
+                player.off('userinactive', inactiveHandler);
+            });
+        }
 
-        this.on('show', showHandler);
-        this.on('hide', hideHandler);
+        createEl() {
+            const el = super.createEl('div', {
+                className: 'vjs-skip-intro-button vjs-skip-intro-button--hidden',
+            });
 
-        this.on('dispose', function() {
-            this.off('show', showHandler);
-            this.off('hide', hideHandler);
+            // Create the text label
+            const text = document.createElement('span');
+            text.className = 'vjs-skip-intro-button-text';
+            text.innerText = this.options_.label || 'Skip';
 
-            player.off('useractive', activeHandler);
-            player.off('userinactive', inactiveHandler);
-        });
+            el.appendChild(text);
+
+            return el;
+        }
+
+        handleClick(event: any) {
+            this.trigger('skip');
+        }
     }
 
-    createEl() {
-        const el = super.createEl('div', {
-            className: 'vjs-skip-intro-button vjs-skip-intro-button--hidden',
-        });
-
-        // Create the text label
-        const text = document.createElement('span');
-        text.className = 'vjs-skip-intro-button-text';
-        text.innerText = this.options_.label || 'Skip';
-
-        el.appendChild(text);
-
-        return el;
-    }
-
-    handleClick(event: any) {
-        this.trigger('skip');
-    }
+    videojsInstance.registerComponent('skipIntro', SkipIntro);
 }

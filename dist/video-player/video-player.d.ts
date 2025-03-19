@@ -1,6 +1,7 @@
 import { PlayConfig } from '../models/play-config';
 import { InitParams } from '../models/play-params';
 export declare class VideoPlayer {
+    private videojsInstance;
     private player;
     private playerLoggerService;
     private articlePlayConfig;
@@ -9,7 +10,7 @@ export declare class VideoPlayer {
     private currentAudioTrack;
     private metadataLoaded;
     private currentTime;
-    constructor(baseUrl: string, projectId: number);
+    constructor(videojsInstance: any, baseUrl: string, projectId: number);
     init(initParams: InitParams): void;
     play(playConfig: PlayConfig, initParams: InitParams): void;
     setPoster(posterUrl: string): void;

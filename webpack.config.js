@@ -15,11 +15,16 @@ module.exports = {
     resolve: {
         extensions: ['.ts'],
     },
+    // Prevents bundling peer dependencies
+    externals: {
+        'video.js': 'video.js',
+        'videojs-contrib-eme': 'videojs-contrib-eme',
+    },
     plugins: [
         new WebpackConcatPlugin({
             bundles: [
                 {
-                    dest: './dist/video.js',
+                    dest: './dist/videojs-packaged.js',
                     src: [
                         './node_modules/video.js/dist/video.min.js',
                         './node_modules/videojs-contrib-eme/dist/videojs-contrib-eme.min.js',
@@ -27,11 +32,11 @@ module.exports = {
                 },
                 {
                     dest: './dist/style.css',
-                    src: [
-                        './node_modules/video.js/dist/video-js.css',
-                        './src/video-player/video-player.css',
-                        './src/chromecast/chromecast-controls.css',
-                    ],
+                    src: ['./src/video-player/video-player.css', './src/chromecast/chromecast-controls.css'],
+                },
+                {
+                    dest: './dist/videojs-packaged.css',
+                    src: ['./node_modules/video.js/dist/video-js.css'],
                 },
             ],
         }),

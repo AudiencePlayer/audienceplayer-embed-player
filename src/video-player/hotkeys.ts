@@ -1,8 +1,19 @@
-declare const videojs: any;
+export function createHotKeysFunction(videojesInstance: any, options: {backward: number; forward: number}) {
+    const PlayToggle = videojesInstance.getComponent('PlayToggle');
 
-const PlayToggle = videojs.getComponent('PlayToggle');
+    function skip(component: any, skipTime: number) {
+        const currentVideoTime = component.currentTime();
+        const liveTracker = component.liveTracker;
+        const duration = liveTracker && liveTracker.isLive() ? liveTracker.seekableEnd() : component.duration();
+        let newTime = currentVideoTime + skipTime;
+        if (newTime > duration) {
+            newTime = duration;
+        } else if (newTime < 0) {
+            newTime = 0;
+        }
+        component.currentTime(newTime);
+    }
 
-export function hotkeys(options: {backward: number; forward: number}) {
     return function(event: KeyboardEvent) {
         switch (event.key) {
             case ' ':
@@ -16,17 +27,4 @@ export function hotkeys(options: {backward: number; forward: number}) {
                 break;
         }
     };
-}
-
-function skip(component: any, skipTime: number) {
-    const currentVideoTime = component.currentTime();
-    const liveTracker = component.liveTracker;
-    const duration = liveTracker && liveTracker.isLive() ? liveTracker.seekableEnd() : component.duration();
-    let newTime = currentVideoTime + skipTime;
-    if (newTime > duration) {
-        newTime = duration;
-    } else if (newTime < 0) {
-        newTime = 0;
-    }
-    component.currentTime(newTime);
 }

@@ -1,11 +1,11 @@
 {
     "compilerOptions": {
         "noImplicitAny": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "declaration": true,
         "declarationDir": "dist",
         "outDir": "dist",
-        "module": "es2020",
+        "module": "ESNext",
         "moduleResolution": "node",
         "skipLibCheck": true,
         "target": "es2020",

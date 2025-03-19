@@ -1,9 +1,7 @@
 import {PlayConfigProtection, PlayEntitlement, MimeTypeDash, MimeTypeHls} from '../models/play-config';
 import {EmeOptions} from '../models/player-options';
 
-declare const videojs: any;
-
-export function getEmeOptionsFromEntitlement(entitlement: PlayEntitlement): EmeOptions {
+export function getEmeOptionsFromEntitlement(videojs: any, entitlement: PlayEntitlement): EmeOptions {
     let protectionInfo: PlayConfigProtection = null;
     let emeOptions: EmeOptions = {};
 

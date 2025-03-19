@@ -1,3 +1,11 @@
+# 2.5.0
+
+Changes to handling with the global instance of `videojs` to enable projects to add 'videojs' as peer dependencies.
+
+Split videojs packaged css and css that belongs to the library, allowing projects to completely use another theme and have a way to still leverage the css that is belongs to this library.
+
+`EmbedPlayer` and `VideoPlayer` constructor now exprt to get an instance of `videojs`.
+
 # 2.4.0
 
 Extended the `PlayConfig` with new optional `skipIntro` property to be able to show a "skip the intro button", which is implemented as a `ClickableComponent` videojs plugin.

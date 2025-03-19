@@ -1,0 +1,16 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "audienceplayer-embed-player": "file:../",
+    "video.js": "8.11.8",
+    "videojs-contrib-eme": "3.11.2"
+  }
+}
