@@ -53,7 +53,7 @@ export function createAudioTrackPlugin(videojsInstance: any) {
         }
 
         handleClick(event: any) {
-            // super.handleClick(event); // @TODO sure?
+            super.handleClick(event);
 
             // the audio track list will automatically toggle other tracks
             // off for us.
@@ -86,7 +86,7 @@ export function createAudioTrackPlugin(videojsInstance: any) {
 
         createItems(items: any = []) {
             // if there's only one audio track, there no point in showing it
-            // this.hideThreshold_ = 1; // @TODO
+            this.hideThreshold_ = 1;
             const tracks = this.player_.audioTracks();
             for (let i = 0; i < tracks.length; i++) {
                 const track = tracks[i];
