@@ -1,4 +1,4 @@
-export function createPlaybackRatekPlugin(videojsInstance: any) {
+export function createPlaybackRatePlugin(videojsInstance: any) {
     const PlaybackRateMenuButton = videojsInstance.getComponent('playbackRateMenuButton');
 
     class CustomPlaybackRateMenuButton extends PlaybackRateMenuButton {

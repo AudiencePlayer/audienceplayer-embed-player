@@ -1,1 +1,1 @@
-export declare function createPlaybackRatekPlugin(videojsInstance: any): void;
+export declare function createPlaybackRatePlugin(videojsInstance: any): void;

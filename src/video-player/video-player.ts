@@ -11,7 +11,7 @@ import {createAudioTrackPlugin} from './plugins/audio-track-button';
 import {createChromecastButtonPlugin} from './plugins/chromecast-button';
 import {createCustomOverlaykPlugin} from './plugins/custom-overlay';
 import {createOverlayPlugin} from './plugins/overlay';
-import {createPlaybackRatekPlugin} from './plugins/playback-rate-button';
+import {createPlaybackRatePlugin} from './plugins/playback-rate-button';
 import {createSubtitlesButtonPlugin} from './plugins/subtitles-button';
 
 export class VideoPlayer {
@@ -32,7 +32,7 @@ export class VideoPlayer {
         createSkipIntroPlugin(videojsInstance);
         createCustomOverlaykPlugin(videojsInstance);
         createOverlayPlugin(videojsInstance);
-        createPlaybackRatekPlugin(videojsInstance);
+        createPlaybackRatePlugin(videojsInstance);
         createSkipIntroPlugin(videojsInstance);
         createSubtitlesButtonPlugin(videojsInstance);
     }
