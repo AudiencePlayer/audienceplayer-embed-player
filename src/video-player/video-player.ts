@@ -149,6 +149,9 @@ export class VideoPlayer {
                 return (playOption.type === MimeTypeHls && configureHLSOnly) || !configureHLSOnly;
             });
 
+        if (playSources.find(source => source.keySystems && source.keySystems['com.apple.fps.1_0'])) {
+            this.player.eme.initLegacyFairplay();
+        }
         this.player.src(playSources);
 
         if (initParams.fullscreen) {
