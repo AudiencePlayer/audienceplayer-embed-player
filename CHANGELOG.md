@@ -1,5 +1,7 @@
 # 2.5.0
 
+Updated video.js to 8.22.0 and the videojs-contrib-eme plugin to 5.5.1
+
 Changes to handling with the global instance of `videojs` to enable projects to add 'videojs' as peer dependencies.
 
 Split videojs packaged css and css that belongs to the library, allowing projects to completely use another theme and have a way to still leverage the css that is belongs to this library.
@@ -19,7 +21,7 @@ skipIntro?: {
 ```
 
 `start` and `end` in seconds.
-The `label` contains the text for the skp button label.
+The `label` contains the text for the skip button label.
 
 # 2.3.0
 
