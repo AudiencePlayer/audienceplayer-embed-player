@@ -13,6 +13,8 @@ import {createCustomOverlaykPlugin} from './plugins/custom-overlay';
 import {createOverlayPlugin} from './plugins/overlay';
 import {createPlaybackRatePlugin} from './plugins/playback-rate-button';
 import {createSubtitlesButtonPlugin} from './plugins/subtitles-button';
+import {createChromecastTechPlugin} from './plugins/chromecast-tech';
+import {ChromecastSender} from '../chromecast/chromecast-sender';
 
 export class VideoPlayer {
     private player: any = null;
@@ -23,8 +25,11 @@ export class VideoPlayer {
     private currentAudioTrack: string;
     private metadataLoaded: boolean;
     private currentTime: number;
+    private castSender: ChromecastSender = null;
+    private chromecastTech: any = null;
 
     constructor(private videojsInstance: any, baseUrl: string, projectId: number) {
+        console.log('new VideoPlayer');
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
 
         createAudioTrackPlugin(videojsInstance);
@@ -35,6 +40,7 @@ export class VideoPlayer {
         createPlaybackRatePlugin(videojsInstance);
         createSkipIntroPlugin(videojsInstance);
         createSubtitlesButtonPlugin(videojsInstance);
+        createChromecastTechPlugin(videojsInstance);
     }
 
     init(initParams: InitParams) {
@@ -64,6 +70,7 @@ export class VideoPlayer {
             fluid: false,
             fill: true,
             responsive: true,
+            techOrder: initParams.chromecastReceiverAppId ? ['chromecast', 'html5'] : ['html5'], // chromecast first, to make it the `active tech`.
             controls: true,
             controlBar: {
                 pictureInPictureToggle: false,
@@ -107,6 +114,14 @@ export class VideoPlayer {
 
         this.player = this.videojsInstance(videoElement, playOptions);
         this.player.eme();
+
+        if (initParams.chromecastReceiverAppId) {
+            this.castSender = new ChromecastSender();
+            this.chromecastTech = this.player.tech();
+            this.castSender.init(initParams.chromecastReceiverAppId).then(() => {
+                this.chromecastTech.setChromecast(this.castSender);
+            });
+        }
         this.bindEvents();
     }
 

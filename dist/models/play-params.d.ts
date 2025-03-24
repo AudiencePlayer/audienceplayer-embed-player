@@ -4,6 +4,7 @@ export interface InitParams {
     options: PlayerOptions;
     fullscreen?: boolean;
     chromecastButton?: boolean;
+    chromecastReceiverAppId?: string;
     defaultSkinClass?: string;
     skipButtons?: {
         forward: number;

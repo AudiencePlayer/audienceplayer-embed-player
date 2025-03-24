@@ -29,6 +29,8 @@ import {VideoPlayer, MimeTypeHls, MimeTypeDash} from '../../dist/bundle.js';
         options: {
             autoplay: muted === 'true' ? 'muted' : true,
         },
+        chromecastButton: true, // for testing
+        chromecastReceiverAppId: '8E6EF2C2', // @TODO
     };
 
     document.getElementById('video-button-start').addEventListener('click', playVideo);

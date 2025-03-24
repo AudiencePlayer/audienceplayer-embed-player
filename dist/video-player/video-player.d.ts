@@ -10,6 +10,8 @@ export declare class VideoPlayer {
     private currentAudioTrack;
     private metadataLoaded;
     private currentTime;
+    private castSender;
+    private chromecastTech;
     constructor(videojsInstance: any, baseUrl: string, projectId: number);
     init(initParams: InitParams): void;
     play(playConfig: PlayConfig, initParams: InitParams): void;
