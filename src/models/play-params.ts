@@ -1,4 +1,7 @@
 import {PlayerOptions} from './player-options';
+import {PlayConfig} from './play-config';
+
+export type DeviceModelContext = 'chromecast_legacy' | 'chromecast_4k' | null;
 
 export interface InitParams {
     selector: string | HTMLElement;
@@ -8,6 +11,7 @@ export interface InitParams {
     chromecastReceiverAppId?: string;
     defaultSkinClass?: string;
     skipButtons?: {forward: number; backward: number} | false;
+    getSource: (deviceModelContext: DeviceModelContext) => Promise<PlayConfig>;
 }
 
 export interface PlayParams extends InitParams {

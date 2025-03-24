@@ -13,6 +13,9 @@ export declare class VideoPlayer {
     private castSender;
     private chromecastTech;
     constructor(videojsInstance: any, baseUrl: string, projectId: number);
+    middleware: (player: any) => {
+        setSource: (srcObj: any, next: any) => void;
+    };
     init(initParams: InitParams): void;
     play(playConfig: PlayConfig, initParams: InitParams): void;
     setPoster(posterUrl: string): void;

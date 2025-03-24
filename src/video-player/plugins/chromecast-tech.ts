@@ -4,9 +4,9 @@ import {ChromecastConnectionInfo} from '../../models/cast-info';
 export function createChromecastTechPlugin(videojsInstance: any) {
     const Tech = videojsInstance.getComponent('Tech');
     const dom = videojsInstance.dom || videojsInstance;
+    let castSender: ChromecastSender = null; // used in instance of ChromecastTech and in static methods
 
     class ChromecastTech extends Tech {
-        private castSender: ChromecastSender = null;
         private connectionInfo: ChromecastConnectionInfo = {
             available: false,
             connected: false,
@@ -25,12 +25,12 @@ export function createChromecastTechPlugin(videojsInstance: any) {
         }
 
         static canPlaySource(x: any) {
-            console.log('canPlaySource', x);
-            return this.castSender && this.castSender.isConnected();
+            console.log('canPlaySource', x, castSender);
+            return castSender && castSender.isConnected();
         }
 
-        static isSupported(x: any) {
-            console.log('isSupported', x);
+        static isSupported() {
+            console.log('isSupported');
             return true;
         }
 
@@ -159,8 +159,9 @@ export function createChromecastTechPlugin(videojsInstance: any) {
         }
 
         setChromecast(cc: ChromecastSender) {
-            this.castSender = cc;
-            this.castSender.onConnectedListener(info => {
+            console.log('setChromecast');
+            castSender = cc;
+            castSender.onConnectedListener(info => {
                 console.log('onCon', info);
                 this.connectionInfo = {
                     ...this.connectionInfo,
@@ -169,9 +170,9 @@ export function createChromecastTechPlugin(videojsInstance: any) {
                 };
             });
 
-            this.castSender.onMediaInfoListener(state => {});
+            castSender.onMediaInfoListener(state => {});
 
-            this.castSender.onCurrentTimeListener((currenTime, duration) => {});
+            castSender.onCurrentTimeListener((currenTime, duration) => {});
 
             this.connectionInfo.available = true;
         }

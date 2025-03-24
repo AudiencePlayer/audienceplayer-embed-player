@@ -43,6 +43,15 @@ export class VideoPlayer {
         createChromecastTechPlugin(videojsInstance);
     }
 
+    middleware = (player: any) => {
+        return {
+            setSource: (srcObj: any, next: any) => {
+                console.log('setSource called', this.castSender && this.castSender.isConnected());
+                next(null, srcObj);
+            },
+        };
+    };
+
     init(initParams: InitParams) {
         this.destroy();
 
@@ -112,6 +121,7 @@ export class VideoPlayer {
             ...initParams.options,
         };
 
+        this.videojsInstance.use('*', this.middleware);
         this.player = this.videojsInstance(videoElement, playOptions);
         this.player.eme();
 
