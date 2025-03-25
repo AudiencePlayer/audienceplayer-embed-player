@@ -1,3 +1,9 @@
+# 2.5.0
+
+Update `node` to `v22.14.0`, typescript to `5.4.5`
+
+Distribution files built again.
+
 # 2.4.0
 
 Extended the `PlayConfig` with new optional `skipIntro` property to be able to show a "skip the intro button", which is implemented as a `ClickableComponent` videojs plugin.
