@@ -1,5 +1,3 @@
-/// <reference path="../../node_modules/@types/chromecast-caf-sender/index.d.ts" />
-
 import {PlayConfig} from '../models/play-config';
 import {Article} from '../models/article';
 import {getArticleTitle} from '../api/converters';
