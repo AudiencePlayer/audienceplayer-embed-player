@@ -1,3 +1,18 @@
+# 2.6.0
+
+Updated video.js to 8.22.0 and the videojs-contrib-eme plugin to 5.5.1
+
+Changes to handling with the global instance of `videojs` to enable projects to add 'videojs' as peer dependencies.
+
+Split videojs packaged css and css that belongs to the library, allowing projects to completely use another theme and have a way to still leverage the css that is belongs to this library.
+
+`EmbedPlayer` and `VideoPlayer` constructor now expect to get an instance of `videojs`.
+
+### Upgrade instructions if you want to keep using the old pre packaged videojs dependencies:
+
+The `dist` folder now contains `videojs-packaged.js`, `videojs-packaged.css` and `style.css` instead of the old `video.js` and `style.css`. Note that the `style.css` only contains the styles needed for this library and the videojs css will now come from the `videojs-packaged.css`, so make sure to include it as well.
+Replace occurrences of the `EmbedPlayer` and `VideoPlayer` constructors with the extra `videojs` argument; e.g. `new EmbedPlayer(videojs, properties: {projectId: 8, apiBaseUrl: 'https://...'; chromecastReceiverAppId: 'A...'})`
+
 # 2.5.0
 
 Update `node` to `v22.14.0`, typescript to `5.4.5`
@@ -17,7 +32,7 @@ skipIntro?: {
 ```
 
 `start` and `end` in seconds.
-The `label` contains the text for the skp button label.
+The `label` contains the text for the skip button label.
 
 # 2.3.0
 

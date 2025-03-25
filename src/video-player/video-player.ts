@@ -4,17 +4,15 @@ import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
 import {InitParams} from '../models/play-params';
-import {CustomPlaybackRateMenuButton} from './plugins/playback-rate-button';
-import {CustomAudioTrackButton} from './plugins/audio-track-button';
-import {hotkeys} from './hotkeys';
+import {createHotKeysFunction} from './hotkeys';
 import {getISO2Locale} from '../utils/locale';
-import {CustomSubtitlesButton, CustomTextTrackButton} from './plugins/subtitles-button';
-import {ChromecastButton} from './plugins/chromecast-button';
-import {Overlay} from './plugins/overlay';
-import {CustomOverlay} from './plugins/custom-overlay';
-import {SkipIntro} from './plugins/skip-intro';
-
-declare const videojs: any;
+import {createSkipIntroPlugin} from './plugins/skip-intro';
+import {createAudioTrackPlugin} from './plugins/audio-track-button';
+import {createChromecastButtonPlugin} from './plugins/chromecast-button';
+import {createCustomOverlaykPlugin} from './plugins/custom-overlay';
+import {createOverlayPlugin} from './plugins/overlay';
+import {createPlaybackRatePlugin} from './plugins/playback-rate-button';
+import {createSubtitlesButtonPlugin} from './plugins/subtitles-button';
 
 export class VideoPlayer {
     private player: any = null;
@@ -26,17 +24,17 @@ export class VideoPlayer {
     private metadataLoaded: boolean;
     private currentTime: number;
 
-    constructor(baseUrl: string, projectId: number) {
+    constructor(private videojsInstance: any, baseUrl: string, projectId: number) {
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
 
-        videojs.registerComponent('customAudioTrackButton', CustomAudioTrackButton);
-        videojs.registerComponent('customTextTrackButton', CustomTextTrackButton);
-        videojs.registerComponent('customSubtitlesButton', CustomSubtitlesButton);
-        videojs.registerComponent('customPlaybackRateMenuButton', CustomPlaybackRateMenuButton);
-        videojs.registerComponent('chromecastButton', ChromecastButton);
-        videojs.registerComponent('overlay', Overlay);
-        videojs.registerComponent('customOverlay', CustomOverlay);
-        videojs.registerComponent('skipIntro', SkipIntro);
+        createAudioTrackPlugin(videojsInstance);
+        createChromecastButtonPlugin(videojsInstance);
+        createSkipIntroPlugin(videojsInstance);
+        createCustomOverlaykPlugin(videojsInstance);
+        createOverlayPlugin(videojsInstance);
+        createPlaybackRatePlugin(videojsInstance);
+        createSkipIntroPlugin(videojsInstance);
+        createSubtitlesButtonPlugin(videojsInstance);
     }
 
     init(initParams: InitParams) {
@@ -58,7 +56,7 @@ export class VideoPlayer {
         videoElement.setAttribute('tabIndex', '0');
         videoElement.setAttribute('width', '100%');
         videoElement.setAttribute('height', '100%');
-        videoElement.disableRemotePlayback = !supportsNativeHLS(); // this will hide the chromecast button. We want to keep Airplay
+        videoElement.disableRemotePlayback = !supportsNativeHLS(this.videojsInstance); // this will hide the chromecast button. We want to keep Airplay
 
         videoContainer.appendChild(videoElement);
 
@@ -95,19 +93,19 @@ export class VideoPlayer {
                 ],
             },
             userActions: {
-                hotkeys: hotkeys({backward: -30, forward: 30}),
+                hotkeys: createHotKeysFunction(this.videojsInstance, {backward: -30, forward: 30}),
             },
             html5: {
                 vhs: {
                     // do to use videojs-http-streaming if it's natively supported
-                    overrideNative: !supportsNativeHLS(),
+                    overrideNative: !supportsNativeHLS(this.videojsInstance),
                     cacheEncryptionKeys: true,
                 },
             },
             ...initParams.options,
         };
 
-        this.player = videojs(videoElement, playOptions);
+        this.player = this.videojsInstance(videoElement, playOptions);
         this.player.eme();
         this.bindEvents();
     }
@@ -124,7 +122,7 @@ export class VideoPlayer {
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
         // simple assumption: eigher support FPS or Widevine
-        const supportsFPS = supportsHLS();
+        const supportsFPS = supportsHLS(this.videojsInstance);
         const supportsWidevine = !supportsFPS;
         // usable HLS sources are supported without DRM (protectionInfo) or when FPS is supported
         const hlsSources = playConfig.entitlements.filter(
@@ -136,10 +134,11 @@ export class VideoPlayer {
         );
         const mp4Sources = playConfig.entitlements.filter(entitlement => entitlement.type === MimeTypeMp4);
         // configure HLS only in case of `supportsHLS` or when no other sources available.
-        const configureHLSOnly = (supportsHLS() || (dashSources.length === 0 && mp4Sources.length === 0)) && hlsSources.length > 0;
+        const configureHLSOnly =
+            (supportsHLS(this.videojsInstance) || (dashSources.length === 0 && mp4Sources.length === 0)) && hlsSources.length > 0;
         const playSources = playConfig.entitlements
             .map(entitlement => {
-                const emeOptions = getEmeOptionsFromEntitlement(entitlement);
+                const emeOptions = getEmeOptionsFromEntitlement(this.videojsInstance, entitlement);
                 return {
                     src: entitlement.src,
                     type: entitlement.type,
@@ -150,6 +149,9 @@ export class VideoPlayer {
                 return (playOption.type === MimeTypeHls && configureHLSOnly) || !configureHLSOnly;
             });
 
+        if (playSources.find(source => source.keySystems && source.keySystems['com.apple.fps.1_0'])) {
+            this.player.eme.initLegacyFairplay();
+        }
         this.player.src(playSources);
 
         if (initParams.fullscreen) {

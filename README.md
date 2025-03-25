@@ -7,34 +7,49 @@ This library allows you to play your AudiencePlayer videos assets on your websit
 There is no npm package, so install from the GitHub link:
 `npm install git+https://github.com/AudiencePlayer/audienceplayer-embed-player`
 
-Check below section `Example of usage` or check out the example project https://github.com/AudiencePlayer/audienceplayer-embed-player-projects
+## Usage
 
-Please mind that `dist/video.js` and `dist/style.css` from this library should be treated as "static files". They should be included directly into your HTML or added as static files via a framework (e.g. Angular, Webpack).
-The library comes with a compiled `dist/bundle.js`, so no `npm prepare` or more dependencies are needed or installed.
+### Usage with dependency management `npm`
 
-## Manual implementation without dependency management
+The dependencies are set up in such a way that they should be peer dependencies in your project. So make sure that your project contains 'video.js' and 'videojs-contrib-eme' in it's package.json with matching versions.
+You can also use the pre-packaged javascript if you do not want to use it as peer dependencies; then instead of adding the peer dependenices, the `dist/videojs-packaged.js` can also be included in a way that suits you.
 
-Copy all files from `dist/` to your project, next to your `index.html`. (in our `demo` folders we link to `../../dist` for simplicity)
+N.B. make sure to NOT use the videojs-packaged.js when you have set up the peer dependencies.
 
-Include the static scripts in your `index.html`:
+E.g. for javascript:
 
-```html
-<script src="video.js"></script>
+```javascript
+import videojs from 'video.js';
+import 'videojs-contrib-eme';
+import {EmbedPlayer} from 'audienceplayer-embed-player';
 ```
 
-The player comes with default css:
+The styling/css part:
+Depending on your project, you should import the video-js style from
+
+`node_modules/video.js/dist/video-js.css`
+
+`node_modules/audienceplayer-embed-player/dist/style.css`
+
+### Manual usage
+
+Make sure the `dist` folder from this library is copied into your project, so you can reference it.
+
+The javascript part: import the pre-packaged videojs in your html from
 
 ```html
-<link href="style.css" rel="stylesheet" />
+<script src="dist/videojs-packaged.js"></script>
 ```
 
-Import `embed-player` in your javascript code:
+Then you can import `embed-player` in your javascript code:
 
 `import {EmbedPlayer} from 'bundle.js';`
 
-or if you have used npm:
+The styling/css part:
 
-`import {EmbedPlayer} from 'audienceplayer-embed-player';`
+```html
+<link href="dist/videojs-packaged.css" rel="stylesheet" /> <link href="dist/style.css" rel="stylesheet" />
+```
 
 ## Methods
 
@@ -44,7 +59,7 @@ Create a new instance of the `embed-player`:
 const apiBaseUrl = '<your-audienceplayer-api-url-here>'; // default: 'https://api.audienceplayer.com'
 const projectId = 8; // your AudiencePlayer project id
 
-const player = new EmbedPlayer({apiBaseUrl, projectId});
+const player = new EmbedPlayer(videojs /* global instance of videojs */, {apiBaseUrl, projectId});
 ```
 
 The `play()` method provides a promise that, in case of successful asset fetch will return the player's config, otherwise - an error will be thrown.
@@ -52,6 +67,12 @@ The `play()` method provides a promise that, in case of successful asset fetch w
 The `destroy()` method will clean-up the player, so that you can safely remove the element referred by the `selector` from the DOM.
 This is typically used when playing the video in a modal dialog or from a different element in the DOM.
 ####important: call .destroy() to make sure the `finish` stream-pulse is sent, so that the user will continue playing on an accurate position.
+
+## Demo / examples
+
+-   A hosted demo can be found here: https://static.audienceplayer.com/embed-demo/demo/
+
+-   The manual example implementations can be found in the `demo` folder. Note the difference in `import` statement when used with `npm`, so these examples are applicable there as well.
 
 ### Default usage with a video player
 
@@ -139,7 +160,7 @@ import {ChromecastControls} from 'bundle.js';
 const chromecastReceiverAppId = `000000`; // replace with the receiver app id
 const token = ''; // replace with your JWT access token or do not provide the `token` property
 const posterImageUrl = 'https://path/to/image'; // or do not provide the `posterImageUrl` property
-const player = new EmbedPlayer({projectId, apiBaseUrl, chromecastReceiverAppId});
+const player = new EmbedPlayer(videojs /* global instance of videojs */, {projectId, apiBaseUrl, chromecastReceiverAppId});
 
 // the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognisable spot next
 // to the play-button/thumbnail or in the menu.
@@ -188,12 +209,6 @@ function stopCastVideo() {
     player.destroy();
 }
 ```
-
-The manual example implementations can be found in the `demo` folder. Note the difference in `import` statement when used with `npm`, so these examples are applicable there as well.
-
-### hosted demo
-
-A hosted demo can be found here: https://static.audienceplayer.com/embed-demo/demo/chromecast/
 
 ### Important to note:
 

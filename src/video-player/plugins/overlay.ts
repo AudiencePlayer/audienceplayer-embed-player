@@ -1,18 +1,20 @@
-declare const videojs: any;
+export function createOverlayPlugin(videojsInstance: any) {
+    const Component = videojsInstance.getComponent('Component');
+    const dom = videojsInstance.dom || videojsInstance;
 
-const Component = videojs.getComponent('Component');
-const dom = videojs.dom || videojs;
+    class Overlay extends Component {
+        createEl() {
+            const el = dom.createEl('div', {
+                className: `vjs-overlay`,
+            });
 
-export class Overlay extends Component {
-    createEl() {
-        const el = dom.createEl('div', {
-            className: `vjs-overlay`,
-        });
+            if (this.options_.element) {
+                el.appendChild(this.options_.element.cloneNode(true));
+            }
 
-        if (this.options_.element) {
-            el.appendChild(this.options_.element.cloneNode(true));
+            return el;
         }
-
-        return el;
     }
+
+    videojsInstance.registerComponent('overlay', Overlay);
 }
