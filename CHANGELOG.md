@@ -1,4 +1,4 @@
-# 2.6.0
+# 3.0.0
 
 Updated video.js to 8.22.0 and the videojs-contrib-eme plugin to 5.5.1
 
