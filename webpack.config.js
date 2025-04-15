@@ -1,7 +1,10 @@
-const path = require('path');
-const WebpackConcatPlugin = require('webpack-concat-files-plugin');
+import path from 'path';
+import {fileURLToPath} from 'url';
+import WebpackConcatPlugin from 'webpack-concat-files-plugin';
 
-module.exports = {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default {
     entry: './src/index.ts',
     module: {
         rules: [

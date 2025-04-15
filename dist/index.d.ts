@@ -8,4 +8,4 @@ import { toMimeType } from './api/converters';
 import { supportsNativeHLS } from './utils/platform';
 import { PlayerLoggerService } from './logging/player-logger-service';
 import { PlayerDeviceTypes } from './models/player';
-export { EmbedPlayer, VideoPlayer, ChromecastControls, ChromecastSender, InitParams, PlayConfig, supportsNativeHLS, MimeTypeHls, MimeTypeDash, MimeType, toMimeType, PlayerLoggerService, PlayerDeviceTypes };
+export { EmbedPlayer, VideoPlayer, ChromecastControls, ChromecastSender, InitParams, PlayConfig, supportsNativeHLS, MimeTypeHls, MimeTypeDash, MimeType, toMimeType, PlayerLoggerService, PlayerDeviceTypes, };
