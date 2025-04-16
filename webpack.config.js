@@ -1,12 +1,14 @@
 import path from 'path';
 import {fileURLToPath} from 'url';
 import WebpackConcatPlugin from 'webpack-concat-files-plugin';
+import CopyPlugin from 'copy-webpack-plugin';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default {
     entry: {
-        bundle: './src/index.ts'
+        bundle: './src/index.ts',
+        logging: './src/logging/index.ts'
     },
     module: {
         rules: [

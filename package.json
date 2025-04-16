@@ -9,10 +9,6 @@
     "main": "dist/bundle.js",
     "module": "dist/bundle.js",
     "types": "dist/index.d.ts",
-    "files": [
-        "dist",
-        "logging"
-    ],
     "scripts": {
         "develop": "webpack --mode development --watch",
         "build": "webpack --mode production",
