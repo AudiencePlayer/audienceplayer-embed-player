@@ -5,7 +5,9 @@ import WebpackConcatPlugin from 'webpack-concat-files-plugin';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default {
-    entry: './src/index.ts',
+    entry: {
+        bundle: './src/index.ts'
+    },
     module: {
         rules: [
             {
@@ -48,7 +50,7 @@ export default {
         outputModule: true,
     },
     output: {
-        filename: 'bundle.js',
+        filename: '[name].js',
         path: path.resolve(__dirname, 'dist'),
         library: {
             type: 'module',
