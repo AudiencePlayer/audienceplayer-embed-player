@@ -1,8 +1,15 @@
-const path = require('path');
-const WebpackConcatPlugin = require('webpack-concat-files-plugin');
+import path from 'path';
+import {fileURLToPath} from 'url';
+import WebpackConcatPlugin from 'webpack-concat-files-plugin';
+import CopyPlugin from 'copy-webpack-plugin';
 
-module.exports = {
-    entry: './src/index.ts',
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default {
+    entry: {
+        bundle: './src/index.ts',
+        logging: './src/logging/index.ts'
+    },
     module: {
         rules: [
             {
@@ -45,7 +52,7 @@ module.exports = {
         outputModule: true,
     },
     output: {
-        filename: 'bundle.js',
+        filename: '[name].js',
         path: path.resolve(__dirname, 'dist'),
         library: {
             type: 'module',

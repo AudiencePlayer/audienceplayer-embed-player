@@ -18,5 +18,5 @@ export {
     MimeTypeHls,
     MimeTypeDash,
     MimeType,
-    toMimeType,
+    toMimeType
 };
