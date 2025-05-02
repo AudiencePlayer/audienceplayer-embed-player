@@ -77,7 +77,7 @@ export class ChromecastSender {
         });
     }
 
-    onMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: any) => void) {
+    onMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void) {
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED, () => {
             const state = this.castPlayer.playerState;
             let info: any = null;
@@ -86,8 +86,13 @@ export class ChromecastSender {
             if (this.castPlayer.isMediaLoaded) {
                 if (this.castPlayer.mediaInfo) {
                     const customData: any = this.castPlayer.mediaInfo.customData;
-                    if (customData && customData.extraInfo) {
-                        info = customData.extraInfo;
+                    if (customData) {
+                        // @TODO extraInfo will be deprecated
+                        if (customData.extraInfo) {
+                            info = JSON.parse(customData.extraInfo);
+                        } else if (customData.articleId && customData.assetId) {
+                            info = {articleId: customData.articleId, assetId: customData.assetId};
+                        }
                     }
                 }
                 callback(state, info);
@@ -107,7 +112,7 @@ export class ChromecastSender {
         return this.supportsHDR;
     }
 
-    getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article, extraInfo?: any) {
+    getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article) {
         if (articlePlayConfig && articlePlayConfig.entitlements && articlePlayConfig.entitlements.length > 0) {
             let contentType = null;
             const supportedContentTypes = ['application/x-mpegURL', 'application/vnd.apple.mpegurl', 'video/mp4'];
@@ -149,15 +154,15 @@ export class ChromecastSender {
 
                 const audioLocaleParam = articlePlayConfig.audioLocale ? {preferredAudioLocale: articlePlayConfig.audioLocale} : {};
                 const textTrackParam = articlePlayConfig.subtitleLocale ? {preferredTextLocale: articlePlayConfig.subtitleLocale} : {};
-                const extraInfoParam = extraInfo ? {extraInfo: JSON.stringify(extraInfo)} : {};
 
                 mediaInfo.customData = {
                     ...audioLocaleParam,
                     ...textTrackParam,
-                    ...extraInfoParam,
                     entitlements: articlePlayConfig.entitlements,
                     pulseToken: articlePlayConfig.pulseToken,
                     mediaProvider: entitlement.mediaProvider,
+                    articleId: articlePlayConfig.articleId,
+                    assetId: articlePlayConfig.assetId,
                 };
 
                 // @ts-ignore
@@ -181,10 +186,10 @@ export class ChromecastSender {
         return {};
     }
 
-    castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean, extraInfo?: any) {
+    castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean) {
         if (this.isConnected()) {
             const castSession = this.castContext.getCurrentSession();
-            const mediaInfo = this.getCastMediaInfo(playConfig, article, extraInfo);
+            const mediaInfo = this.getCastMediaInfo(playConfig, article);
 
             if (mediaInfo) {
                 const request = new chrome.cast.media.LoadRequest(mediaInfo);

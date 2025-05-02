@@ -13,10 +13,13 @@ export declare class ChromecastSender {
         connected: boolean;
         friendlyName: string;
     }) => void): void;
-    onMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: any) => void): void;
+    onMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: {
+        articleId: number;
+        assetId: number;
+    }) => void): void;
     onCurrentTimeListener(callback: (currentTime: number, duration: number) => void): void;
     getSupportsHDR(): boolean;
-    getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article, extraInfo?: any): chrome.cast.media.MediaInfo;
+    getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article): chrome.cast.media.MediaInfo;
     getLicenseUrlFromSrc(src: string, token: string): {
         licenseUrl: string;
         token: string;
@@ -24,7 +27,7 @@ export declare class ChromecastSender {
         licenseUrl?: undefined;
         token?: undefined;
     };
-    castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean, extraInfo?: any): Promise<chrome.cast.ErrorCode>;
+    castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean): Promise<chrome.cast.ErrorCode>;
     isConnected(): boolean;
     stopMedia(): void;
     endSession(stopCasting: boolean): void;

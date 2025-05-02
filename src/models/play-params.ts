@@ -9,7 +9,7 @@ export interface InitParams {
     skipButtons?: {forward: number; backward: number} | false;
 }
 
-export interface PlayParams extends InitParams {
+export interface PlayParams {
     articleId: number;
     assetId: number;
     token: string;

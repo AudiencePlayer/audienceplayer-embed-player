@@ -1,3 +1,9 @@
+# 3.1.0
+
+`VideoPlayer.play()` method no longer needs `initParams` argument
+
+Chromecast `mediaInfo.customData` should contain properties `articleId` and `assetId` instead of the JSON string `extraInfo` which contained the `articleId` and `assetId`.
+
 # 3.0.1
 
 Expose logging as a package for internal use.

@@ -48,7 +48,7 @@ export class EmbedPlayer {
         return this.apiService
             .getArticleAssetPlayConfig(playParams.articleId, playParams.assetId, playParams.continueFromPreviousPosition)
             .then(config => {
-                this.playVideo(config, playParams);
+                this.playVideo(config);
                 return config;
             })
             .catch(error => {
@@ -61,8 +61,8 @@ export class EmbedPlayer {
         this.videoPlayer.destroy();
     }
 
-    playVideo(config: PlayConfig, playParams: PlayParams) {
-        this.videoPlayer.play(config, playParams);
+    playVideo(config: PlayConfig) {
+        this.videoPlayer.play(config);
     }
 
     getVideoPlayer() {

@@ -1,3 +1,4 @@
+import { ApiService } from '../api/api-service';
 import { PlayerLoggerService } from './player-logger-service';
 import { PlayerDeviceTypes } from '../models/player';
-export { PlayerLoggerService, PlayerDeviceTypes, };
+export { ApiService, PlayerLoggerService, PlayerDeviceTypes, };

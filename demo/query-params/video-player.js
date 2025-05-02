@@ -26,9 +26,10 @@ import {EmbedPlayer} from '../../dist/bundle.js';
 
     const embedPlayer = new EmbedPlayer(videojs, {projectId, apiBaseUrl});
 
+    embedPlayer.initVideoPlayer(initParam);
+
     embedPlayer
         .play({
-            ...initParam,
             articleId,
             assetId,
             ...tokenParameter,

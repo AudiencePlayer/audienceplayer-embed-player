@@ -82,7 +82,7 @@ import {VideoPlayer, MimeTypeHls, MimeTypeDash} from '../../dist/bundle.js';
 
         outputConfig.innerText = JSON.stringify(config, null, 4);
 
-        videoPlayer.play(config, initParam);
+        videoPlayer.play(config);
 
         const playerInstance = videoPlayer.getPlayer();
 

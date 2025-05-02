@@ -10,9 +10,10 @@ export declare class VideoPlayer {
     private currentAudioTrack;
     private metadataLoaded;
     private currentTime;
+    private initParams;
     constructor(videojsInstance: any, baseUrl: string, projectId: number);
     init(initParams: InitParams): void;
-    play(playConfig: PlayConfig, initParams: InitParams): void;
+    play(playConfig: PlayConfig): void;
     setPoster(posterUrl: string): void;
     destroy(): void;
     getPlayer(): any;

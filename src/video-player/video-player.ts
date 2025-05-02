@@ -23,6 +23,7 @@ export class VideoPlayer {
     private currentAudioTrack: string;
     private metadataLoaded: boolean;
     private currentTime: number;
+    private initParams: InitParams;
 
     constructor(private videojsInstance: any, baseUrl: string, projectId: number) {
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
@@ -40,6 +41,7 @@ export class VideoPlayer {
     init(initParams: InitParams) {
         this.destroy();
 
+        this.initParams = initParams;
         const videoContainer = initParams.selector instanceof Element ? initParams.selector : document.querySelector(initParams.selector);
 
         if (!videoContainer) {
@@ -110,11 +112,11 @@ export class VideoPlayer {
         this.bindEvents();
     }
 
-    play(playConfig: PlayConfig, initParams: InitParams) {
+    play(playConfig: PlayConfig) {
         this.firstPlayingEvent = true;
         if (!this.player || (this.player && this.player.currentSrc())) {
             this.destroy();
-            this.init(initParams);
+            this.init(this.initParams);
         }
 
         this.articlePlayConfig = playConfig;
@@ -154,7 +156,7 @@ export class VideoPlayer {
         }
         this.player.src(playSources);
 
-        if (initParams.fullscreen) {
+        if (this.initParams.fullscreen) {
             this.player.requestFullscreen();
         }
 
@@ -238,7 +240,6 @@ export class VideoPlayer {
                 this.playerLoggerService.onCurrentTimeUpdated(this.currentTime);
 
                 if (!!this.articlePlayConfig.skipIntro && skipIntroComponent) {
-                    const seconds = this.currentTime / 1000;
                     if (
                         this.articlePlayConfig.skipIntro.start <= this.currentTime &&
                         this.articlePlayConfig.skipIntro.end >= this.currentTime
