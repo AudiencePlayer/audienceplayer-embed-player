@@ -2,6 +2,7 @@
 /// <reference types="chromecast-caf-sender" />
 import { PlayConfig } from '../models/play-config';
 import { Article } from '../models/article';
+import { PlayParamsChromecast } from "../models/play-params";
 export declare class ChromecastSender {
     private castContext;
     private castPlayer;
@@ -20,14 +21,9 @@ export declare class ChromecastSender {
     onCurrentTimeListener(callback: (currentTime: number, duration: number) => void): void;
     getSupportsHDR(): boolean;
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article): chrome.cast.media.MediaInfo;
-    getLicenseUrlFromSrc(src: string, token: string): {
-        licenseUrl: string;
-        token: string;
-    } | {
-        licenseUrl?: undefined;
-        token?: undefined;
-    };
+    getCastMediaInfoByParams(chromecastParams: PlayParamsChromecast): chrome.cast.media.MediaInfo;
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean): Promise<chrome.cast.ErrorCode>;
+    castVideoByParams(chromecastParams: PlayParamsChromecast): Promise<chrome.cast.ErrorCode>;
     isConnected(): boolean;
     stopMedia(): void;
     endSession(stopCasting: boolean): void;

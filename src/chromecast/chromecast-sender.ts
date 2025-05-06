@@ -1,6 +1,7 @@
 import {PlayConfig} from '../models/play-config';
 import {Article} from '../models/article';
 import {getArticleTitle} from '../api/converters';
+import {PlayParamsChromecast} from '../models/play-params';
 
 export class ChromecastSender {
     private castContext: cast.framework.CastContext = null;
@@ -174,16 +175,14 @@ export class ChromecastSender {
         return null;
     }
 
-    getLicenseUrlFromSrc(src: string, token: string) {
-        if (token) {
-            const rootSrc = src.includes('?') ? `${src}&token=` : `${src}?token=`;
-            const licenseUrl = rootSrc + encodeURIComponent(token);
-            return {
-                licenseUrl,
-                token,
-            };
-        }
-        return {};
+    getCastMediaInfoByParams(chromecastParams: PlayParamsChromecast) {
+        const mediaInfo = new chrome.cast.media.MediaInfo('contentIdPlaceHolder', 'application/vnd.cast-media');
+
+        mediaInfo.customData = {
+            ...chromecastParams,
+        };
+
+        return mediaInfo;
     }
 
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean) {
@@ -197,6 +196,20 @@ export class ChromecastSender {
                 return castSession.loadMedia(request);
             } else {
                 throw {message: 'Unexpected manifest format in articlePlayConfig ' + JSON.stringify(playConfig)};
+            }
+        }
+    }
+
+    castVideoByParams(chromecastParams: PlayParamsChromecast) {
+        if (this.isConnected()) {
+            const castSession = this.castContext.getCurrentSession();
+
+            const mediaInfo = this.getCastMediaInfoByParams(chromecastParams);
+            if (mediaInfo) {
+                const request = new chrome.cast.media.LoadRequest(mediaInfo);
+                return castSession.loadMedia(request);
+            } else {
+                throw {message: 'Could not create media info request'};
             }
         }
     }
