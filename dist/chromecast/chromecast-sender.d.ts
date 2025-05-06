@@ -2,7 +2,7 @@
 /// <reference types="chromecast-caf-sender" />
 import { PlayConfig } from '../models/play-config';
 import { Article } from '../models/article';
-import { PlayParamsChromecast } from "../models/play-params";
+import { PlayParamsChromecast } from '../models/play-params';
 export declare class ChromecastSender {
     private castContext;
     private castPlayer;
