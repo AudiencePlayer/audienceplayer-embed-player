@@ -1,6 +1,7 @@
 import {graphRequest} from './graph-request';
 import {articleAssetPlayMutation, articleQuery} from './queries';
 import {toArticle, toPlayConfig} from './converters';
+import {DeviceModelContextEnum} from '../models/play-params';
 
 export class ApiService {
     private apiFetchUrl: string;
@@ -15,17 +16,25 @@ export class ApiService {
         this.token = token;
     }
 
-    getArticleAssetPlayConfig(articleId: number, assetId: number, continueFromPreviousPosition: boolean) {
-        return graphRequest(this.apiFetchUrl, articleAssetPlayMutation, {articleId, assetId, protocols: ['dash', 'hls']}, this.token).then(
-            (response: any) => {
-                if (!response || !response.data || response.errors) {
-                    const {message, code} = response.errors[0];
-                    throw {message, code}; // @TODO to play config error
-                }
-
-                return toPlayConfig(response.data.ArticleAssetPlay, continueFromPreviousPosition);
+    getArticleAssetPlayConfig(
+        articleId: number,
+        assetId: number,
+        continueFromPreviousPosition: boolean,
+        deviceModelContext: DeviceModelContextEnum = null
+    ) {
+        return graphRequest(
+            this.apiFetchUrl,
+            articleAssetPlayMutation,
+            {articleId, assetId, protocols: ['dash', 'hls'], device_model_context: deviceModelContext},
+            this.token
+        ).then((response: any) => {
+            if (!response || !response.data || response.errors) {
+                const {message, code} = response.errors[0];
+                throw {message, code}; // @TODO to play config error
             }
-        );
+
+            return toPlayConfig(response.data.ArticleAssetPlay, continueFromPreviousPosition);
+        });
     }
 
     getArticle(articleId: number) {

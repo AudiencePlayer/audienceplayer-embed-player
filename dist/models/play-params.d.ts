@@ -22,3 +22,11 @@ export interface PlayParamsChromecast {
     token: string;
     continueFromPreviousPosition: boolean;
 }
+export declare enum DeviceModelContextEnum {
+    chromecast_legacy = "chromecast_legacy",
+    chromecast_4k = "chromecast_4k",
+    lg_legacy = "lg_legacy",
+    lg_webos = "lg_webos",
+    samsung_tizen = "samsung_tizen",
+    tpvision_tva = "tpvision_tva"
+}
