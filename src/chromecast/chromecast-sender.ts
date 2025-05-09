@@ -1,7 +1,7 @@
 import {PlayConfig} from '../models/play-config';
 import {Article} from '../models/article';
 import {getArticleTitle} from '../api/converters';
-import {PlayParamsChromecast} from '../models/play-params';
+import {PlayParams} from '../models/play-params';
 
 export class ChromecastSender {
     private castContext: cast.framework.CastContext = null;
@@ -145,9 +145,8 @@ export class ChromecastSender {
             if (entitlement) {
                 const mediaInfo = new chrome.cast.media.MediaInfo(entitlement.src, contentType);
                 mediaInfo.streamType = entitlement.isLive ? chrome.cast.media.StreamType.LIVE : chrome.cast.media.StreamType.BUFFERED;
-                mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
-                mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
-                mediaInfo.metadata.title = getArticleTitle(article);
+
+                this.addMediaInfoToMetaData(article, mediaInfo);
 
                 if (tracks.length > 0) {
                     mediaInfo.tracks = tracks;
@@ -175,11 +174,13 @@ export class ChromecastSender {
         return null;
     }
 
-    getCastMediaInfoByParams(chromecastParams: PlayParamsChromecast) {
+    getCastMediaInfoByParams(playParams: PlayParams, article?: Article) {
         const mediaInfo = new chrome.cast.media.MediaInfo('contentIdPlaceHolder', 'application/vnd.cast-media');
 
+        this.addMediaInfoToMetaData(article, mediaInfo);
+
         mediaInfo.customData = {
-            ...chromecastParams,
+            ...playParams,
         };
 
         return mediaInfo;
@@ -200,11 +201,11 @@ export class ChromecastSender {
         }
     }
 
-    castVideoByParams(chromecastParams: PlayParamsChromecast) {
+    castVideoByParams(playParams: PlayParams) {
         if (this.isConnected()) {
             const castSession = this.castContext.getCurrentSession();
 
-            const mediaInfo = this.getCastMediaInfoByParams(chromecastParams);
+            const mediaInfo = this.getCastMediaInfoByParams(playParams);
             if (mediaInfo) {
                 const request = new chrome.cast.media.LoadRequest(mediaInfo);
                 return castSession.loadMedia(request);
@@ -246,5 +247,17 @@ export class ChromecastSender {
 
     getCastPlayerController() {
         return this.castPlayerController;
+    }
+
+    addMediaInfoToMetaData(article: Article, mediaInfo: chrome.cast.media.MediaInfo) {
+        if (article) {
+            mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+            mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
+            mediaInfo.metadata.title = getArticleTitle(article);
+
+            const image = article.images.length ? article.images[0] : null;
+            // pick high available resolution
+            mediaInfo.metadata.images = image ? [new chrome.cast.Image(`${image.baseUrl}/1920x1080/${image.fileName}`)] : [];
+        }
     }
 }

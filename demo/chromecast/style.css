@@ -62,12 +62,8 @@ body {
     z-index: 3;
 }
 
-.media-player--chromecast .media-player__chromecast-controls {
-    z-index: 3;
-}
-
 .media-player--video .media-player__video-player {
-    z-index: 1;
+    z-index: 4;
 }
 
 .media-player--loading .media-player__loader {

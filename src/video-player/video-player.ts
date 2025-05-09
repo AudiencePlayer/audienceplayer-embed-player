@@ -3,7 +3,7 @@ import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
-import {InitParams} from '../models/play-params';
+import {InitParams, PlayParams} from '../models/play-params';
 import {createHotKeysFunction} from './hotkeys';
 import {getISO2Locale} from '../utils/locale';
 import {createSkipIntroPlugin} from './plugins/skip-intro';
@@ -13,9 +13,14 @@ import {createCustomOverlaykPlugin} from './plugins/custom-overlay';
 import {createOverlayPlugin} from './plugins/overlay';
 import {createPlaybackRatePlugin} from './plugins/playback-rate-button';
 import {createSubtitlesButtonPlugin} from './plugins/subtitles-button';
+import {ApiService} from '../api/api-service';
+import {createChromecastTechPlugin} from './plugins/chromecast-tech';
+import {ChromecastSender} from '../chromecast/chromecast-sender';
 
 export class VideoPlayer {
     private player: any = null;
+    private apiService: ApiService;
+    private castSender: ChromecastSender;
     private playerLoggerService: PlayerLoggerService;
     private articlePlayConfig: PlayConfig;
     private firstPlayingEvent: boolean;
@@ -26,6 +31,7 @@ export class VideoPlayer {
     private initParams: InitParams;
 
     constructor(private videojsInstance: any, baseUrl: string, projectId: number) {
+        this.apiService = new ApiService(baseUrl.replace(/\/*$/, ''), projectId);
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
 
         createAudioTrackPlugin(videojsInstance);
@@ -36,7 +42,17 @@ export class VideoPlayer {
         createPlaybackRatePlugin(videojsInstance);
         createSkipIntroPlugin(videojsInstance);
         createSubtitlesButtonPlugin(videojsInstance);
+        createChromecastTechPlugin(videojsInstance);
     }
+
+    middleware = (player: any) => {
+        return {
+            setSource: (srcObj: any, next: any) => {
+                console.log('setSource called', srcObj, this.castSender && this.castSender.isConnected());
+                next(null, srcObj);
+            },
+        };
+    };
 
     init(initParams: InitParams) {
         this.destroy();
@@ -66,6 +82,7 @@ export class VideoPlayer {
             fluid: false,
             fill: true,
             responsive: true,
+            techOrder: initParams.chromecastReceiverAppId ? ['chromecast', 'html5'] : ['html5'], // chromecast first, to make it the `active tech`.
             controls: true,
             controlBar: {
                 pictureInPictureToggle: false,
@@ -107,23 +124,45 @@ export class VideoPlayer {
             ...initParams.options,
         };
 
+        this.videojsInstance.use('*', this.middleware);
         this.player = this.videojsInstance(videoElement, playOptions);
         this.player.eme();
+
+        if (initParams.chromecastReceiverAppId) {
+            this.castSender = new ChromecastSender();
+            const chromecastTech = this.player.tech();
+            this.castSender.init(initParams.chromecastReceiverAppId).then(() => {
+                chromecastTech.setChromecast(this.castSender);
+            });
+        }
+
         this.bindEvents();
     }
 
+    playByParams(playParams: PlayParams): Promise<number> {
+        this.reset();
+        this.apiService.setToken(playParams.token ? playParams.token : null);
+
+        return this.apiService
+            .getArticleAssetPlayConfig(playParams.articleId, playParams.assetId, playParams.continueFromPreviousPosition)
+            .then(config => {
+                // this.play(config);
+                return 0;
+            })
+            .catch(error => {
+                console.log('err', error);
+                return error.code;
+            });
+    }
+
     play(playConfig: PlayConfig) {
-        this.firstPlayingEvent = true;
-        if (!this.player || (this.player && this.player.currentSrc())) {
-            this.destroy();
-            this.init(this.initParams);
-        }
+        this.reset();
 
         this.articlePlayConfig = playConfig;
 
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
-        // simple assumption: eigher support FPS or Widevine
+        // simple assumption: either support FPS or Widevine
         const supportsFPS = supportsHLS(this.videojsInstance);
         const supportsWidevine = !supportsFPS;
         // usable HLS sources are supported without DRM (protectionInfo) or when FPS is supported
@@ -199,6 +238,14 @@ export class VideoPlayer {
 
     getPlayer(): any {
         return this.player;
+    }
+
+    private reset() {
+        this.firstPlayingEvent = true;
+        if (!this.player || (this.player && this.player.currentSrc())) {
+            this.destroy();
+            this.init(this.initParams);
+        }
     }
 
     private bindEvents() {

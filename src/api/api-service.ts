@@ -30,7 +30,7 @@ export class ApiService {
         ).then((response: any) => {
             if (!response || !response.data || response.errors) {
                 const {message, code} = response.errors[0];
-                throw {message, code}; // @TODO to play config error
+                throw {message, code};
             }
 
             return toPlayConfig(response.data.ArticleAssetPlay, continueFromPreviousPosition);

@@ -7,16 +7,10 @@ export interface InitParams {
     chromecastButton?: boolean;
     defaultSkinClass?: string;
     skipButtons?: {forward: number; backward: number} | false;
+    chromecastReceiverAppId?: string;
 }
 
 export interface PlayParams {
-    articleId: number;
-    assetId: number;
-    token: string;
-    continueFromPreviousPosition: boolean;
-}
-
-export interface PlayParamsChromecast {
     articleId: number;
     assetId: number;
     token: string;

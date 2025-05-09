@@ -2,7 +2,7 @@ import {VideoPlayer} from './video-player/video-player';
 import {ChromecastSender} from './chromecast/chromecast-sender';
 import {ApiService} from './api/api-service';
 import {PlayConfig} from './models/play-config';
-import {InitParams, PlayParams, PlayParamsChromecast} from './models/play-params';
+import {InitParams, PlayParams} from './models/play-params';
 import {getArticleBackgroundImage, getResizedUrl, toPlayConfigError} from './api/converters';
 
 export class EmbedPlayer {
@@ -82,7 +82,7 @@ export class EmbedPlayer {
         castButtonContaner.appendChild(castButton);
     }
 
-    castVideo({articleId, assetId, token, continueFromPreviousPosition}: PlayParamsChromecast) {
+    castVideo({articleId, assetId, token, continueFromPreviousPosition}: PlayParams) {
         if (!articleId) {
             return Promise.reject('articleId property is missing');
         }

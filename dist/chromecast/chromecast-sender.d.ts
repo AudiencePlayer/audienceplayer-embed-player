@@ -2,7 +2,7 @@
 /// <reference types="chromecast-caf-sender" />
 import { PlayConfig } from '../models/play-config';
 import { Article } from '../models/article';
-import { PlayParamsChromecast } from '../models/play-params';
+import { PlayParams } from '../models/play-params';
 export declare class ChromecastSender {
     private castContext;
     private castPlayer;
@@ -21,13 +21,14 @@ export declare class ChromecastSender {
     onCurrentTimeListener(callback: (currentTime: number, duration: number) => void): void;
     getSupportsHDR(): boolean;
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article): chrome.cast.media.MediaInfo;
-    getCastMediaInfoByParams(chromecastParams: PlayParamsChromecast): chrome.cast.media.MediaInfo;
+    getCastMediaInfoByParams(playParams: PlayParams, article?: Article): chrome.cast.media.MediaInfo;
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean): Promise<chrome.cast.ErrorCode>;
-    castVideoByParams(chromecastParams: PlayParamsChromecast): Promise<chrome.cast.ErrorCode>;
+    castVideoByParams(playParams: PlayParams): Promise<chrome.cast.ErrorCode>;
     isConnected(): boolean;
     stopMedia(): void;
     endSession(stopCasting: boolean): void;
     stopCasting(): void;
     getCastPlayer(): cast.framework.RemotePlayer;
     getCastPlayerController(): cast.framework.RemotePlayerController;
+    addMediaInfoToMetaData(article: Article, mediaInfo: chrome.cast.media.MediaInfo): void;
 }

@@ -1,4 +1,4 @@
-import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
+import {VideoPlayer} from '../../dist/bundle.js';
 // or if you use `npm`: `import {EmbedPlayer, ChromecastControls} from 'audienceplayer-embed-player';`;
 
 (function() {
@@ -38,104 +38,40 @@ import {EmbedPlayer, ChromecastControls} from '../../dist/bundle.js';
             autoplay: true,
             overlay: {element: metaEl},
         },
+        chromecastButton: true,
+        chromecastReceiverAppId,
+    };
+
+    const playParams = {
+        articleId,
+        assetId,
+        token,
+        continueFromPreviousPosition,
     };
 
     document.getElementById('video-button-start').addEventListener('click', playVideo);
-    document.getElementById('video-button-destroy').addEventListener('click', destroyVideo);
     document.getElementById('setButton').addEventListener('click', () => storeValues(true));
 
     if (posterImageUrl) {
         splashEl.style.backgroundImage = `url(${posterImageUrl})`;
     }
 
-    const embedPlayer = new EmbedPlayer(videojs, {projectId, apiBaseUrl, chromecastReceiverAppId});
-    embedPlayer.initVideoPlayer(initParam);
+    // chromecastReceiverAppId
 
-    embedPlayer
-        .initChromecast()
-        .then(() => {
-            const controls = new ChromecastControls(
-                embedPlayer.getCastPlayer(),
-                embedPlayer.getCastPlayerController(),
-                '.media-player__chromecast-controls'
-            );
-            document.getElementById('cast-button').style.visibility = 'visible';
-
-            embedPlayer.appendChromecastButton('#cast-button');
-
-            const castSender = embedPlayer.getCastSender();
-            castSender.onConnectedListener(({connected, friendlyName}) => {
-                embedPlayer.initVideoPlayer({
-                    ...initParam,
-                    chromecastButton: !!chromecastReceiverAppId,
-                });
-
-                containerEl.classList.remove(connected ? 'media-player--video' : 'media-player--chromecast');
-                containerEl.classList.add(connected ? 'media-player--chromecast' : 'media-player--video');
-            });
-
-            castSender.onCurrentTimeListener((currentTime, duration) => {
-                if (currentTime > 0 && duration > 0 && currentTime + 1 > duration) {
-                    // only update if currentTime > 0 due to chromecast bug sending last event of stream with 0
-                    console.log('cc ended');
-                    destroyVideo();
-                }
-            });
-        })
-        .catch(e => {
-            console.log('e', e);
-        });
+    const videoPlayer = new VideoPlayer(videojs, apiBaseUrl, projectId);
+    videoPlayer.init(initParam);
 
     function playVideo() {
-        containerEl.classList.remove('media-player--overlay');
-        containerEl.classList.add('media-player--loading');
+        videoPlayer
+            .playByParams(playParams)
+            .then(() => {
+                containerEl.classList.add('media-player--video');
 
-        if (embedPlayer.isConnected()) {
-            embedPlayer
-                .castVideo({
-                    articleId,
-                    assetId,
-                    ...tokenParameter,
-                    continueFromPreviousPosition: continueFromPreviousPosition ? continueFromPreviousPosition === 'true' : true,
-                })
-                .catch(error => console.error(error))
-                .finally(() => {
-                    containerEl.classList.remove('media-player--loading');
-                });
-        } else {
-            embedPlayer
-                .play({
-                    ...initParam,
-                    articleId,
-                    assetId,
-                    ...tokenParameter,
-                    continueFromPreviousPosition: continueFromPreviousPosition ? continueFromPreviousPosition === 'true' : true,
-                })
-                .catch(error => {
-                    console.error(error);
-                })
-                .finally(() => {
-                    containerEl.classList.add('media-player--video');
-                    containerEl.classList.remove('media-player--loading');
-                });
-
-            const playerInstance = embedPlayer.getVideoPlayer();
-            playerInstance.on('ended', () => {
-                console.log('video ended');
+                console.log('yes');
+            })
+            .catch(e => {
+                console.log('e', e);
             });
-        }
-    }
-
-    function stopCastVideo() {
-        embedPlayer.endSession(true);
-    }
-
-    function destroyVideo() {
-        embedPlayer.destroy();
-
-        containerEl.classList.remove('media-player--video');
-        containerEl.classList.remove('media-player--chromecast');
-        containerEl.classList.add('media-player--overlay');
     }
 
     function storeProperty(name) {
