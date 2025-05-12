@@ -15,6 +15,13 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             connected: false,
             friendlyName: '',
         };
+        private myPlayerController: cast.framework.RemotePlayerController;
+        private myPlayer: cast.framework.RemotePlayer;
+        private myCurrentTime = 0;
+        private myDuration = 0;
+        private myPlayingState = false;
+        private myEndedState = false;
+
         public featuresVolumeControl = false;
         public featuresMuteControl = false;
         public featuresFullscreenResize = false;
@@ -25,7 +32,10 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             console.log('ChromecastTech', options);
 
             initPromise.then(() => {
-                castSender.onConnectedListener(info => {
+                this.myPlayer = castSender.getCastPlayer();
+                this.myPlayerController = castSender.getCastPlayerController();
+
+                castSender.setOnConnectedListener(info => {
                     console.log('onCon', info);
                     this.connectionInfo = {
                         ...this.connectionInfo,
@@ -34,15 +44,36 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                     };
                 });
 
-                castSender.onMediaInfoListener(state => {});
-                castSender.onCurrentTimeListener((currenTime, duration) => {});
+                castSender.setOnMediaInfoListener(state => {
+                    console.log('mediaInfo', state);
+                    if (state === 'PLAYING') {
+                        this.myPlayingState = true;
+                    } else {
+                        this.myPlayingState = false;
+                    }
+                });
+                castSender.setOnCurrentTimeListener((currentTime, duration) => {
+                    console.log('onCurrentTime', currentTime, duration);
+                    if (this.myCurrentTime !== currentTime) {
+                        this.myCurrentTime = currentTime;
+                        if (this.myCurrentTime > 0 && this.myDuration > 0 && this.myCurrentTime + 1 > this.myDuration) {
+                            this.trigger('ended');
+                        } else {
+                            this.trigger('timeupdate');
+                        }
+                    }
+
+                    if (this.myDuration !== duration) {
+                        this.myDuration = duration;
+                        this.trigger('durationchange');
+                    }
+                });
 
                 this.connectionInfo.available = true;
 
+                this.triggerReady();
                 console.log('castSender initialized');
             });
-
-            this.triggerReady(); // @TODO part of castSender.init promise?
         }
 
         static canPlaySource(x: any) {
@@ -72,15 +103,17 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
         play() {
             console.log('play');
+            this.myPlayerController.playOrPause();
         }
 
         pause() {
             console.log('pause');
+            this.myPlayerController.playOrPause();
         }
 
         paused() {
             console.log('paused');
-            return false;
+            return !this.myPlayingState;
         }
 
         setSource(source: any) {
@@ -101,18 +134,21 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             });
         }
 
-        setCurrentTime(time: number) {}
+        setCurrentTime(newTime: number) {
+            this.myPlayer.currentTime = newTime;
+            this.myPlayerController.seek();
+        }
 
         currentTime() {
-            return 0;
+            return this.myCurrentTime;
         }
 
         duration() {
-            return 10;
+            return this.myDuration;
         }
 
         ended() {
-            return false;
+            return this.myEndedState;
         }
 
         buffered(): any {

@@ -8,6 +8,9 @@ export class ChromecastSender {
     private castPlayer: cast.framework.RemotePlayer = null;
     private castPlayerController: cast.framework.RemotePlayerController = null;
     private supportsHDR = false;
+    private onConnectedListener: (info: {connected: boolean; friendlyName: string}) => void;
+    private onMediaInfoListener: (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void;
+    private onCurrentTimeListener: (currentTime: number, duration: number) => void;
 
     constructor(private chromecastReceiverAppId: string) {}
 
@@ -57,36 +60,29 @@ export class ChromecastSender {
                 this.supportsHDR = false;
             }
         });
-    }
 
-    onConnectedListener(callback: (info: {connected: boolean; friendlyName: string}) => void) {
-        const doCallback = () => {
-            if (this.castPlayer.isConnected) {
-                const castContext = cast.framework.CastContext.getInstance();
-                if (castContext) {
-                    const session = castContext.getCurrentSession();
-                    if (session) {
-                        const device = session.getCastDevice();
-                        if (device) {
-                            callback({
-                                connected: true,
-                                friendlyName: device.friendlyName || 'Chromecast',
-                            });
-                            return;
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, event => {
+            if (this.onConnectedListener) {
+                if (this.castPlayer.isConnected) {
+                    const castContext = cast.framework.CastContext.getInstance();
+                    if (castContext) {
+                        const session = castContext.getCurrentSession();
+                        if (session) {
+                            const device = session.getCastDevice();
+                            if (device) {
+                                this.onConnectedListener({
+                                    connected: true,
+                                    friendlyName: device.friendlyName || 'Chromecast',
+                                });
+                                return;
+                            }
                         }
                     }
                 }
+                this.onConnectedListener({connected: false, friendlyName: ''});
             }
-            callback({connected: false, friendlyName: ''});
-        };
-
-        doCallback();
-        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, event => {
-            doCallback();
         });
-    }
 
-    onMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void) {
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED, () => {
             const state = this.castPlayer.playerState;
             let info: any = null;
@@ -104,17 +100,31 @@ export class ChromecastSender {
                         }
                     }
                 }
-                callback(state, info);
+                if (this.onMediaInfoListener) {
+                    this.onMediaInfoListener(state, info);
+                }
+            }
+        });
+
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, () => {
+            if (this.onCurrentTimeListener) {
+                if (this.castPlayer.playerState !== chrome.cast.media.PlayerState.IDLE) {
+                    this.onCurrentTimeListener(this.castPlayer.currentTime, this.castPlayer.duration);
+                }
             }
         });
     }
 
-    onCurrentTimeListener(callback: (currentTime: number, duration: number) => void) {
-        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, () => {
-            if (this.castPlayer.playerState !== chrome.cast.media.PlayerState.IDLE) {
-                callback(this.castPlayer.currentTime, this.castPlayer.duration);
-            }
-        });
+    setOnConnectedListener(callback: (info: {connected: boolean; friendlyName: string}) => void) {
+        this.onConnectedListener = callback;
+    }
+
+    setOnMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void) {
+        this.onMediaInfoListener = callback;
+    }
+
+    setOnCurrentTimeListener(callback: (currentTime: number, duration: number) => void) {
+        this.onCurrentTimeListener = callback;
     }
 
     getSupportsHDR() {

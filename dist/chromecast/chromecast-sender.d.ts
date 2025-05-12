@@ -9,18 +9,21 @@ export declare class ChromecastSender {
     private castPlayer;
     private castPlayerController;
     private supportsHDR;
+    private onConnectedListener;
+    private onMediaInfoListener;
+    private onCurrentTimeListener;
     constructor(chromecastReceiverAppId: string);
     init(): Promise<void>;
     initializeCastApi(chromecastReceiverAppId: string): void;
-    onConnectedListener(callback: (info: {
+    setOnConnectedListener(callback: (info: {
         connected: boolean;
         friendlyName: string;
     }) => void): void;
-    onMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: {
+    setOnMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: {
         articleId: number;
         assetId: number;
     }) => void): void;
-    onCurrentTimeListener(callback: (currentTime: number, duration: number) => void): void;
+    setOnCurrentTimeListener(callback: (currentTime: number, duration: number) => void): void;
     getSupportsHDR(): boolean;
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article): chrome.cast.media.MediaInfo;
     getCastMediaInfoByParams(playParams: PlayParams, article?: Article): chrome.cast.media.MediaInfo;

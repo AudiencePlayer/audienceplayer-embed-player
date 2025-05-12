@@ -319,7 +319,7 @@ export class VideoPlayer {
 
         if (skipIntroComponent) {
             skipIntroComponent.on('skip', () => {
-                // @TODO skip for CC
+                // @TODO for CC
                 if (this.localPlayConfig) {
                     this.player.currentTime(this.localPlayConfig.skipIntro.end);
                 }
