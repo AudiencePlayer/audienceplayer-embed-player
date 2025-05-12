@@ -4,11 +4,13 @@ import { PlayConfig } from '../models/play-config';
 import { Article } from '../models/article';
 import { PlayParams } from '../models/play-params';
 export declare class ChromecastSender {
+    private chromecastReceiverAppId;
     private castContext;
     private castPlayer;
     private castPlayerController;
     private supportsHDR;
-    init(chromecastReceiverAppId: string): Promise<void>;
+    constructor(chromecastReceiverAppId: string);
+    init(): Promise<void>;
     initializeCastApi(chromecastReceiverAppId: string): void;
     onConnectedListener(callback: (info: {
         connected: boolean;

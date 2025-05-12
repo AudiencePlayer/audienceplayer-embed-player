@@ -39,7 +39,6 @@ import {VideoPlayer} from '../../dist/bundle.js';
             overlay: {element: metaEl},
         },
         chromecastButton: true,
-        chromecastReceiverAppId,
     };
 
     const playParams = {
@@ -58,7 +57,7 @@ import {VideoPlayer} from '../../dist/bundle.js';
 
     // chromecastReceiverAppId
 
-    const videoPlayer = new VideoPlayer(videojs, apiBaseUrl, projectId);
+    const videoPlayer = new VideoPlayer(videojs, apiBaseUrl, projectId, chromecastReceiverAppId);
     videoPlayer.init(initParam);
 
     function playVideo() {

@@ -9,14 +9,14 @@ import {ChromecastSender, ChromecastControls} from '../../dist/bundle.js';
     storeValues(false);
 
     const chromecastReceiver = localStorage.getItem('chromecastReceiver');
-    const castSender = new ChromecastSender();
+    const castSender = new ChromecastSender(chromecastReceiver);
 
     const output = document.querySelector('#output');
 
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('setButton').addEventListener('click', () => storeValues(true));
 
-    castSender.init(chromecastReceiver).then(() => {
+    castSender.init().then(() => {
         const castButtonContaner = document.querySelector('#cast-button');
         const castButton = document.createElement('google-cast-launcher');
         castButtonContaner.appendChild(castButton);

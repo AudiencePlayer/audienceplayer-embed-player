@@ -19,7 +19,7 @@ export class EmbedPlayer {
         this.chromecastReceiverAppId = properties.chromecastReceiverAppId ? properties.chromecastReceiverAppId : null;
         this.apiService = new ApiService(this.apiBaseUrl, this.projectId);
         this.videoPlayer = new VideoPlayer(videojsInstance, this.apiBaseUrl, this.projectId);
-        this.castSender = new ChromecastSender();
+        this.castSender = new ChromecastSender(properties.chromecastReceiverAppId);
     }
 
     initVideoPlayer(initParams: InitParams) {
@@ -73,7 +73,7 @@ export class EmbedPlayer {
         if (!this.chromecastReceiverAppId) {
             return Promise.reject('No Chromecast receiver app id');
         }
-        return this.castSender.init(this.chromecastReceiverAppId);
+        return this.castSender.init();
     }
 
     appendChromecastButton(selector: string | Element) {

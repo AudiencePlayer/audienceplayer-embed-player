@@ -9,13 +9,15 @@ export class ChromecastSender {
     private castPlayerController: cast.framework.RemotePlayerController = null;
     private supportsHDR = false;
 
-    init(chromecastReceiverAppId: string) {
+    constructor(private chromecastReceiverAppId: string) {}
+
+    init() {
         return new Promise<void>((resolve, reject) => {
-            if (chromecastReceiverAppId) {
+            if (this.chromecastReceiverAppId) {
                 window['__onGCastApiAvailable'] = (isAvailable: boolean) => {
                     if (isAvailable && cast && cast.framework && chrome && chrome.cast) {
                         try {
-                            this.initializeCastApi(chromecastReceiverAppId);
+                            this.initializeCastApi(this.chromecastReceiverAppId);
                             resolve();
                         } catch (e) {
                             reject(e);
@@ -61,15 +63,21 @@ export class ChromecastSender {
         const doCallback = () => {
             if (this.castPlayer.isConnected) {
                 const castContext = cast.framework.CastContext.getInstance();
-                const device = castContext.getCurrentSession().getCastDevice();
-
-                callback({
-                    connected: true,
-                    friendlyName: device.friendlyName || 'Chromecast',
-                });
-            } else {
-                callback({connected: false, friendlyName: ''});
+                if (castContext) {
+                    const session = castContext.getCurrentSession();
+                    if (session) {
+                        const device = session.getCastDevice();
+                        if (device) {
+                            callback({
+                                connected: true,
+                                friendlyName: device.friendlyName || 'Chromecast',
+                            });
+                            return;
+                        }
+                    }
+                }
             }
+            callback({connected: false, friendlyName: ''});
         };
 
         doCallback();
@@ -202,16 +210,20 @@ export class ChromecastSender {
     }
 
     castVideoByParams(playParams: PlayParams) {
+        console.log('castVideoByParams', playParams);
         if (this.isConnected()) {
             const castSession = this.castContext.getCurrentSession();
 
             const mediaInfo = this.getCastMediaInfoByParams(playParams);
             if (mediaInfo) {
+                console.log('mediaInfo', mediaInfo);
                 const request = new chrome.cast.media.LoadRequest(mediaInfo);
                 return castSession.loadMedia(request);
             } else {
-                throw {message: 'Could not create media info request'};
+                return Promise.reject('Could not create media info request');
             }
+        } else {
+            return Promise.reject('castVideoByParams: Not connected!');
         }
     }
 

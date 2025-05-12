@@ -6,24 +6,22 @@ export declare class VideoPlayer {
     private apiService;
     private castSender;
     private playerLoggerService;
-    private articlePlayConfig;
+    private localPlayConfig;
     private firstPlayingEvent;
     private currentTextTrack;
     private currentAudioTrack;
     private metadataLoaded;
     private currentTime;
     private initParams;
-    constructor(videojsInstance: any, baseUrl: string, projectId: number);
-    middleware: (player: any) => {
-        setSource: (srcObj: any, next: any) => void;
-    };
+    constructor(videojsInstance: any, baseUrl: string, projectId: number, chromecastReceiverAppId?: string);
     init(initParams: InitParams): void;
-    playByParams(playParams: PlayParams): Promise<number>;
+    playByParams(playParams: PlayParams): Promise<void>;
     play(playConfig: PlayConfig): void;
     setPoster(posterUrl: string): void;
     destroy(): void;
     getPlayer(): any;
     private reset;
+    private getAndInitPlaySourcesFromConfig;
     private bindEvents;
     private checkSelectedTracks;
     private setDefaultTextTrack;

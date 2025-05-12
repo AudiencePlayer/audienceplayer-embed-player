@@ -4,6 +4,8 @@
 
 Chromecast `mediaInfo.customData` should contain properties `articleId` and `assetId` instead of the JSON string `extraInfo` which contained the `articleId` and `assetId`.
 
+`ChromecastSender` constructor gets the chromecast receiver id as argument. `ChromecastSender.init()` no longer has this argument.
+
 # 3.0.1
 
 Expose logging as a package for internal use.

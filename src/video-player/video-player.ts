@@ -20,9 +20,9 @@ import {ChromecastSender} from '../chromecast/chromecast-sender';
 export class VideoPlayer {
     private player: any = null;
     private apiService: ApiService;
-    private castSender: ChromecastSender;
+    private castSender: ChromecastSender = null;
     private playerLoggerService: PlayerLoggerService;
-    private articlePlayConfig: PlayConfig;
+    private localPlayConfig: PlayConfig; // this contains the play confif for a local playout, with CC it's a remote playout, and null.
     private firstPlayingEvent: boolean;
     private currentTextTrack: string;
     private currentAudioTrack: string;
@@ -30,7 +30,8 @@ export class VideoPlayer {
     private currentTime: number;
     private initParams: InitParams;
 
-    constructor(private videojsInstance: any, baseUrl: string, projectId: number) {
+    constructor(private videojsInstance: any, baseUrl: string, projectId: number, chromecastReceiverAppId: string = null) {
+        console.log('VideoPlayer.constructor');
         this.apiService = new ApiService(baseUrl.replace(/\/*$/, ''), projectId);
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
 
@@ -42,21 +43,18 @@ export class VideoPlayer {
         createPlaybackRatePlugin(videojsInstance);
         createSkipIntroPlugin(videojsInstance);
         createSubtitlesButtonPlugin(videojsInstance);
-        createChromecastTechPlugin(videojsInstance);
-    }
 
-    middleware = (player: any) => {
-        return {
-            setSource: (srcObj: any, next: any) => {
-                console.log('setSource called', srcObj, this.castSender && this.castSender.isConnected());
-                next(null, srcObj);
-            },
-        };
-    };
+        if (chromecastReceiverAppId) {
+            this.castSender = new ChromecastSender(chromecastReceiverAppId);
+
+            createChromecastTechPlugin(videojsInstance, this.castSender);
+        }
+    }
 
     init(initParams: InitParams) {
         this.destroy();
 
+        this.localPlayConfig = null;
         this.initParams = initParams;
         const videoContainer = initParams.selector instanceof Element ? initParams.selector : document.querySelector(initParams.selector);
 
@@ -78,11 +76,14 @@ export class VideoPlayer {
 
         videoContainer.appendChild(videoElement);
 
+        const techOrder = this.castSender ? ['chromecast', 'html5'] : ['html5']; // chromecast first, to make it the `active tech`.
+        console.log('init with techOrder', techOrder);
+
         const playOptions = {
             fluid: false,
             fill: true,
             responsive: true,
-            techOrder: initParams.chromecastReceiverAppId ? ['chromecast', 'html5'] : ['html5'], // chromecast first, to make it the `active tech`.
+            techOrder,
             controls: true,
             controlBar: {
                 pictureInPictureToggle: false,
@@ -124,42 +125,86 @@ export class VideoPlayer {
             ...initParams.options,
         };
 
-        this.videojsInstance.use('*', this.middleware);
+        // this.videojsInstance.use('*', this.middleware);
         this.player = this.videojsInstance(videoElement, playOptions);
         this.player.eme();
-
-        if (initParams.chromecastReceiverAppId) {
-            this.castSender = new ChromecastSender();
-            const chromecastTech = this.player.tech();
-            this.castSender.init(initParams.chromecastReceiverAppId).then(() => {
-                chromecastTech.setChromecast(this.castSender);
-            });
-        }
-
+        this.player.eme.initLegacyFairplay();
         this.bindEvents();
     }
 
-    playByParams(playParams: PlayParams): Promise<number> {
+    playByParams(playParams: PlayParams): Promise<void> {
         this.reset();
-        this.apiService.setToken(playParams.token ? playParams.token : null);
 
-        return this.apiService
-            .getArticleAssetPlayConfig(playParams.articleId, playParams.assetId, playParams.continueFromPreviousPosition)
-            .then(config => {
-                // this.play(config);
-                return 0;
-            })
-            .catch(error => {
-                console.log('err', error);
-                return error.code;
-            });
+        if (this.castSender && this.castSender.isConnected()) {
+            console.log('playByParams, with CC connected');
+            this.localPlayConfig = null;
+            this.player.src({src: 'custom', type: 'application/vnd.chromecast', playParams});
+            return Promise.resolve();
+        } else {
+            console.log('playByParams, regular play, fetching play config');
+            this.apiService.setToken(playParams.token ? playParams.token : null);
+
+            return this.apiService
+                .getArticleAssetPlayConfig(playParams.articleId, playParams.assetId, playParams.continueFromPreviousPosition)
+                .then(config => {
+                    this.player.src(this.getAndInitPlaySourcesFromConfig(config));
+                });
+        }
     }
 
+    // @TODO .play can not be used together with chromecast-tech.
     play(playConfig: PlayConfig) {
         this.reset();
 
-        this.articlePlayConfig = playConfig;
+        this.player.src(this.getAndInitPlaySourcesFromConfig(playConfig));
 
+        if (this.initParams.fullscreen) {
+            this.player.requestFullscreen();
+        }
+    }
+
+    setPoster(posterUrl: string) {
+        this.player.poster(posterUrl);
+    }
+
+    destroy() {
+        if (this.player) {
+            if (false === this.player.ended()) {
+                this.player.pause();
+                // only if we have not already caught the 'ended' event
+                // Be aware that the `stopped` emit also send along all kinds of info, so call _before_ disposing player
+                if (this.localPlayConfig) {
+                    this.playerLoggerService.onStop();
+                }
+            }
+
+            this.player.dispose();
+        }
+
+        if (this.localPlayConfig) {
+            this.playerLoggerService.destroy();
+        }
+        this.player = null;
+        this.currentAudioTrack = null;
+        this.currentTextTrack = null;
+        this.currentTime = -1;
+    }
+
+    getPlayer(): any {
+        return this.player;
+    }
+
+    private reset() {
+        this.firstPlayingEvent = true;
+        if (!this.player || (this.player && this.player.currentSrc())) {
+            console.log('reset and destroy');
+            this.destroy();
+            this.init(this.initParams);
+        }
+    }
+
+    private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig) {
+        this.localPlayConfig = playConfig;
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
         // simple assumption: either support FPS or Widevine
@@ -177,6 +222,19 @@ export class VideoPlayer {
         // configure HLS only in case of `supportsHLS` or when no other sources available.
         const configureHLSOnly =
             (supportsHLS(this.videojsInstance) || (dashSources.length === 0 && mp4Sources.length === 0)) && hlsSources.length > 0;
+
+        const trackParam = configureHLSOnly
+            ? {}
+            : {
+                  textTracks: playConfig.subtitles.map(track => ({
+                      kind: track.kind,
+                      src: track.src,
+                      srclang: track.srclang,
+                      label: track.label,
+                      enabled: track.srclang === playConfig.subtitleLocale,
+                  })),
+              };
+
         const playSources = playConfig.entitlements
             .map(entitlement => {
                 const emeOptions = getEmeOptionsFromEntitlement(this.videojsInstance, entitlement);
@@ -184,96 +242,54 @@ export class VideoPlayer {
                     src: entitlement.src,
                     type: entitlement.type,
                     ...emeOptions,
+                    ...trackParam,
                 };
             })
             .filter(playOption => {
                 return (playOption.type === MimeTypeHls && configureHLSOnly) || !configureHLSOnly;
             });
 
-        if (playSources.find(source => source.keySystems && source.keySystems['com.apple.fps.1_0'])) {
-            this.player.eme.initLegacyFairplay();
-        }
-        this.player.src(playSources);
+        // if (playSources.find(source => source.keySystems && source.keySystems['com.apple.fps.1_0'])) {
+        //
+        // }
 
-        if (this.initParams.fullscreen) {
-            this.player.requestFullscreen();
-        }
-
-        if (!configureHLSOnly) {
-            // non HLS only needs the text tracks
-            playConfig.subtitles.forEach(track => {
-                this.player.addRemoteTextTrack({
-                    kind: track.kind,
-                    src: track.src,
-                    srclang: track.srclang,
-                    label: track.label,
-                    enabled: track.srclang === playConfig.subtitleLocale,
-                });
-            });
-        }
-    }
-
-    setPoster(posterUrl: string) {
-        this.player.poster(posterUrl);
-    }
-
-    destroy() {
-        if (this.player) {
-            if (false === this.player.ended()) {
-                this.player.pause();
-                // only if we have not already caught the 'ended' event
-                // Be aware that the `stopped` emit also send along all kinds of info, so call _before_ disposing player
-                this.playerLoggerService.onStop();
-            }
-
-            this.player.dispose();
-        }
-
-        this.playerLoggerService.destroy();
-        this.player = null;
-        this.currentAudioTrack = null;
-        this.currentTextTrack = null;
-        this.currentTime = -1;
-    }
-
-    getPlayer(): any {
-        return this.player;
-    }
-
-    private reset() {
-        this.firstPlayingEvent = true;
-        if (!this.player || (this.player && this.player.currentSrc())) {
-            this.destroy();
-            this.init(this.initParams);
-        }
+        return playSources;
     }
 
     private bindEvents() {
         this.player.on('error', () => {
-            this.playerLoggerService.onError(JSON.stringify(this.player.error()));
+            if (this.localPlayConfig) {
+                this.playerLoggerService.onError(JSON.stringify(this.player.error()));
+            }
         });
 
         this.player.on('playing', () => {
             if (this.firstPlayingEvent) {
                 this.firstPlayingEvent = false;
-                if (this.articlePlayConfig.currentTime > 0) {
-                    this.player.currentTime(this.articlePlayConfig.currentTime);
+                if (this.localPlayConfig && this.localPlayConfig.currentTime > 0) {
+                    this.player.currentTime(this.localPlayConfig.currentTime);
                 }
             }
             this.checkSelectedTracks();
-            this.playerLoggerService.onPlaying();
+            if (this.localPlayConfig) {
+                this.playerLoggerService.onPlaying();
+            }
         });
 
         this.player.on('pause', () => {
             this.checkSelectedTracks();
             if (this.player.paused() && !this.player.ended()) {
-                this.playerLoggerService.onPause();
+                if (this.localPlayConfig) {
+                    this.playerLoggerService.onPause();
+                }
             }
         });
 
         this.player.on('ended', () => {
             this.checkSelectedTracks();
-            this.playerLoggerService.onStop();
+            if (this.localPlayConfig) {
+                this.playerLoggerService.onStop();
+            }
         });
 
         const skipIntroComponent = this.player.skipIntro;
@@ -284,12 +300,14 @@ export class VideoPlayer {
                 this.currentTime = tempTime;
                 this.checkSelectedTracks();
 
-                this.playerLoggerService.onCurrentTimeUpdated(this.currentTime);
+                if (this.localPlayConfig) {
+                    this.playerLoggerService.onCurrentTimeUpdated(this.currentTime);
+                }
 
-                if (!!this.articlePlayConfig.skipIntro && skipIntroComponent) {
+                if (!!this.localPlayConfig && !!this.localPlayConfig.skipIntro && skipIntroComponent) {
                     if (
-                        this.articlePlayConfig.skipIntro.start <= this.currentTime &&
-                        this.articlePlayConfig.skipIntro.end >= this.currentTime
+                        this.localPlayConfig.skipIntro.start <= this.currentTime &&
+                        this.localPlayConfig.skipIntro.end >= this.currentTime
                     ) {
                         skipIntroComponent.trigger('show');
                     } else {
@@ -301,16 +319,28 @@ export class VideoPlayer {
 
         if (skipIntroComponent) {
             skipIntroComponent.on('skip', () => {
-                this.player.currentTime(this.articlePlayConfig.skipIntro.end);
+                // @TODO skip for CC
+                if (this.localPlayConfig) {
+                    this.player.currentTime(this.localPlayConfig.skipIntro.end);
+                }
             });
         }
 
         this.player.on('durationchange', () => {
             this.checkSelectedTracks();
-            this.playerLoggerService.onDurationUpdated(this.player.duration());
+            if (this.localPlayConfig) {
+                this.playerLoggerService.onDurationUpdated(this.player.duration());
+            }
         });
 
         this.player.on('loadedmetadata', () => {
+            const selectedSource = this.player.currentSource();
+            const textTracks = selectedSource.textTracks || [];
+
+            textTracks.forEach((track: any) => {
+                this.player.addRemoteTextTrack(track, false);
+            });
+
             const audioTrackList = this.player.audioTracks();
             if (audioTrackList && audioTrackList.length > 0) {
                 // set default tracks when available
@@ -360,26 +390,32 @@ export class VideoPlayer {
             }
         }
 
-        this.playerLoggerService.updateProperties({
-            textTrack: selectedTextTrack,
-            audioTrack: selectedAudioTrack,
-            resolution: selectedResolution,
-        });
+        if (this.localPlayConfig) {
+            this.playerLoggerService.updateProperties({
+                textTrack: selectedTextTrack,
+                audioTrack: selectedAudioTrack,
+                resolution: selectedResolution,
+            });
+        }
 
         if (this.currentTextTrack !== null && this.currentTextTrack !== selectedTextTrack) {
-            this.playerLoggerService.onTextTrackChanged(selectedTextTrack);
+            if (this.localPlayConfig) {
+                this.playerLoggerService.onTextTrackChanged(selectedTextTrack);
+            }
         }
 
         this.currentTextTrack = selectedTextTrack;
 
         if (this.currentAudioTrack !== null && this.currentAudioTrack !== selectedAudioTrack) {
-            this.playerLoggerService.onAudioTrackChanged(selectedAudioTrack);
+            if (this.localPlayConfig) {
+                this.playerLoggerService.onAudioTrackChanged(selectedAudioTrack);
+            }
         }
         this.currentAudioTrack = selectedAudioTrack;
     }
 
     private setDefaultTextTrack() {
-        if (this.articlePlayConfig.subtitleLocale) {
+        if (this.localPlayConfig.subtitleLocale) {
             const tracks = this.player.textTracks();
             for (let i = 0; i < tracks.length; i++) {
                 // textTracks is not a real array so no iterators here
@@ -390,7 +426,7 @@ export class VideoPlayer {
             // it must be split up in to two loops, because two 'showing' items will break
             for (let i = 0; i < tracks.length; i++) {
                 const trackLocale = getISO2Locale(tracks[i].language);
-                if (trackLocale === this.articlePlayConfig.subtitleLocale.toLowerCase() && tracks[i].kind === 'subtitles') {
+                if (trackLocale === this.localPlayConfig.subtitleLocale.toLowerCase() && tracks[i].kind === 'subtitles') {
                     tracks[i].mode = 'showing';
                     break;
                 }
@@ -399,13 +435,13 @@ export class VideoPlayer {
     }
 
     private setDefaultAudioTrack() {
-        if (this.articlePlayConfig.audioLocale) {
+        if (this.localPlayConfig.audioLocale) {
             const audioTracks = this.player.audioTracks();
             for (let i = 0; i < audioTracks.length; i++) {
                 const trackLocale = getISO2Locale(audioTracks[i].language);
                 if (
-                    (this.articlePlayConfig.audioLocale && trackLocale === this.articlePlayConfig.audioLocale.toLowerCase()) ||
-                    (this.articlePlayConfig.audioLocale === '' && i === 0)
+                    (this.localPlayConfig.audioLocale && trackLocale === this.localPlayConfig.audioLocale.toLowerCase()) ||
+                    (this.localPlayConfig.audioLocale === '' && i === 0)
                 ) {
                     audioTracks[i].enabled = true;
                     break;

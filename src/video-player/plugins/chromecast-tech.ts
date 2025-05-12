@@ -1,10 +1,13 @@
 import {ChromecastSender} from '../../chromecast/chromecast-sender';
 import {ChromecastConnectionInfo} from '../../models/cast-info';
 
-export function createChromecastTechPlugin(videojsInstance: any) {
+export function createChromecastTechPlugin(videojsInstance: any, castSender: ChromecastSender) {
     const Tech = videojsInstance.getComponent('Tech');
     const dom = videojsInstance.dom || videojsInstance;
-    let castSender: ChromecastSender = null;
+
+    console.log('createChromecastTechPlugin');
+
+    const initPromise = castSender.init();
 
     class ChromecastTech extends Tech {
         private connectionInfo: ChromecastConnectionInfo = {
@@ -21,7 +24,25 @@ export function createChromecastTechPlugin(videojsInstance: any) {
 
             console.log('ChromecastTech', options);
 
-            this.triggerReady();
+            initPromise.then(() => {
+                castSender.onConnectedListener(info => {
+                    console.log('onCon', info);
+                    this.connectionInfo = {
+                        ...this.connectionInfo,
+                        connected: info.connected,
+                        friendlyName: info.friendlyName,
+                    };
+                });
+
+                castSender.onMediaInfoListener(state => {});
+                castSender.onCurrentTimeListener((currenTime, duration) => {});
+
+                this.connectionInfo.available = true;
+
+                console.log('castSender initialized');
+            });
+
+            this.triggerReady(); // @TODO part of castSender.init promise?
         }
 
         static canPlaySource(x: any) {
@@ -37,6 +58,7 @@ export function createChromecastTechPlugin(videojsInstance: any) {
         static canPlayType(type: string) {
             // Return 'probably', 'maybe', or ''
             //return type === 'video/custom' ? 'probably' : '';
+            console.log('canPlayType', type);
             return 'probably';
         }
 
@@ -61,10 +83,17 @@ export function createChromecastTechPlugin(videojsInstance: any) {
             return false;
         }
 
-        src(source: any) {
-            console.log('src', source);
+        setSource(source: any) {
+            console.log('chromecast-tech.src', source.playParams);
             this.source = source;
             this.trigger('loadstart');
+
+            castSender
+                .castVideoByParams(source.playParams)
+                .then(() => {
+                    console.log('castVideoByParams requested CC');
+                })
+                .catch(err => console.log(err));
 
             setTimeout(() => {
                 this.trigger('play');
@@ -157,24 +186,8 @@ export function createChromecastTechPlugin(videojsInstance: any) {
             // Clean up anything your tech has created
             super.dispose();
         }
-
-        setChromecast(cc: ChromecastSender) {
-            castSender = cc;
-            castSender.onConnectedListener(info => {
-                console.log('onCon', info);
-                this.connectionInfo = {
-                    ...this.connectionInfo,
-                    connected: info.connected,
-                    friendlyName: info.friendlyName,
-                };
-            });
-
-            castSender.onMediaInfoListener(state => {});
-            castSender.onCurrentTimeListener((currenTime, duration) => {});
-
-            this.connectionInfo.available = true;
-        }
     }
 
     videojsInstance.registerTech('chromecast', ChromecastTech);
+    console.log('registered chromecast tech');
 }

@@ -9,7 +9,6 @@ export interface InitParams {
         forward: number;
         backward: number;
     } | false;
-    chromecastReceiverAppId?: string;
 }
 export interface PlayParams {
     articleId: number;
