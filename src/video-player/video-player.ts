@@ -415,7 +415,7 @@ export class VideoPlayer {
     }
 
     private setDefaultTextTrack() {
-        if (this.localPlayConfig.subtitleLocale) {
+        if (this.localPlayConfig && this.localPlayConfig.subtitleLocale) {
             const tracks = this.player.textTracks();
             for (let i = 0; i < tracks.length; i++) {
                 // textTracks is not a real array so no iterators here
@@ -435,7 +435,7 @@ export class VideoPlayer {
     }
 
     private setDefaultAudioTrack() {
-        if (this.localPlayConfig.audioLocale) {
+        if (this.localPlayConfig && this.localPlayConfig.audioLocale) {
             const audioTracks = this.player.audioTracks();
             for (let i = 0; i < audioTracks.length; i++) {
                 const trackLocale = getISO2Locale(audioTracks[i].language);

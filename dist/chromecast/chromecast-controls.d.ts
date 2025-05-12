@@ -1,9 +1,5 @@
 /// <reference types="chromecast-caf-sender" />
-interface TrackInfo {
-    id: number;
-    locale: string;
-    active: boolean;
-}
+import { TrackInfo } from '../models/cast-info';
 export declare class ChromecastControls {
     private currentStatus;
     private playerController;
@@ -19,12 +15,6 @@ export declare class ChromecastControls {
     bindEventsToMenu(buttonSelector: string): void;
     renderTracks(): void;
     getTracksList(tracks: TrackInfo[], type: string): HTMLUListElement;
-    getActiveTracksByType(type: string): number[];
-    getTracksByType(type: string): {
-        id: number;
-        locale: string;
-        active: boolean;
-    }[];
     getTransformedDurationValue(value: number): string;
     setProgressBarValues(): void;
     checkChromecastContainerVisibility(): void;
@@ -36,4 +26,3 @@ export declare class ChromecastControls {
     toggleMenu(menuEl: HTMLElement, containerEl: HTMLElement): void;
     getElement(selector: string): HTMLElement;
 }
-export {};

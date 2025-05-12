@@ -64,7 +64,7 @@ import {VideoPlayer} from '../../dist/bundle.js';
         videoPlayer
             .playByParams(playParams)
             .then(() => {
-                containerEl.classList.add('media-player--video');
+                // containerEl.classList.add('media-player--video');
 
                 console.log('yes');
             })

@@ -8,3 +8,8 @@ export interface ChromecastPlayInfo {
     assetId: number;
     hasMedia: boolean;
 }
+export interface TrackInfo {
+    id: number;
+    locale: string;
+    active: boolean;
+}

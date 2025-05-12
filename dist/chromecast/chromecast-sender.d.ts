@@ -3,6 +3,7 @@
 import { PlayConfig } from '../models/play-config';
 import { Article } from '../models/article';
 import { PlayParams } from '../models/play-params';
+import { TrackInfo } from "../models/cast-info";
 export declare class ChromecastSender {
     private chromecastReceiverAppId;
     private castContext;
@@ -12,6 +13,8 @@ export declare class ChromecastSender {
     private onConnectedListener;
     private onMediaInfoListener;
     private onCurrentTimeListener;
+    private onMediaTracksListener;
+    private onDurationListener;
     constructor(chromecastReceiverAppId: string);
     init(): Promise<void>;
     initializeCastApi(chromecastReceiverAppId: string): void;
@@ -23,10 +26,13 @@ export declare class ChromecastSender {
         articleId: number;
         assetId: number;
     }) => void): void;
-    setOnCurrentTimeListener(callback: (currentTime: number, duration: number) => void): void;
+    setOnCurrentTimeListener(callback: (currentTime: number) => void): void;
+    setOnMediaTracksListener(callback: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void): void;
+    setOnDurationListener(callback: (duration: number) => void): void;
     getSupportsHDR(): boolean;
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article): chrome.cast.media.MediaInfo;
     getCastMediaInfoByParams(playParams: PlayParams, article?: Article): chrome.cast.media.MediaInfo;
+    getCastSession(): chrome.cast.media.Media;
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean): Promise<chrome.cast.ErrorCode>;
     castVideoByParams(playParams: PlayParams): Promise<chrome.cast.ErrorCode>;
     isConnected(): boolean;
@@ -36,4 +42,10 @@ export declare class ChromecastSender {
     getCastPlayer(): cast.framework.RemotePlayer;
     getCastPlayerController(): cast.framework.RemotePlayerController;
     addMediaInfoToMetaData(article: Article, mediaInfo: chrome.cast.media.MediaInfo): void;
+    getActiveTracksByType(type: string): number[];
+    getTracksByType(type: string): {
+        id: number;
+        locale: string;
+        active: boolean;
+    }[];
 }

@@ -1,10 +1,5 @@
 import {getNativeLanguage} from '../utils/locale';
-
-interface TrackInfo {
-    id: number;
-    locale: string;
-    active: boolean;
-}
+import {TrackInfo} from '../models/cast-info';
 
 export class ChromecastControls {
     private currentStatus: chrome.cast.media.PlayerState;
@@ -153,10 +148,11 @@ export class ChromecastControls {
         let audioTracks: TrackInfo[] = [];
         let textTracks: TrackInfo[] = [];
 
-        if (this.player.mediaInfo && this.player.mediaInfo.tracks && sessionMediaInfo) {
-            audioTracks = this.getTracksByType('AUDIO');
-            textTracks = this.getTracksByType('TEXT');
-        }
+        // @TODO
+        // if (this.player.mediaInfo && this.player.mediaInfo.tracks && sessionMediaInfo) {
+        //     audioTracks = this.getTracksByType('AUDIO');
+        //     textTracks = this.getTracksByType('TEXT');
+        // }
 
         if (sessionMediaInfo && sessionMediaInfo.media) {
             if (sessionMediaInfo.media.streamType === chrome.cast.media.StreamType.LIVE) {
@@ -211,25 +207,6 @@ export class ChromecastControls {
             tracksListElement.appendChild(listItemElement);
         });
         return tracksListElement;
-    }
-
-    getActiveTracksByType(type: string) {
-        return this.getTracksByType(type)
-            .filter(track => track.active)
-            .map(track => +track.id);
-    }
-
-    getTracksByType(type: string) {
-        const sessionMediaInfo = cast.framework.CastContext.getInstance()
-            .getCurrentSession()
-            .getMediaSession();
-        return this.player.mediaInfo.tracks
-            .filter(track => track.type === type)
-            .map(track => ({
-                id: track.trackId,
-                locale: track.language,
-                active: sessionMediaInfo.activeTrackIds && sessionMediaInfo.activeTrackIds.indexOf(track.trackId) !== -1,
-            }));
     }
 
     getTransformedDurationValue(value: number) {
@@ -301,13 +278,15 @@ export class ChromecastControls {
             event.preventDefault();
             event.stopPropagation();
             const selectedTrackId = +event.target.value;
-            const newActiveTracks = this.getActiveTracksByType(type === 'AUDIO' ? 'TEXT' : 'AUDIO');
-            const activeTracksOfType = this.getActiveTracksByType(type);
-            const index = activeTracksOfType.indexOf(selectedTrackId);
-            if (type === 'AUDIO' || (type === 'TEXT' && index === -1)) {
-                newActiveTracks.push(selectedTrackId);
-            }
-            this.setActiveTracks(newActiveTracks, type);
+
+            // @TODO
+            // const newActiveTracks = this.getActiveTracksByType(type === 'AUDIO' ? 'TEXT' : 'AUDIO');
+            // const activeTracksOfType = this.getActiveTracksByType(type);
+            // const index = activeTracksOfType.indexOf(selectedTrackId);
+            // if (type === 'AUDIO' || (type === 'TEXT' && index === -1)) {
+            //     newActiveTracks.push(selectedTrackId);
+            // }
+            // this.setActiveTracks(newActiveTracks, type);
         }
     }
 

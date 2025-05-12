@@ -2,6 +2,7 @@ import {PlayConfig} from '../models/play-config';
 import {Article} from '../models/article';
 import {getArticleTitle} from '../api/converters';
 import {PlayParams} from '../models/play-params';
+import {TrackInfo} from '../models/cast-info';
 
 export class ChromecastSender {
     private castContext: cast.framework.CastContext = null;
@@ -10,7 +11,9 @@ export class ChromecastSender {
     private supportsHDR = false;
     private onConnectedListener: (info: {connected: boolean; friendlyName: string}) => void;
     private onMediaInfoListener: (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void;
-    private onCurrentTimeListener: (currentTime: number, duration: number) => void;
+    private onCurrentTimeListener: (currentTime: number) => void;
+    private onMediaTracksListener: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void;
+    private onDurationListener: (duration: number) => void;
 
     constructor(private chromecastReceiverAppId: string) {}
 
@@ -109,7 +112,34 @@ export class ChromecastSender {
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, () => {
             if (this.onCurrentTimeListener) {
                 if (this.castPlayer.playerState !== chrome.cast.media.PlayerState.IDLE) {
-                    this.onCurrentTimeListener(this.castPlayer.currentTime, this.castPlayer.duration);
+                    this.onCurrentTimeListener(this.castPlayer.currentTime);
+                }
+            }
+        });
+
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, () => {
+            if (this.castPlayer.isMediaLoaded && this.castPlayer.mediaInfo) {
+                const sessionMediaInfo = cast.framework.CastContext.getInstance()
+                    .getCurrentSession()
+                    .getMediaSession();
+                let audioTracks: TrackInfo[] = [];
+                let textTracks: TrackInfo[] = [];
+
+                if (this.castPlayer.mediaInfo.tracks && sessionMediaInfo) {
+                    console.log('mediaInfo.tracks', this.castPlayer.mediaInfo.tracks);
+                    if (this.onMediaTracksListener) {
+                        audioTracks = this.getTracksByType('AUDIO');
+                        textTracks = this.getTracksByType('TEXT');
+                        this.onMediaTracksListener(audioTracks, textTracks);
+                    }
+                }
+            }
+        });
+
+        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.DURATION_CHANGED, () => {
+            if (this.castPlayer.isMediaLoaded && this.castPlayer.mediaInfo) {
+                if (this.onDurationListener) {
+                    this.onDurationListener(this.castPlayer.duration);
                 }
             }
         });
@@ -123,8 +153,16 @@ export class ChromecastSender {
         this.onMediaInfoListener = callback;
     }
 
-    setOnCurrentTimeListener(callback: (currentTime: number, duration: number) => void) {
+    setOnCurrentTimeListener(callback: (currentTime: number) => void) {
         this.onCurrentTimeListener = callback;
+    }
+
+    setOnMediaTracksListener(callback: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void) {
+        this.onMediaTracksListener = callback;
+    }
+
+    setOnDurationListener(callback: (duration: number) => void) {
+        this.onDurationListener = callback;
     }
 
     getSupportsHDR() {
@@ -204,6 +242,17 @@ export class ChromecastSender {
         return mediaInfo;
     }
 
+    getCastSession() {
+        const castContext = cast.framework.CastContext.getInstance();
+        if (castContext) {
+            const session = castContext.getCurrentSession();
+            if (session) {
+                return session.getMediaSession();
+            }
+        }
+        return null;
+    }
+
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean) {
         if (this.isConnected()) {
             const castSession = this.castContext.getCurrentSession();
@@ -281,5 +330,24 @@ export class ChromecastSender {
             // pick high available resolution
             mediaInfo.metadata.images = image ? [new chrome.cast.Image(`${image.baseUrl}/1920x1080/${image.fileName}`)] : [];
         }
+    }
+
+    getActiveTracksByType(type: string) {
+        return this.getTracksByType(type)
+            .filter(track => track.active)
+            .map(track => +track.id);
+    }
+
+    getTracksByType(type: string) {
+        const sessionMediaInfo = cast.framework.CastContext.getInstance()
+            .getCurrentSession()
+            .getMediaSession();
+        return this.castPlayer.mediaInfo.tracks
+            .filter(track => track.type === type && track.language)
+            .map(track => ({
+                id: track.trackId,
+                locale: track.language,
+                active: sessionMediaInfo.activeTrackIds && sessionMediaInfo.activeTrackIds.indexOf(track.trackId) !== -1,
+            }));
     }
 }
