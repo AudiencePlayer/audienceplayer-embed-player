@@ -137,7 +137,7 @@ export class ChromecastSender {
         });
 
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.DURATION_CHANGED, () => {
-            if (this.castPlayer.isMediaLoaded && this.castPlayer.mediaInfo) {
+            if (this.castPlayer.isMediaLoaded) {
                 if (this.onDurationListener) {
                     this.onDurationListener(this.castPlayer.duration);
                 }

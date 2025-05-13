@@ -3,7 +3,7 @@
 import { PlayConfig } from '../models/play-config';
 import { Article } from '../models/article';
 import { PlayParams } from '../models/play-params';
-import { TrackInfo } from "../models/cast-info";
+import { TrackInfo } from '../models/cast-info';
 export declare class ChromecastSender {
     private chromecastReceiverAppId;
     private castContext;

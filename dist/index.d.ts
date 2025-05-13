@@ -6,4 +6,4 @@ import { InitParams } from './models/play-params';
 import { PlayConfig, MimeTypeHls, MimeType, MimeTypeDash } from './models/play-config';
 import { toMimeType } from './api/converters';
 import { supportsNativeHLS } from './utils/platform';
-export { EmbedPlayer, VideoPlayer, ChromecastControls, ChromecastSender, InitParams, PlayConfig, supportsNativeHLS, MimeTypeHls, MimeTypeDash, MimeType, toMimeType };
+export { EmbedPlayer, VideoPlayer, ChromecastControls, ChromecastSender, InitParams, PlayConfig, supportsNativeHLS, MimeTypeHls, MimeTypeDash, MimeType, toMimeType, };
