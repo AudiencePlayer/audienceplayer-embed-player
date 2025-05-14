@@ -62,10 +62,12 @@ export class VideoPlayer {
                     if (!info.connected && this.player.currentType() === 'application/vnd.chromecast') {
                         console.log('CC disconnected, was playing something remote');
                         this.reset();
+                        this.player.addClass('vjs-waiting');
                         setTimeout(() => this.playByParams(currentSources[0].playParams), 2000);
                     } else if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {
                         console.log('CC connected, was playing something local');
                         this.reset();
+                        this.player.addClass('vjs-waiting');
                         setTimeout(() => this.playByParams(currentSources[0].playParams), 2000);
                     }
                 }
@@ -151,6 +153,7 @@ export class VideoPlayer {
         this.player = this.videojsInstance(videoElement, playOptions);
         this.player.eme();
         this.player.eme.initLegacyFairplay();
+
         this.bindEvents();
     }
 
@@ -218,11 +221,9 @@ export class VideoPlayer {
 
     private reset() {
         this.firstPlayingEvent = true;
-        if (!this.player || (this.player && this.player.currentSrc())) {
-            console.log('reset and destroy');
-            this.destroy();
-            this.init(this.initParams);
-        }
+        console.log('reset');
+        this.destroy();
+        this.init(this.initParams);
     }
 
     private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig) {

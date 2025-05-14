@@ -79,12 +79,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                     }
                 });
 
-                /*
-                this.trigger('loadeddata');
-                        this.trigger('play');
-                        this.trigger('playing');
-                 */
-
                 castSender.setOnCurrentTimeListener(currentTime => {
                     console.log('onCurrentTime', currentTime);
                     // if (this.duration() > 0 && currentTime + 1 > this.duration()) {
@@ -140,13 +134,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                     this.didLoadRequest = false;
                 });
 
-                /*
-                const mediaSession = this.getCastMediaSession();
-                    mediaSession.addUpdateListener((isAlive) => {
-                        console.log('mediaSession updated; isAlive ', isAlive);
-                    });
-                 */
-
                 console.log('castSender initialized');
 
                 this.triggerReady();
@@ -201,6 +188,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         paused() {
             const isPaused =
                 (this.myPlayer && this.myPlayer.isPaused) || this.ended() || (this.myPlayer && this.myPlayer.playerState === null);
+            console.log('paused', isPaused);
             return isPaused;
         }
 
@@ -255,9 +243,10 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         duration() {
             if (!this.myPlayer) {
                 console.log('duration call, but no player');
-                return 0;
+                return NaN;
             }
-            return this.myPlayer.duration;
+            console.log('duration', this.myPlayer.duration);
+            return this.myPlayer.duration === 0 ? NaN : this.myPlayer.duration;
         }
 
         ended() {
@@ -269,7 +258,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                     return false;
                 }
             }
-            console.log('ended', this.didLoadRequest);
             return this.didLoadRequest;
         }
 
