@@ -32,7 +32,8 @@ export declare class ChromecastSender {
     getSupportsHDR(): boolean;
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article): chrome.cast.media.MediaInfo;
     getCastMediaInfoByParams(playParams: PlayParams, article?: Article): chrome.cast.media.MediaInfo;
-    getCastSession(): chrome.cast.media.Media;
+    getCastSession(): cast.framework.CastSession;
+    getCastMediaSession(): chrome.cast.media.Media;
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean): Promise<chrome.cast.ErrorCode>;
     castVideoByParams(playParams: PlayParams): Promise<chrome.cast.ErrorCode>;
     isConnected(): boolean;

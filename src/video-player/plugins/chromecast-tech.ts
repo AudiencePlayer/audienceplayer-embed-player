@@ -11,11 +11,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
     const initPromise = castSender.init();
 
     class ChromecastTech extends Tech {
-        private connectionInfo: ChromecastConnectionInfo = {
-            available: false,
-            connected: false,
-            friendlyName: '',
-        };
         private myPlayerController: cast.framework.RemotePlayerController;
         private myPlayer: cast.framework.RemotePlayer;
         private didPlay = false;
@@ -33,23 +28,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 this.myPlayer = castSender.getCastPlayer();
                 this.myPlayerController = castSender.getCastPlayerController();
 
-                castSender.setOnConnectedListener(info => {
-                    console.log('onCon', info);
-                    this.connectionInfo = {
-                        ...this.connectionInfo,
-                        connected: info.connected,
-                        friendlyName: info.friendlyName,
-                    };
-
-                    if (this.didPlay && !info.connected) {
-                        this.didPlay = false;
-                        this.trigger('ended');
-                    }
-                });
-
                 castSender.setOnMediaInfoListener((state, info) => {
-                    console.log('mediaInfo', state, this.source);
-
                     if (!this.source) {
                         console.log(
                             'Restoring session',
@@ -60,19 +39,18 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                             this.player
                         );
                         // @TODO do we also need a loadedmetadata in regular case
-                        this.source = {src: 'restore', type: 'application/vnd.chromecast'};
+                        this.source = {src: 'restore', type: 'application/vnd.chromecast', playParams: {...info}};
                         this.triggerSourceset(this.source);
                         /// this.src({src: 'restore', type: 'application/vnd.chromecast'});
                         this.trigger('loadstart');
-                        this.trigger('loadeddata');
-                        this.trigger('loadedmetadata');
-                        this.trigger('durationchange');
 
                         // regardless of play state, videojs always needs this for the 'first-play'
                         this.trigger('play');
                         this.trigger('playing');
 
-                        if (this.myPlayer.playerState !== chrome.cast.media.PlayerState.PLAYING) {
+                        if (this.myPlayer.playerState === null || this.myPlayer.playerState === chrome.cast.media.PlayerState.BUFFERING) {
+                            this.trigger('waiting');
+                        } else if (this.myPlayer.playerState !== chrome.cast.media.PlayerState.PLAYING) {
                             this.trigger('pause');
                             // timeupdate needed when in paused state and restoring
                             setTimeout(() => {
@@ -98,11 +76,17 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                         }
                     }
                 });
+
+                /*
+                this.trigger('loadeddata');
+                        this.trigger('play');
+                        this.trigger('playing');
+                 */
+
                 castSender.setOnCurrentTimeListener(currentTime => {
                     // console.log('onCurrentTime', currentTime);
-                    if (currentTime + 1 > this.duration()) {
-                        console.log('ENDED!!');
-                        this.trigger('ended');
+                    if (this.duration() > 0 && currentTime + 1 > this.duration()) {
+                        setTimeout(() => this.trigger('ended'), 500);
                     } else {
                         this.trigger('timeupdate');
                     }
@@ -113,8 +97,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 });
 
                 castSender.setOnMediaTracksListener((audioTracks, textTracks) => {
-                    console.log('tracksListener', audioTracks, textTracks);
-
                     Array.from(this.audioTracks()).forEach((track: any) => this.audioTracks().removeTrack(track));
                     audioTracks.forEach(audioTrack => {
                         const track = new videojsInstance.AudioTrack({
@@ -145,28 +127,24 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 this.textTracks().addEventListener('change', () => this.handleTextTrackChange());
                 this.audioTracks().addEventListener('change', () => this.handleAudioTrackChange());
 
-                this.connectionInfo.available = true;
+                console.log('castSender initialized');
 
                 this.triggerReady();
-                console.log('castSender initialized');
             });
         }
 
         static canPlaySource(x: any) {
-            console.log('canPlaySource', x);
+            console.log('canPlaySource', castSender && castSender.isConnected());
             return castSender && castSender.isConnected();
         }
 
         static isSupported() {
-            console.log('isSupported');
             return true;
         }
 
         static canPlayType(type: string) {
-            // Return 'probably', 'maybe', or ''
-            // return type === 'video/custom' ? 'probably' : '';
             console.log('canPlayType', type);
-            return 'probably';
+            return type === 'application/vnd.chromecast' ? 'probably' : '';
         }
 
         createEl(type: any, props: any, attrs: any) {
@@ -186,8 +164,8 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         pause() {
-            console.log('pause', this.myPlayer.canPause);
-            if (!this.paused() && this.myPlayer.canPause) {
+            console.log('pause', this.myPlayer && this.myPlayer.canPause);
+            if (!this.paused() && this.myPlayer && this.myPlayer.canPause) {
                 this.myPlayerController.playOrPause();
                 console.log('playOrPause called');
             }
@@ -205,19 +183,13 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
             if (this.source && this.source.src === 'restore') {
                 this.trigger('loadstart');
-                this.trigger('loadeddata');
             } else {
-                this.trigger('waiting');
-
+                this.trigger('loadstart');
                 castSender
                     .castVideoByParams(source.playParams)
                     .then(() => {
+                        this.trigger('waiting');
                         console.log('castVideoByParams requested CC');
-
-                        this.trigger('loadstart');
-                        this.trigger('loadeddata');
-                        this.trigger('play');
-                        this.trigger('playing');
                     })
                     .catch(err => console.log(err));
             }
@@ -256,16 +228,21 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 console.log('duration call, but no player');
                 return 0;
             }
-            console.log('duration: ', this.myPlayer.duration);
             return this.myPlayer.duration;
         }
 
         ended() {
+            if (!this.myPlayer) {
+                return false;
+            }
             if (this.myPlayer.isConnected) {
-                const session = castSender.getCastSession();
+                if (this.myPlayer.playerState && this.myPlayer.playerState !== chrome.cast.media.PlayerState.IDLE) {
+                    return false;
+                }
+                const session = castSender.getCastMediaSession();
                 if (session) {
                     const isEnded = session.idleReason === chrome.cast.media.IdleReason.FINISHED;
-                    console.log('ended', isEnded);
+                    console.log('ended - check via session', isEnded);
                     return isEnded;
                 }
             }
@@ -277,24 +254,25 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         seekable() {
-            // TODO Investigate if there's a way to detect
-            // if the source is live, so that we can
-            // possibly adjust the seekable `TimeRanges` accordingly.
+            // TODO If the source is live adjust the seekable `TimeRanges` accordingly.
             return this.videojs.createTimeRange(0, this.duration());
         }
 
-        // 🧠 These are triggered when the user selects a new track
         handleTextTrackChange() {
-            const selected: any = Array.from(this.textTracks()).find((t: any) => t.mode === 'showing');
-            if (selected) {
-                castSender.setActiveTrackById(selected.id, 'TEXT');
+            if (this.didPlay) {
+                const selected: any = Array.from(this.textTracks()).find((t: any) => t.mode === 'showing');
+                if (selected) {
+                    castSender.setActiveTrackById(selected.id, 'TEXT');
+                }
             }
         }
 
         handleAudioTrackChange() {
-            const selected: any = Array.from(this.audioTracks()).find((t: any) => t.enabled);
-            if (selected) {
-                castSender.setActiveTrackById(selected.id, 'AUDIO');
+            if (this.didPlay) {
+                const selected: any = Array.from(this.audioTracks()).find((t: any) => t.enabled);
+                if (selected) {
+                    castSender.setActiveTrackById(selected.id, 'AUDIO');
+                }
             }
         }
 
@@ -334,7 +312,14 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         readyState() {
-            console.log('readyState');
+            if (
+                !this.myPlayer ||
+                (this.myPlayer && this.myPlayer.playerState === null) ||
+                (this.myPlayer && this.myPlayer.playerState === chrome.cast.media.PlayerState.IDLE) ||
+                (this.myPlayer && this.myPlayer.playerState === chrome.cast.media.PlayerState.BUFFERING)
+            ) {
+                return 0;
+            }
             return 4;
         }
 

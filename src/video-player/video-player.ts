@@ -48,6 +48,28 @@ export class VideoPlayer {
             this.castSender = new ChromecastSender(chromecastReceiverAppId);
 
             createChromecastTechPlugin(videojsInstance, this.castSender);
+
+            this.castSender.setOnConnectedListener(info => {
+                if (!this.player) {
+                    return;
+                }
+                const currentSources = this.player.currentSources();
+                const wasPlaying = !this.player.paused();
+                console.log('onConnectedListener', info, currentSources, wasPlaying);
+
+                // playParams exist
+                if (currentSources && currentSources.length > 0 && currentSources[0].playParams && this.player.currentType()) {
+                    if (!info.connected && this.player.currentType() === 'application/vnd.chromecast') {
+                        console.log('CC disconnected, was playing something remote');
+                        this.reset();
+                        setTimeout(() => this.playByParams(currentSources[0].playParams), 2000);
+                    } else if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {
+                        console.log('CC connected, was playing something local');
+                        this.reset();
+                        setTimeout(() => this.playByParams(currentSources[0].playParams), 2000);
+                    }
+                }
+            });
         }
     }
 
@@ -138,7 +160,7 @@ export class VideoPlayer {
         if (this.castSender && this.castSender.isConnected()) {
             console.log('playByParams, with CC connected');
             this.localPlayConfig = null;
-            this.player.src({src: 'custom', type: 'application/vnd.chromecast', playParams});
+            this.player.src({src: 'chromecast', type: 'application/vnd.chromecast', playParams});
             return Promise.resolve();
         } else {
             console.log('playByParams, regular play, fetching play config');
@@ -235,6 +257,8 @@ export class VideoPlayer {
                   })),
               };
 
+        const playParams = {playParams: {articleId: playConfig.articleId, assetId: playConfig.assetId}};
+
         const playSources = playConfig.entitlements
             .map(entitlement => {
                 const emeOptions = getEmeOptionsFromEntitlement(this.videojsInstance, entitlement);
@@ -243,6 +267,7 @@ export class VideoPlayer {
                     type: entitlement.type,
                     ...emeOptions,
                     ...trackParam,
+                    ...playParams,
                 };
             })
             .filter(playOption => {

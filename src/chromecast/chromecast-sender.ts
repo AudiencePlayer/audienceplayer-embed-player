@@ -126,7 +126,6 @@ export class ChromecastSender {
                 let textTracks: TrackInfo[] = [];
 
                 if (this.castPlayer.mediaInfo.tracks && sessionMediaInfo) {
-                    console.log('mediaInfo.tracks', this.castPlayer.mediaInfo.tracks);
                     if (this.onMediaTracksListener) {
                         audioTracks = this.getTracksByType('AUDIO');
                         textTracks = this.getTracksByType('TEXT');
@@ -243,19 +242,19 @@ export class ChromecastSender {
     }
 
     getCastSession() {
-        const castContext = cast.framework.CastContext.getInstance();
-        if (castContext) {
-            const session = castContext.getCurrentSession();
-            if (session) {
-                return session.getMediaSession();
-            }
+        return this.castContext.getCurrentSession();
+    }
+
+    getCastMediaSession() {
+        const castSession = this.getCastSession();
+        if (castSession) {
+            return castSession.getMediaSession();
         }
-        return null;
     }
 
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean) {
         if (this.isConnected()) {
-            const castSession = this.castContext.getCurrentSession();
+            const castSession = this.getCastSession();
             const mediaInfo = this.getCastMediaInfo(playConfig, article);
 
             if (mediaInfo) {
@@ -271,7 +270,7 @@ export class ChromecastSender {
     castVideoByParams(playParams: PlayParams) {
         console.log('castVideoByParams', playParams);
         if (this.isConnected()) {
-            const castSession = this.castContext.getCurrentSession();
+            const castSession = this.getCastSession();
 
             const mediaInfo = this.getCastMediaInfoByParams(playParams);
             if (mediaInfo) {
@@ -292,7 +291,7 @@ export class ChromecastSender {
 
     stopMedia() {
         if (this.castContext) {
-            const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+            const castSession = this.getCastSession();
             if (castSession) {
                 castSession.getMediaSession().stop(new chrome.cast.media.StopRequest(), () => {}, () => {});
             }
@@ -301,7 +300,7 @@ export class ChromecastSender {
 
     endSession(stopCasting: boolean) {
         if (this.castContext) {
-            const castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+            const castSession = this.getCastSession();
             if (castSession) {
                 castSession.endSession(stopCasting);
             }
@@ -339,31 +338,31 @@ export class ChromecastSender {
     }
 
     getTracksByType(type: string) {
-        const sessionMediaInfo = cast.framework.CastContext.getInstance()
-            .getCurrentSession()
-            .getMediaSession();
+        const mediaSession = this.getCastMediaSession();
         return this.castPlayer.mediaInfo.tracks
             .filter(track => track.type === type && track.language)
             .map(track => ({
                 id: track.trackId,
                 locale: track.language,
-                active: sessionMediaInfo.activeTrackIds && sessionMediaInfo.activeTrackIds.indexOf(track.trackId) !== -1,
+                active: mediaSession && mediaSession.activeTrackIds && mediaSession.activeTrackIds.indexOf(track.trackId) !== -1,
             }));
     }
 
     setActiveTracks(trackIds: number[], type: string) {
         if (this.castPlayer && this.castPlayer.isConnected) {
-            const media = cast.framework.CastContext.getInstance()
-                .getCurrentSession()
-                .getMediaSession();
-            const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackIds);
-            media.editTracksInfo(
-                tracksInfoRequest,
-                () => {
-                    // @TODO
-                },
-                (error: chrome.cast.Error) => console.error('ChromeCast', error)
-            );
+            const mediaSession = this.getCastMediaSession();
+            if (mediaSession) {
+                const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackIds);
+                mediaSession.editTracksInfo(
+                    tracksInfoRequest,
+                    () => {
+                        // @TODO
+                    },
+                    (error: chrome.cast.Error) => console.error('ChromeCast', error)
+                );
+            } else {
+                console.error('setActiveTracks called but no media session');
+            }
         }
     }
 

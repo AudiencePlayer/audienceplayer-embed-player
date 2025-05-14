@@ -69,6 +69,7 @@
 }
 
 .video-js .vjs-chromecast-button {
+    display: inline-block;
     margin: 0.5em;
     padding: 0;
     cursor: pointer;
