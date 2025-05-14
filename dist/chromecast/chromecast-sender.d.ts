@@ -48,4 +48,6 @@ export declare class ChromecastSender {
         locale: string;
         active: boolean;
     }[];
+    setActiveTracks(trackIds: number[], type: string): void;
+    setActiveTrackById(selectedTrackId: number, type: string): void;
 }

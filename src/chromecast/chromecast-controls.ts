@@ -290,25 +290,6 @@ export class ChromecastControls {
         }
     }
 
-    setActiveTracks(trackIds: number[], type: string) {
-        if (this.player && this.player.isConnected) {
-            const media = cast.framework.CastContext.getInstance()
-                .getCurrentSession()
-                .getMediaSession();
-            const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackIds);
-            media.editTracksInfo(
-                tracksInfoRequest,
-                () => {
-                    this.toggleMenu(
-                        this.getElement(type === 'AUDIO' ? '.vjs-audio-button .vjs-menu' : '.vjs-subtitles-button .vjs-menu'),
-                        this.getElement(type === 'AUDIO' ? 'div.vjs-audio-button' : 'div.vjs-subtitles-button')
-                    );
-                },
-                (error: chrome.cast.Error) => console.error('ChromeCast', error)
-            );
-        }
-    }
-
     toggleMenu(menuEl: HTMLElement, containerEl: HTMLElement) {
         if (menuEl.classList.contains('vjs-lock-showing') || containerEl.classList.contains('vjs-hover')) {
             menuEl.classList.remove('vjs-lock-showing');

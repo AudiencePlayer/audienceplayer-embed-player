@@ -22,7 +22,6 @@ export declare class ChromecastControls {
     seek(newTime: number): void;
     stop(): void;
     setActiveTrack(event: MouseEvent, type: string): void;
-    setActiveTracks(trackIds: number[], type: string): void;
     toggleMenu(menuEl: HTMLElement, containerEl: HTMLElement): void;
     getElement(selector: string): HTMLElement;
 }

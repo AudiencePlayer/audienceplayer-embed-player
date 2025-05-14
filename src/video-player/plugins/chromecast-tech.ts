@@ -115,7 +115,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 castSender.setOnMediaTracksListener((audioTracks, textTracks) => {
                     console.log('tracksListener', audioTracks, textTracks);
 
-                    Array.from(this.audioTracks()).forEach((track: any) => this.audioTracks.removeTrack(track));
+                    Array.from(this.audioTracks()).forEach((track: any) => this.audioTracks().removeTrack(track));
                     audioTracks.forEach(audioTrack => {
                         const track = new videojsInstance.AudioTrack({
                             id: audioTrack.id,
@@ -125,19 +125,20 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                             enabled: audioTrack.active,
                         });
 
-                        this.audioTracks().addTrack(audioTrack);
+                        this.audioTracks().addTrack(track);
                     });
 
                     textTracks.forEach(textTrack => {
-                        Array.from(this.textTracks()).forEach((track: any) => this.textTracks.removeTrack(track));
+                        Array.from(this.textTracks()).forEach((track: any) => this.textTracks().removeTrack(track));
                         const track = new videojsInstance.TextTrack({
+                            tech: this,
                             label: getNativeLanguage(textTrack.locale),
                             kind: 'subtitles',
                             language: textTrack.locale,
                             mode: textTrack.active ? 'showing' : 'disabled',
                         });
 
-                        this.textTracks.addTrack(track);
+                        this.textTracks().addTrack(track);
                     });
                 });
 
@@ -195,7 +196,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         paused() {
             const isPaused =
                 (this.myPlayer && this.myPlayer.isPaused) || this.ended() || (this.myPlayer && this.myPlayer.playerState === null);
-            console.log('paused', isPaused);
             return isPaused;
         }
 
@@ -269,7 +269,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                     return isEnded;
                 }
             }
-            console.log('ended - all else');
             return true;
         }
 
@@ -286,16 +285,16 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
         // 🧠 These are triggered when the user selects a new track
         handleTextTrackChange() {
-            const selected = Array.from(this.textTracks()).find((t: any) => t.mode === 'showing');
+            const selected: any = Array.from(this.textTracks()).find((t: any) => t.mode === 'showing');
             if (selected) {
-                // Tell Chromecast receiver to switch subtitle
+                castSender.setActiveTrackById(selected.id, 'TEXT');
             }
         }
 
         handleAudioTrackChange() {
-            const selected = Array.from(this.audioTracks()).find((t: any) => t.enabled);
+            const selected: any = Array.from(this.audioTracks()).find((t: any) => t.enabled);
             if (selected) {
-                // Tell Chromecast receiver to switch audio
+                castSender.setActiveTrackById(selected.id, 'AUDIO');
             }
         }
 

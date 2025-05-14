@@ -350,4 +350,30 @@ export class ChromecastSender {
                 active: sessionMediaInfo.activeTrackIds && sessionMediaInfo.activeTrackIds.indexOf(track.trackId) !== -1,
             }));
     }
+
+    setActiveTracks(trackIds: number[], type: string) {
+        if (this.castPlayer && this.castPlayer.isConnected) {
+            const media = cast.framework.CastContext.getInstance()
+                .getCurrentSession()
+                .getMediaSession();
+            const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackIds);
+            media.editTracksInfo(
+                tracksInfoRequest,
+                () => {
+                    // @TODO
+                },
+                (error: chrome.cast.Error) => console.error('ChromeCast', error)
+            );
+        }
+    }
+
+    setActiveTrackById(selectedTrackId: number, type: string) {
+        const newActiveTracks = this.getActiveTracksByType(type === 'AUDIO' ? 'TEXT' : 'AUDIO');
+        const activeTracksOfType = this.getActiveTracksByType(type);
+        const index = activeTracksOfType.indexOf(selectedTrackId);
+        if (type === 'AUDIO' || (type === 'TEXT' && index === -1)) {
+            newActiveTracks.push(selectedTrackId);
+        }
+        this.setActiveTracks(newActiveTracks, type);
+    }
 }
