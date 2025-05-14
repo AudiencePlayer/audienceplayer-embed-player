@@ -119,13 +119,11 @@ export class ChromecastSender {
 
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, () => {
             if (this.castPlayer.isMediaLoaded && this.castPlayer.mediaInfo) {
-                const sessionMediaInfo = cast.framework.CastContext.getInstance()
-                    .getCurrentSession()
-                    .getMediaSession();
+                const mediaSession = this.getCastMediaSession();
                 let audioTracks: TrackInfo[] = [];
                 let textTracks: TrackInfo[] = [];
 
-                if (this.castPlayer.mediaInfo.tracks && sessionMediaInfo) {
+                if (this.castPlayer.mediaInfo.tracks && mediaSession) {
                     if (this.onMediaTracksListener) {
                         audioTracks = this.getTracksByType('AUDIO');
                         textTracks = this.getTracksByType('TEXT');

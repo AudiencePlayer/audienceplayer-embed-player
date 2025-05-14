@@ -289,54 +289,60 @@ export class VideoPlayer {
         });
 
         this.player.on('playing', () => {
-            if (this.firstPlayingEvent) {
-                this.firstPlayingEvent = false;
-                if (this.localPlayConfig && this.localPlayConfig.currentTime > 0) {
-                    this.player.currentTime(this.localPlayConfig.currentTime);
-                }
-            }
-            this.checkSelectedTracks();
             if (this.localPlayConfig) {
+                if (this.firstPlayingEvent) {
+                    this.firstPlayingEvent = false;
+                    if (this.localPlayConfig && this.localPlayConfig.currentTime > 0) {
+                        this.player.currentTime(this.localPlayConfig.currentTime);
+                    }
+                }
+                this.checkSelectedTracks();
                 this.playerLoggerService.onPlaying();
             }
         });
 
         this.player.on('pause', () => {
-            this.checkSelectedTracks();
-            if (this.player.paused() && !this.player.ended()) {
-                if (this.localPlayConfig) {
-                    this.playerLoggerService.onPause();
+            if (this.localPlayConfig) {
+                this.checkSelectedTracks();
+                if (this.player.paused() && !this.player.ended()) {
+                    if (this.localPlayConfig) {
+                        this.playerLoggerService.onPause();
+                    }
                 }
             }
         });
 
         this.player.on('ended', () => {
-            this.checkSelectedTracks();
             if (this.localPlayConfig) {
-                this.playerLoggerService.onStop();
+                this.checkSelectedTracks();
+                if (this.localPlayConfig) {
+                    this.playerLoggerService.onStop();
+                }
             }
         });
 
         const skipIntroComponent = this.player.skipIntro;
 
         this.player.on('timeupdate', () => {
-            const tempTime = Math.ceil(this.player.currentTime()) || 0;
-            if (this.currentTime !== tempTime) {
-                this.currentTime = tempTime;
-                this.checkSelectedTracks();
+            if (this.localPlayConfig) {
+                const tempTime = Math.ceil(this.player.currentTime()) || 0;
+                if (this.currentTime !== tempTime) {
+                    this.currentTime = tempTime;
+                    this.checkSelectedTracks();
 
-                if (this.localPlayConfig) {
-                    this.playerLoggerService.onCurrentTimeUpdated(this.currentTime);
-                }
+                    if (this.localPlayConfig) {
+                        this.playerLoggerService.onCurrentTimeUpdated(this.currentTime);
+                    }
 
-                if (!!this.localPlayConfig && !!this.localPlayConfig.skipIntro && skipIntroComponent) {
-                    if (
-                        this.localPlayConfig.skipIntro.start <= this.currentTime &&
-                        this.localPlayConfig.skipIntro.end >= this.currentTime
-                    ) {
-                        skipIntroComponent.trigger('show');
-                    } else {
-                        skipIntroComponent.trigger('hide');
+                    if (!!this.localPlayConfig && !!this.localPlayConfig.skipIntro && skipIntroComponent) {
+                        if (
+                            this.localPlayConfig.skipIntro.start <= this.currentTime &&
+                            this.localPlayConfig.skipIntro.end >= this.currentTime
+                        ) {
+                            skipIntroComponent.trigger('show');
+                        } else {
+                            skipIntroComponent.trigger('hide');
+                        }
                     }
                 }
             }
@@ -352,35 +358,42 @@ export class VideoPlayer {
         }
 
         this.player.on('durationchange', () => {
-            this.checkSelectedTracks();
             if (this.localPlayConfig) {
+                this.checkSelectedTracks();
                 this.playerLoggerService.onDurationUpdated(this.player.duration());
             }
         });
 
         this.player.on('loadedmetadata', () => {
-            const selectedSource = this.player.currentSource();
-            const textTracks = selectedSource.textTracks || [];
+            if (this.localPlayConfig) {
+                const selectedSource = this.player.currentSource();
+                const textTracks = selectedSource.textTracks || [];
 
-            textTracks.forEach((track: any) => {
-                this.player.addRemoteTextTrack(track, false);
-            });
+                textTracks.forEach((track: any) => {
+                    this.player.addRemoteTextTrack(track, false);
+                });
 
-            const audioTrackList = this.player.audioTracks();
-            if (audioTrackList && audioTrackList.length > 0) {
-                // set default tracks when available
-                this.setDefaultAudioTrack();
-                this.setDefaultTextTrack();
-                this.metadataLoaded = true;
-            } else {
-                // unfortunately there is no reliable way to know when iOS native binding to text-tracks is done
-                // (even after first play event, this is not true), so we resort to an old fashioned timeout
-                setTimeout(() => {
+                const audioTrackList = this.player.audioTracks();
+                if (audioTrackList && audioTrackList.length > 0) {
+                    // set default tracks when available
                     this.setDefaultAudioTrack();
                     this.setDefaultTextTrack();
                     this.metadataLoaded = true;
-                }, 1000);
+                } else {
+                    // unfortunately there is no reliable way to know when iOS native binding to text-tracks is done
+                    // (even after first play event, this is not true), so we resort to an old fashioned timeout
+                    setTimeout(() => {
+                        this.setDefaultAudioTrack();
+                        this.setDefaultTextTrack();
+                        this.metadataLoaded = true;
+                    }, 1000);
+                }
             }
+        });
+
+        this.player.tech(true).on('finished', () => {
+            console.log('Player finished; reset');
+            this.reset();
         });
     }
 
