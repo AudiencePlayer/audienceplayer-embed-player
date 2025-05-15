@@ -1,5 +1,6 @@
 import { PlayConfig } from '../models/play-config';
 import { InitParams, PlayParams } from '../models/play-params';
+import { ChromecastSender } from '../chromecast/chromecast-sender';
 export declare class VideoPlayer {
     private videojsInstance;
     private player;
@@ -23,6 +24,7 @@ export declare class VideoPlayer {
     private reset;
     private getAndInitPlaySourcesFromConfig;
     private bindEvents;
+    getCastSender(): ChromecastSender;
     private checkSelectedTracks;
     private setDefaultTextTrack;
     private setDefaultAudioTrack;

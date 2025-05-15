@@ -13,7 +13,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
     class ChromecastTech extends Tech {
         private myPlayerController: cast.framework.RemotePlayerController = null;
         private myPlayer: cast.framework.RemotePlayer = null;
-        private didLoadRequest = false;
+        private didEnd = false;
 
         public featuresVolumeControl = false;
         public featuresMuteControl = false;
@@ -28,7 +28,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 this.myPlayer = castSender.getCastPlayer();
                 this.myPlayerController = castSender.getCastPlayerController();
 
-                castSender.setOnMediaInfoListener((state, info) => {
+                castSender.setOnPlayStateListener((state, info) => {
                     if (!this.source) {
                         console.log(
                             'Restoring session',
@@ -40,7 +40,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                         );
                         // @TODO do we also need a loadedmetadata in regular case
                         this.source = {src: 'restore', type: 'application/vnd.chromecast', playParams: {...info}};
-                        this.didLoadRequest = true;
+                        this.didEnd = false;
                         this.triggerSourceset(this.source);
                         /// this.src({src: 'restore', type: 'application/vnd.chromecast'});
                         this.trigger('loadstart');
@@ -70,22 +70,23 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                                 this.trigger('pause');
                             } else if (state === chrome.cast.media.PlayerState.BUFFERING) {
                                 this.trigger('waiting');
-                            } else if (this.ended()) {
-                                console.log('FINISHED');
-                                this.didLoadRequest = false;
-                                this.trigger('finished');
                             }
+                            // else if (this.ended()) {
+                            //     console.log('FINISHED');
+                            //     this.trigger('finished');
+                            // }
                         }
                     }
                 });
 
                 castSender.setOnCurrentTimeListener(currentTime => {
                     console.log('onCurrentTime', currentTime);
-                    // if (this.duration() > 0 && currentTime + 1 > this.duration()) {
-                    //     setTimeout(() => this.trigger('ended'), 500);
-                    // } else {
+                    if (this.duration() > 0 && currentTime + 1 > this.duration()) {
+                        console.log('didEnd => true');
+                        this.didEnd = true;
+                        setTimeout(() => this.trigger('ended'), 500);
+                    }
                     this.trigger('timeupdate');
-                    // }
                 });
 
                 castSender.setOnDurationListener(duration => {
@@ -125,13 +126,13 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
                 this.on('dispose', () => {
                     console.log('dispose');
-                    castSender.setOnMediaInfoListener(null);
+                    castSender.setOnPlayStateListener(null);
                     castSender.setOnCurrentTimeListener(null);
                     castSender.setOnMediaTracksListener(null);
                     this.myPlayerController = null;
                     this.myPlayer = null;
                     this.source = null;
-                    this.didLoadRequest = false;
+                    this.didEnd = false;
                 });
 
                 console.log('castSender initialized');
@@ -195,6 +196,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         setSource(source: any) {
             console.log('chromecast-tech.src', source);
             this.source = source;
+            this.didEnd = false;
 
             if (this.source && this.source.src === 'restore') {
                 this.trigger('loadstart');
@@ -203,7 +205,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 castSender
                     .castVideoByParams(source.playParams)
                     .then(() => {
-                        this.didLoadRequest = true;
                         this.trigger('waiting');
                         console.log('castVideoByParams requested CC');
                     })
@@ -227,9 +228,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             // Seeking to any place within (approximately) 1 second of the end of the item
             // causes the Video.js player to get stuck in a BUFFERING state. To work around
             // this, we only allow seeking to within 1 second of the end of an item.
-            this.myPlayer.currentTime = Math.min(duration - 1, newTime);
-
-            this.myPlayer.currentTime = newTime;
+            this.myPlayer.currentTime = Math.min(duration - 1, Math.round(newTime));
             this.myPlayerController.seek();
         }
 
@@ -245,20 +244,12 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 console.log('duration call, but no player');
                 return NaN;
             }
-            console.log('duration', this.myPlayer.duration);
+            // console.log('duration', this.myPlayer.duration);
             return this.myPlayer.duration === 0 ? NaN : this.myPlayer.duration;
         }
 
         ended() {
-            if (!this.myPlayer) {
-                return false;
-            }
-            if (this.myPlayer.isConnected) {
-                if (this.myPlayer.playerState !== null && this.myPlayer.playerState !== chrome.cast.media.PlayerState.IDLE) {
-                    return false;
-                }
-            }
-            return this.didLoadRequest;
+            return this.didEnd;
         }
 
         buffered(): any {

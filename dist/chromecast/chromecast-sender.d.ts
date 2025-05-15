@@ -9,9 +9,11 @@ export declare class ChromecastSender {
     private castContext;
     private castPlayer;
     private castPlayerController;
+    private lastCurrentTimeMeasured;
+    private updateInterval;
     private supportsHDR;
     private onConnectedListener;
-    private onMediaInfoListener;
+    private onPlayStateListener;
     private onCurrentTimeListener;
     private onMediaTracksListener;
     private onDurationListener;
@@ -22,7 +24,7 @@ export declare class ChromecastSender {
         connected: boolean;
         friendlyName: string;
     }) => void): void;
-    setOnMediaInfoListener(callback: (state: chrome.cast.media.PlayerState, info: {
+    setOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: {
         articleId: number;
         assetId: number;
     }) => void): void;

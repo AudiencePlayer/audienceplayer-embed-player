@@ -62,13 +62,17 @@ export class VideoPlayer {
                     if (!info.connected && this.player.currentType() === 'application/vnd.chromecast') {
                         console.log('CC disconnected, was playing something remote');
                         this.reset();
-                        this.player.addClass('vjs-waiting');
-                        setTimeout(() => this.playByParams(currentSources[0].playParams), 2000);
+                        if (wasPlaying) {
+                            this.player.addClass('vjs-waiting');
+                            setTimeout(() => this.playByParams(currentSources[0].playParams), 2000);
+                        }
                     } else if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {
                         console.log('CC connected, was playing something local');
                         this.reset();
-                        this.player.addClass('vjs-waiting');
-                        setTimeout(() => this.playByParams(currentSources[0].playParams), 2000);
+                        if (wasPlaying) {
+                            this.player.addClass('vjs-waiting');
+                            setTimeout(() => this.playByParams(currentSources[0].playParams), 2000);
+                        }
                     }
                 }
             });
@@ -391,11 +395,10 @@ export class VideoPlayer {
                 }
             }
         });
+    }
 
-        this.player.tech(true).on('finished', () => {
-            console.log('Player finished; reset');
-            this.reset();
-        });
+    getCastSender() {
+        return this.castSender;
     }
 
     private checkSelectedTracks() {
