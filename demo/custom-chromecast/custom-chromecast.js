@@ -21,9 +21,9 @@ import {ChromecastSender, ChromecastControls} from '../../dist/bundle.js';
         const castButton = document.createElement('google-cast-launcher');
         castButtonContaner.appendChild(castButton);
 
-        const controls = new ChromecastControls(castSender.getCastPlayer(), castSender.getCastPlayerController());
+        const controls = new ChromecastControls(castSender);
 
-        castSender.onConnectedListener(({connected, friendlyName}) => {
+        castSender.setOnConnectedListener(({connected, friendlyName}) => {
             output.innerText = connected ? 'Connected to ' + friendlyName : 'Not connected';
         });
     });

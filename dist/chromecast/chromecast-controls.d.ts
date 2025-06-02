@@ -1,13 +1,14 @@
-/// <reference types="chromecast-caf-sender" />
 import { TrackInfo } from '../models/cast-info';
+import { ChromecastSender } from "./chromecast-sender";
 export declare class ChromecastControls {
+    private castSender;
     private currentStatus;
     private playerController;
     private player;
     private rootElement;
     private totalDuration;
     private currentTime;
-    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string | HTMLElement);
+    constructor(castSender: ChromecastSender, selector?: string | HTMLElement);
     bindEvents(): void;
     createChromecastControlsTemplate(selector?: string | HTMLElement): void;
     setPlayButtonClass(): void;

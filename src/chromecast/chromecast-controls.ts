@@ -1,7 +1,9 @@
 import {getNativeLanguage} from '../utils/locale';
 import {TrackInfo} from '../models/cast-info';
+import {ChromecastSender} from './chromecast-sender';
 
 export class ChromecastControls {
+    private castSender: ChromecastSender;
     private currentStatus: chrome.cast.media.PlayerState;
     private playerController: cast.framework.RemotePlayerController;
     private player: cast.framework.RemotePlayer;
@@ -9,12 +11,13 @@ export class ChromecastControls {
     private totalDuration: number;
     private currentTime: number;
 
-    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string | HTMLElement) {
-        this.player = player;
-        this.playerController = controller;
-        this.totalDuration = player.duration || 0;
-        this.currentTime = player.currentTime || 0;
-        this.currentStatus = player.playerState;
+    constructor(castSender: ChromecastSender, selector?: string | HTMLElement) {
+        this.castSender = castSender;
+        this.player = this.castSender.getCastPlayer();
+        this.playerController = this.castSender.getCastPlayerController();
+        this.totalDuration = this.player.duration || 0;
+        this.currentTime = this.player.currentTime || 0;
+        this.currentStatus = this.player.playerState;
         this.createChromecastControlsTemplate(selector);
         this.bindEvents();
         this.setPlayButtonClass();
@@ -53,24 +56,24 @@ export class ChromecastControls {
         const chromecastControlsTemplateString = `
         <div class="chromecast-controls video-js vjs-workinghover">
             <div class="vjs-control-bar">
-                
+
                 <button class="play-pause-button vjs-play-control vjs-control vjs-button vjs-paused" type="button" title="Play" aria-disabled="false">
                     <span class="vjs-icon-placeholder" aria-hidden="true"></span><span class="vjs-control-text" aria-live="polite">Play</span>
                 </button>
-                
+
                <div class="chromecast-controls__progress-bar">
                  <div class="chromecast-controls__progress-bar__current vjs-time-control"></div>
                  <div class="chromecast-controls__progress-bar-slider-container">
                     <input type="range"
                         value="0"
-                        class="chromecast-controls__progress-bar__slider" 
+                        class="chromecast-controls__progress-bar__slider"
                         min="0"
                         max="100"/>
                     <div class="chromecast-controls__progress-bar__slider-left"></div>
-                </div>    
+                </div>
                  <div class="chromecast-controls__progress-bar__total vjs-time-control"></div>
                </div>
-                
+
                 <div class="vjs-subtitles-button vjs-menu-button vjs-menu-button-popup vjs-control vjs-button">
                     <button class="vjs-subtitles-button vjs-menu-button vjs-menu-button-popup vjs-button" type="button" aria-disabled="false" aria-haspopup="true" aria-expanded="false">
                         <span class="vjs-icon-placeholder" aria-hidden="true"></span>
@@ -78,7 +81,7 @@ export class ChromecastControls {
                     </button>
                     <div class="vjs-menu"></div>
                 </div>
-                
+
                 <div class="vjs-audio-button vjs-menu-button vjs-menu-button-popup vjs-control vjs-button">
                     <button class="vjs-audio-button vjs-menu-button vjs-menu-button-popup vjs-button" type="button" aria-disabled="false" title="Audio Track" aria-haspopup="true" aria-expanded="false">
                         <span class="vjs-icon-placeholder" aria-hidden="true"></span>
@@ -86,7 +89,7 @@ export class ChromecastControls {
                     </button>
                     <div class="vjs-menu"></div>
                 </div>
-                
+
                 <div class="vjs-control vjs-button vjs-chromecast-button">
                     <google-cast-launcher></google-cast-launcher>
                 </div>

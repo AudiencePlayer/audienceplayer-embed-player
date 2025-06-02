@@ -165,7 +165,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
         play() {
             console.log('play');
-            if (this.myPlayerController) {
+            if (this.myPlayerController && this.myPlayer && this.myPlayer.isConnected) {
                 if (this.ended()) {
                     this.setCurrentTime(0);
                     this.myPlayerController.playOrPause();
@@ -178,7 +178,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
         pause() {
             console.log('pause');
-            if (this.myPlayerController && this.myPlayer) {
+            if (this.myPlayerController && this.myPlayer && this.myPlayer.isConnected) {
                 if (!this.paused() && this.myPlayer && this.myPlayer.canPause) {
                     this.myPlayerController.playOrPause();
                     console.log('playOrPause called');
@@ -219,17 +219,22 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         setCurrentTime(newTime: number) {
             console.log('setCurrentTime', newTime);
 
-            const duration = this.duration();
+            if (this.myPlayerController && this.myPlayer && this.myPlayer.isConnected && this.myPlayer.canSeek) {
+                const duration = this.duration();
 
-            if (newTime > duration || !this.myPlayer || !this.myPlayer.canSeek || !this.myPlayerController) {
+                if (newTime > duration) {
+                    console.log('Skip seek ', newTime, duration);
+                    return;
+                }
+                // Seeking to any place within (approximately) 1 second of the end of the item
+                // causes the Video.js player to get stuck in a BUFFERING state. To work around
+                // this, we only allow seeking to within 1 second of the end of an item.
+                this.myPlayer.currentTime = Math.min(duration - 1, Math.floor(newTime));
+                console.log('set currenTime to', this.myPlayer.currentTime);
+                this.myPlayerController.seek();
+            } else {
                 console.log('Can not seek');
-                return;
             }
-            // Seeking to any place within (approximately) 1 second of the end of the item
-            // causes the Video.js player to get stuck in a BUFFERING state. To work around
-            // this, we only allow seeking to within 1 second of the end of an item.
-            this.myPlayer.currentTime = Math.min(duration - 1, Math.round(newTime));
-            this.myPlayerController.seek();
         }
 
         currentTime() {
