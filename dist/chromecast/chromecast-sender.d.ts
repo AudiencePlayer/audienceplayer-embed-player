@@ -9,6 +9,7 @@ export declare class ChromecastSender {
     private castContext;
     private castPlayer;
     private castPlayerController;
+    private initPromise;
     private lastCurrentTimeMeasured;
     private updateInterval;
     private supportsHDR;

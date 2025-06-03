@@ -1,5 +1,5 @@
 import { TrackInfo } from '../models/cast-info';
-import { ChromecastSender } from "./chromecast-sender";
+import { ChromecastSender } from './chromecast-sender';
 export declare class ChromecastControls {
     private castSender;
     private currentStatus;

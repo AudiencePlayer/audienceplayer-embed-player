@@ -16,17 +16,23 @@ import {ChromecastSender, ChromecastControls} from '../../dist/bundle.js';
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('setButton').addEventListener('click', () => storeValues(true));
 
-    castSender.init().then(() => {
-        const castButtonContaner = document.querySelector('#cast-button');
-        const castButton = document.createElement('google-cast-launcher');
-        castButtonContaner.appendChild(castButton);
+    const initPromise = castSender.init();
 
-        const controls = new ChromecastControls(castSender);
+    onInit();
 
-        castSender.setOnConnectedListener(({connected, friendlyName}) => {
-            output.innerText = connected ? 'Connected to ' + friendlyName : 'Not connected';
+    function onInit() {
+        initPromise.then(() => {
+            const castButtonContaner = document.querySelector('#cast-button');
+            const castButton = document.createElement('google-cast-launcher');
+            castButtonContaner.appendChild(castButton);
+
+            const controls = new ChromecastControls(castSender);
+
+            castSender.setOnConnectedListener(({connected, friendlyName}) => {
+                output.innerText = connected ? 'Connected to ' + friendlyName : 'Not connected';
+            });
         });
-    });
+    }
 
     function playVideo() {
         const assetId = +localStorage.getItem('assetId');

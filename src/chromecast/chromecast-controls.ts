@@ -26,23 +26,23 @@ export class ChromecastControls {
     }
 
     bindEvents() {
-        this.playerController.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, () => {
+        this.castSender.setOnMediaTracksListener(() => {
             if (this.rootElement && this.player.mediaInfo) {
                 this.renderTracks();
             }
         });
 
-        this.playerController.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, e => {
+        this.castSender.setOnCurrentTimeListener(e => {
             if (this.rootElement) {
-                this.currentTime = e.value;
+                this.currentTime = e;
                 this.totalDuration = this.player.duration;
                 this.setProgressBarValues();
             }
         });
 
-        this.playerController.addEventListener(cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED, e => {
+        this.castSender.setOnPlayStateListener(e => {
             if (this.rootElement) {
-                this.currentStatus = e.value;
+                this.currentStatus = e;
                 this.checkChromecastContainerVisibility();
                 this.setPlayButtonClass();
                 this.setProgressBarValues();

@@ -8,11 +8,10 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
     console.log('createChromecastTechPlugin');
 
-    const initPromise = castSender.init();
-
     class ChromecastTech extends Tech {
         private myPlayerController: cast.framework.RemotePlayerController = null;
         private myPlayer: cast.framework.RemotePlayer = null;
+        private lastCurrentTime = 0;
         private didEnd = false;
 
         public featuresVolumeControl = false;
@@ -24,7 +23,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
             console.log('ChromecastTech', options);
 
-            initPromise.then(() => {
+            castSender.init().then(() => {
                 this.myPlayer = castSender.getCastPlayer();
                 this.myPlayerController = castSender.getCastPlayerController();
 
@@ -80,7 +79,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 });
 
                 castSender.setOnCurrentTimeListener(currentTime => {
-                    console.log('onCurrentTime', currentTime);
+                    this.lastCurrentTime = currentTime;
                     if (this.duration() > 0 && currentTime + 1 > this.duration()) {
                         console.log('didEnd => true');
                         this.didEnd = true;
@@ -179,7 +178,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         pause() {
             console.log('pause');
             if (this.myPlayerController && this.myPlayer && this.myPlayer.isConnected) {
-                if (!this.paused() && this.myPlayer && this.myPlayer.canPause) {
+                if (!this.paused() && this.myPlayer.canPause) {
                     this.myPlayerController.playOrPause();
                     console.log('playOrPause called');
                 }
@@ -217,8 +216,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         setCurrentTime(newTime: number) {
-            console.log('setCurrentTime', newTime);
-
             if (this.myPlayerController && this.myPlayer && this.myPlayer.isConnected && this.myPlayer.canSeek) {
                 const duration = this.duration();
 
@@ -230,7 +227,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 // causes the Video.js player to get stuck in a BUFFERING state. To work around
                 // this, we only allow seeking to within 1 second of the end of an item.
                 this.myPlayer.currentTime = Math.min(duration - 1, Math.floor(newTime));
-                console.log('set currenTime to', this.myPlayer.currentTime);
                 this.myPlayerController.seek();
             } else {
                 console.log('Can not seek');
@@ -238,10 +234,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         currentTime() {
-            if (!this.myPlayer) {
-                return 0;
-            }
-            return this.myPlayer.currentTime;
+            return this.lastCurrentTime;
         }
 
         duration() {

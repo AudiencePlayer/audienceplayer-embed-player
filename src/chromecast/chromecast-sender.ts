@@ -8,6 +8,7 @@ export class ChromecastSender {
     private castContext: cast.framework.CastContext = null;
     private castPlayer: cast.framework.RemotePlayer = null;
     private castPlayerController: cast.framework.RemotePlayerController = null;
+    private initPromise: Promise<void> = null;
     private lastCurrentTimeMeasured: number = null;
     private updateInterval: any = null;
     private supportsHDR = false;
@@ -20,29 +21,33 @@ export class ChromecastSender {
     constructor(private chromecastReceiverAppId: string) {}
 
     init() {
-        return new Promise<void>((resolve, reject) => {
-            if (this.chromecastReceiverAppId) {
-                window['__onGCastApiAvailable'] = (isAvailable: boolean) => {
-                    if (isAvailable && cast && cast.framework && chrome && chrome.cast) {
-                        try {
-                            this.initializeCastApi(this.chromecastReceiverAppId);
-                            resolve();
-                        } catch (e) {
-                            reject(e);
+        this.initPromise =
+            this.initPromise ||
+            new Promise<void>((resolve, reject) => {
+                if (this.chromecastReceiverAppId) {
+                    window['__onGCastApiAvailable'] = (isAvailable: boolean) => {
+                        if (isAvailable && cast && cast.framework && chrome && chrome.cast) {
+                            try {
+                                this.initializeCastApi(this.chromecastReceiverAppId);
+                                resolve();
+                            } catch (e) {
+                                reject(e);
+                            }
+                        } else {
+                            reject('Chromecast not available');
                         }
-                    } else {
-                        reject('Chromecast not available');
-                    }
-                };
+                    };
 
-                const scriptElement = document.createElement('script');
-                scriptElement.async = true;
-                scriptElement.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
-                document.head.appendChild(scriptElement);
-            } else {
-                reject('Chromecast Receiver Application Id is missing');
-            }
-        });
+                    const scriptElement = document.createElement('script');
+                    scriptElement.async = true;
+                    scriptElement.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
+                    document.head.appendChild(scriptElement);
+                } else {
+                    reject('Chromecast Receiver Application Id is missing');
+                }
+            });
+
+        return this.initPromise;
     }
 
     initializeCastApi(chromecastReceiverAppId: string) {
@@ -74,7 +79,6 @@ export class ChromecastSender {
                     if (castSession) {
                         const device = castSession.getCastDevice();
                         if (device) {
-                            // this.startUpdateInterval();
                             this.onConnectedListener({
                                 connected: true,
                                 friendlyName: device.friendlyName || 'Chromecast',
@@ -83,7 +87,6 @@ export class ChromecastSender {
                         }
                     }
                 }
-                // this.stopUpdateInterval();
                 this.onConnectedListener({connected: false, friendlyName: ''});
             }
         });
@@ -119,12 +122,13 @@ export class ChromecastSender {
             }
         });
 
-        this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, e => {
-            console.log('CURRENT_TIME_CHANGED', e.value);
-            if (this.onCurrentTimeListener) {
-                this.onCurrentTimeListener(this.castPlayer.currentTime);
+        // @TODO consider clearInterval
+        this.updateInterval = setInterval(() => {
+            const mediaSession = this.getCastMediaSession();
+            if (mediaSession && this.onCurrentTimeListener) {
+                this.onCurrentTimeListener(mediaSession.getEstimatedTime());
             }
-        });
+        }, 500);
 
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, () => {
             if (this.castPlayer.isMediaLoaded && this.castPlayer.mediaInfo) {
@@ -376,23 +380,4 @@ export class ChromecastSender {
         }
         this.setActiveTracks(newActiveTracks, type);
     }
-
-    // private startUpdateInterval() {
-    //     this.stopUpdateInterval();
-    //     this.updateInterval = setInterval(() => {
-    //         console.log('interval check ', this.castPlayer.currentTime);
-    //         if (this.castPlayer && this.castPlayer.isConnected && this.castPlayer.currentTime !== this.lastCurrentTimeMeasured) {
-    //             this.lastCurrentTimeMeasured = this.castPlayer.currentTime;
-    //             if (this.onCurrentTimeListener) {
-    //                 this.onCurrentTimeListener(this.castPlayer.currentTime);
-    //             }
-    //         }
-    //     }, 500);
-    // }
-    //
-    // private stopUpdateInterval() {
-    //     if (this.updateInterval) {
-    //         clearInterval(this.updateInterval);
-    //     }
-    // }
 }
