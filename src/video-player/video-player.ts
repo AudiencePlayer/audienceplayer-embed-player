@@ -30,9 +30,9 @@ export class VideoPlayer {
     private currentTime: number;
     private initParams: InitParams;
 
-    constructor(private videojsInstance: any, baseUrl: string, projectId: number, chromecastReceiverAppId: string = null) {
+    constructor(private videojsInstance: any, baseUrl: string = null, projectId: number = 0, chromecastReceiverAppId: string = null) {
         console.log('VideoPlayer.constructor');
-        if (typeof baseUrl === 'string' && projectId > 0) {
+        if (baseUrl && typeof baseUrl === 'string' && projectId > 0) {
             this.apiService = new ApiService(baseUrl.replace(/\/*$/, ''), projectId);
         }
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);

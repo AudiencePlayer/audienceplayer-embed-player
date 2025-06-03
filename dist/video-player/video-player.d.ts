@@ -14,7 +14,7 @@ export declare class VideoPlayer {
     private metadataLoaded;
     private currentTime;
     private initParams;
-    constructor(videojsInstance: any, baseUrl: string, projectId: number, chromecastReceiverAppId?: string);
+    constructor(videojsInstance: any, baseUrl?: string, projectId?: number, chromecastReceiverAppId?: string);
     init(initParams: InitParams): void;
     playByParams(playParams: PlayParams): Promise<void>;
     play(playConfig: PlayConfig): void;
