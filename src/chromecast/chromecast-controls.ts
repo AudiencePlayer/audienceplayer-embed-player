@@ -26,13 +26,13 @@ export class ChromecastControls {
     }
 
     bindEvents() {
-        this.castSender.setOnMediaTracksListener(() => {
+        this.castSender.addOnMediaTracksListener(() => {
             if (this.rootElement && this.player.mediaInfo) {
                 this.renderTracks();
             }
         });
 
-        this.castSender.setOnCurrentTimeListener(e => {
+        this.castSender.addOnCurrentTimeListener(e => {
             if (this.rootElement) {
                 this.currentTime = e;
                 this.totalDuration = this.player.duration;
@@ -40,7 +40,7 @@ export class ChromecastControls {
             }
         });
 
-        this.castSender.setOnPlayStateListener(e => {
+        this.castSender.addOnPlayStateListener(e => {
             if (this.rootElement) {
                 this.currentStatus = e;
                 this.checkChromecastContainerVisibility();

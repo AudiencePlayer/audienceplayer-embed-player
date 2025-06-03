@@ -3,35 +3,40 @@
 import { PlayConfig } from '../models/play-config';
 import { Article } from '../models/article';
 import { PlayParams } from '../models/play-params';
-import { TrackInfo } from '../models/cast-info';
+import { ChromecastConnectionInfo, TrackInfo } from '../models/cast-info';
 export declare class ChromecastSender {
     private chromecastReceiverAppId;
+    private static initPromise;
     private castContext;
     private castPlayer;
     private castPlayerController;
-    private initPromise;
-    private lastCurrentTimeMeasured;
+    private lastConnectionInfo;
     private updateInterval;
     private supportsHDR;
-    private onConnectedListener;
-    private onPlayStateListener;
-    private onCurrentTimeListener;
-    private onMediaTracksListener;
-    private onDurationListener;
+    private onConnectedListeners;
+    private onPlayStateListeners;
+    private onCurrentTimeListeners;
+    private onMediaTracksListeners;
+    private onDurationListeners;
     constructor(chromecastReceiverAppId: string);
     init(): Promise<void>;
     initializeCastApi(chromecastReceiverAppId: string): void;
-    setOnConnectedListener(callback: (info: {
-        connected: boolean;
-        friendlyName: string;
-    }) => void): void;
-    setOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: {
+    addOnConnectedListener(callback: (info: ChromecastConnectionInfo) => void): void;
+    removeOnConnectedListener(callback: (info: ChromecastConnectionInfo) => void): void;
+    addOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: {
         articleId: number;
         assetId: number;
     }) => void): void;
-    setOnCurrentTimeListener(callback: (currentTime: number) => void): void;
-    setOnMediaTracksListener(callback: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void): void;
-    setOnDurationListener(callback: (duration: number) => void): void;
+    removeOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: {
+        articleId: number;
+        assetId: number;
+    }) => void): void;
+    addOnCurrentTimeListener(callback: (currentTime: number) => void): void;
+    removeOnCurrentTimeListener(callback: (currentTime: number) => void): void;
+    addOnMediaTracksListener(callback: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void): void;
+    removeOnMediaTracksListener(callback: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void): void;
+    addOnDurationListener(callback: (duration: number) => void): void;
+    removeOnDurationListener(callback: (duration: number) => void): void;
     getSupportsHDR(): boolean;
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article): chrome.cast.media.MediaInfo;
     getCastMediaInfoByParams(playParams: PlayParams, article?: Article): chrome.cast.media.MediaInfo;
@@ -54,4 +59,5 @@ export declare class ChromecastSender {
     }[];
     setActiveTracks(trackIds: number[], type: string): void;
     setActiveTrackById(selectedTrackId: number, type: string): void;
+    private dispatchConnectionInfo;
 }

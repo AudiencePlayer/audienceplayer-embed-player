@@ -51,7 +51,7 @@ export class VideoPlayer {
 
             createChromecastTechPlugin(videojsInstance, this.castSender);
 
-            this.castSender.setOnConnectedListener(info => {
+            this.castSender.addOnConnectedListener(info => {
                 if (!this.player) {
                     return;
                 }

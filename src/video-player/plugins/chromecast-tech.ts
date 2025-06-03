@@ -1,6 +1,6 @@
 import {ChromecastSender} from '../../chromecast/chromecast-sender';
-import {ChromecastConnectionInfo} from '../../models/cast-info';
 import {getNativeLanguage} from '../../utils/locale';
+import {TrackInfo} from '../../models/cast-info';
 
 export function createChromecastTechPlugin(videojsInstance: any, castSender: ChromecastSender) {
     const Tech = videojsInstance.getComponent('Tech');
@@ -27,107 +27,20 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 this.myPlayer = castSender.getCastPlayer();
                 this.myPlayerController = castSender.getCastPlayerController();
 
-                castSender.setOnPlayStateListener((state, info) => {
-                    if (!this.source) {
-                        console.log(
-                            'Restoring session',
-                            this.myPlayer.playerState,
-                            this.myPlayer.isMediaLoaded,
-                            this.myPlayer.duration,
-                            info,
-                            this.player
-                        );
-                        // @TODO do we also need a loadedmetadata in regular case
-                        this.source = {src: 'restore', type: 'application/vnd.chromecast', playParams: {...info}};
-                        this.didEnd = false;
-                        this.triggerSourceset(this.source);
-                        /// this.src({src: 'restore', type: 'application/vnd.chromecast'});
-                        this.trigger('loadstart');
-
-                        // regardless of play state, videojs always needs this for the 'first-play'
-                        this.trigger('play');
-                        this.trigger('playing');
-
-                        if (this.myPlayer.playerState === null || this.myPlayer.playerState === chrome.cast.media.PlayerState.BUFFERING) {
-                            this.trigger('waiting');
-                        } else if (this.myPlayer.playerState !== chrome.cast.media.PlayerState.PLAYING) {
-                            this.trigger('pause');
-                            // timeupdate needed when in paused state and restoring
-                            setTimeout(() => {
-                                this.trigger('timeupdate');
-                            }, 300);
-                        }
-
-                        this.trigger('timeupdate');
-                    } else {
-                        console.log('mediaInfoUpdate', state);
-                        if (state === chrome.cast.media.PlayerState.PLAYING) {
-                            this.trigger('play');
-                            this.trigger('playing');
-                        } else {
-                            if (state === chrome.cast.media.PlayerState.PAUSED) {
-                                this.trigger('pause');
-                            } else if (state === chrome.cast.media.PlayerState.BUFFERING) {
-                                this.trigger('waiting');
-                            }
-                            // else if (this.ended()) {
-                            //     console.log('FINISHED');
-                            //     this.trigger('finished');
-                            // }
-                        }
-                    }
-                });
-
-                castSender.setOnCurrentTimeListener(currentTime => {
-                    this.lastCurrentTime = currentTime;
-                    if (this.duration() > 0 && currentTime + 1 > this.duration()) {
-                        console.log('didEnd => true');
-                        this.didEnd = true;
-                        setTimeout(() => this.trigger('ended'), 500);
-                    }
-                    this.trigger('timeupdate');
-                });
-
-                castSender.setOnDurationListener(duration => {
-                    this.trigger('durationchange');
-                });
-
-                castSender.setOnMediaTracksListener((audioTracks, textTracks) => {
-                    Array.from(this.audioTracks()).forEach((track: any) => this.audioTracks().removeTrack(track));
-                    audioTracks.forEach(audioTrack => {
-                        const track = new videojsInstance.AudioTrack({
-                            id: audioTrack.id,
-                            kind: 'main',
-                            label: getNativeLanguage(audioTrack.locale),
-                            language: audioTrack.locale,
-                            enabled: audioTrack.active,
-                        });
-
-                        this.audioTracks().addTrack(track);
-                    });
-
-                    textTracks.forEach(textTrack => {
-                        Array.from(this.textTracks()).forEach((track: any) => this.textTracks().removeTrack(track));
-                        const track = new videojsInstance.TextTrack({
-                            tech: this,
-                            label: getNativeLanguage(textTrack.locale),
-                            kind: 'subtitles',
-                            language: textTrack.locale,
-                            mode: textTrack.active ? 'showing' : 'disabled',
-                        });
-
-                        this.textTracks().addTrack(track);
-                    });
-                });
+                castSender.addOnPlayStateListener(this.onPlayStateListener);
+                castSender.addOnCurrentTimeListener(this.onCurrentTimeListener);
+                castSender.addOnDurationListener(this.onDurationListener);
+                castSender.addOnMediaTracksListener(this.onMediaTracksListener);
 
                 this.textTracks().addEventListener('change', () => this.handleTextTrackChange());
                 this.audioTracks().addEventListener('change', () => this.handleAudioTrackChange());
 
                 this.on('dispose', () => {
                     console.log('dispose');
-                    castSender.setOnPlayStateListener(null);
-                    castSender.setOnCurrentTimeListener(null);
-                    castSender.setOnMediaTracksListener(null);
+                    castSender.removeOnPlayStateListener(this.onPlayStateListener);
+                    castSender.removeOnCurrentTimeListener(this.onCurrentTimeListener);
+                    castSender.removeOnDurationListener(this.onDurationListener);
+                    castSender.removeOnMediaTracksListener(this.onMediaTracksListener);
                     this.myPlayerController = null;
                     this.myPlayer = null;
                     this.source = null;
@@ -141,7 +54,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         static canPlaySource(x: any) {
-            console.log('canPlaySource', castSender && castSender.isConnected());
             return castSender && castSender.isConnected();
         }
 
@@ -150,7 +62,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         static canPlayType(type: string) {
-            console.log('canPlayType', type);
             return type === 'application/vnd.chromecast' ? 'probably' : '';
         }
 
@@ -163,24 +74,20 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         play() {
-            console.log('play');
             if (this.myPlayerController && this.myPlayer && this.myPlayer.isConnected) {
                 if (this.ended()) {
                     this.setCurrentTime(0);
                     this.myPlayerController.playOrPause();
                 } else if (this.paused()) {
                     this.myPlayerController.playOrPause();
-                    console.log('playOrPause called');
                 }
             }
         }
 
         pause() {
-            console.log('pause');
             if (this.myPlayerController && this.myPlayer && this.myPlayer.isConnected) {
                 if (!this.paused() && this.myPlayer.canPause) {
                     this.myPlayerController.playOrPause();
-                    console.log('playOrPause called');
                 }
             }
         }
@@ -188,7 +95,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         paused() {
             const isPaused =
                 (this.myPlayer && this.myPlayer.isPaused) || this.ended() || (this.myPlayer && this.myPlayer.playerState === null);
-            console.log('paused', isPaused);
             return isPaused;
         }
 
@@ -344,6 +250,98 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             // Clean up anything your tech has created
             super.dispose();
         }
+
+        private onPlayStateListener = (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => {
+            if (!this.source) {
+                console.log(
+                    'Restoring session',
+                    this.myPlayer.playerState,
+                    this.myPlayer.isMediaLoaded,
+                    this.myPlayer.duration,
+                    info,
+                    this.player
+                );
+                // @TODO do we also need a loadedmetadata in regular case
+                this.source = {src: 'restore', type: 'application/vnd.chromecast', playParams: {...info}};
+                this.didEnd = false;
+                this.triggerSourceset(this.source);
+                /// this.src({src: 'restore', type: 'application/vnd.chromecast'});
+                this.trigger('loadstart');
+
+                // regardless of play state, videojs always needs this for the 'first-play'
+                this.trigger('play');
+                this.trigger('playing');
+
+                if (this.myPlayer.playerState === null || this.myPlayer.playerState === chrome.cast.media.PlayerState.BUFFERING) {
+                    this.trigger('waiting');
+                } else if (this.myPlayer.playerState !== chrome.cast.media.PlayerState.PLAYING) {
+                    this.trigger('pause');
+                    // timeupdate needed when in paused state and restoring
+                    setTimeout(() => {
+                        this.trigger('timeupdate');
+                    }, 300);
+                }
+
+                this.trigger('timeupdate');
+            } else {
+                console.log('mediaInfoUpdate', state);
+                if (state === chrome.cast.media.PlayerState.PLAYING) {
+                    this.trigger('play');
+                    this.trigger('playing');
+                } else {
+                    if (state === chrome.cast.media.PlayerState.PAUSED) {
+                        this.trigger('pause');
+                    } else if (state === chrome.cast.media.PlayerState.BUFFERING) {
+                        this.trigger('waiting');
+                    }
+                    // else if (this.ended()) {
+                    //     console.log('FINISHED');
+                    //     this.trigger('finished');
+                    // }
+                }
+            }
+        };
+        private onCurrentTimeListener = (currentTime: number) => {
+            this.lastCurrentTime = currentTime;
+            if (this.duration() > 0 && currentTime + 1 > this.duration()) {
+                console.log('didEnd => true');
+                this.didEnd = true;
+                setTimeout(() => this.trigger('ended'), 500);
+            }
+            this.trigger('timeupdate');
+        };
+
+        private onDurationListener = (duration: number) => {
+            this.trigger('durationchange');
+        };
+
+        private onMediaTracksListener = (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => {
+            Array.from(this.audioTracks()).forEach((track: any) => this.audioTracks().removeTrack(track));
+            audioTracks.forEach(audioTrack => {
+                const track = new videojsInstance.AudioTrack({
+                    id: audioTrack.id,
+                    kind: 'main',
+                    label: getNativeLanguage(audioTrack.locale),
+                    language: audioTrack.locale,
+                    enabled: audioTrack.active,
+                });
+
+                this.audioTracks().addTrack(track);
+            });
+
+            textTracks.forEach(textTrack => {
+                Array.from(this.textTracks()).forEach((track: any) => this.textTracks().removeTrack(track));
+                const track = new videojsInstance.TextTrack({
+                    tech: this,
+                    label: getNativeLanguage(textTrack.locale),
+                    kind: 'subtitles',
+                    language: textTrack.locale,
+                    mode: textTrack.active ? 'showing' : 'disabled',
+                });
+
+                this.textTracks().addTrack(track);
+            });
+        };
     }
 
     videojsInstance.registerTech('chromecast', ChromecastTech);

@@ -2,52 +2,58 @@ import {PlayConfig} from '../models/play-config';
 import {Article} from '../models/article';
 import {getArticleTitle} from '../api/converters';
 import {PlayParams} from '../models/play-params';
-import {TrackInfo} from '../models/cast-info';
+import {ChromecastConnectionInfo, TrackInfo} from '../models/cast-info';
 
 export class ChromecastSender {
+    private static initPromise: Promise<void> = null;
     private castContext: cast.framework.CastContext = null;
     private castPlayer: cast.framework.RemotePlayer = null;
     private castPlayerController: cast.framework.RemotePlayerController = null;
-    private initPromise: Promise<void> = null;
-    private lastCurrentTimeMeasured: number = null;
+    private lastConnectionInfo: ChromecastConnectionInfo = null;
     private updateInterval: any = null;
     private supportsHDR = false;
-    private onConnectedListener: (info: {connected: boolean; friendlyName: string}) => void;
-    private onPlayStateListener: (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void;
-    private onCurrentTimeListener: (currentTime: number) => void;
-    private onMediaTracksListener: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void;
-    private onDurationListener: (duration: number) => void;
+    private onConnectedListeners: Array<(info: ChromecastConnectionInfo) => void> = [];
+    private onPlayStateListeners: Array<(state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void> = [];
+    private onCurrentTimeListeners: Array<(currentTime: number) => void> = [];
+    private onMediaTracksListeners: Array<(audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void> = [];
+    private onDurationListeners: Array<(duration: number) => void> = [];
 
-    constructor(private chromecastReceiverAppId: string) {}
+    constructor(private chromecastReceiverAppId: string) {
+        console.log('ChromecastSender', chromecastReceiverAppId);
+        if (ChromecastSender.initPromise) {
+            throw Error('ChromecastSender already initialized');
+        }
+        ChromecastSender.initPromise = new Promise<void>((resolve, reject) => {
+            if (this.chromecastReceiverAppId) {
+                window['__onGCastApiAvailable'] = (isAvailable: boolean) => {
+                    if (isAvailable && cast && cast.framework && chrome && chrome.cast) {
+                        try {
+                            this.initializeCastApi(this.chromecastReceiverAppId);
+                            this.dispatchConnectionInfo({available: true, connected: false, friendlyName: ''});
+                            resolve();
+                        } catch (e) {
+                            this.dispatchConnectionInfo({available: false, connected: false, friendlyName: ''});
+                            reject(e);
+                        }
+                    } else {
+                        this.dispatchConnectionInfo({available: false, connected: false, friendlyName: ''});
+                        reject('Chromecast not available');
+                    }
+                };
+
+                const scriptElement = document.createElement('script');
+                scriptElement.async = true;
+                scriptElement.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
+                document.head.appendChild(scriptElement);
+            } else {
+                this.dispatchConnectionInfo({available: false, connected: false, friendlyName: ''});
+                reject('Chromecast Receiver Application Id is missing');
+            }
+        });
+    }
 
     init() {
-        this.initPromise =
-            this.initPromise ||
-            new Promise<void>((resolve, reject) => {
-                if (this.chromecastReceiverAppId) {
-                    window['__onGCastApiAvailable'] = (isAvailable: boolean) => {
-                        if (isAvailable && cast && cast.framework && chrome && chrome.cast) {
-                            try {
-                                this.initializeCastApi(this.chromecastReceiverAppId);
-                                resolve();
-                            } catch (e) {
-                                reject(e);
-                            }
-                        } else {
-                            reject('Chromecast not available');
-                        }
-                    };
-
-                    const scriptElement = document.createElement('script');
-                    scriptElement.async = true;
-                    scriptElement.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
-                    document.head.appendChild(scriptElement);
-                } else {
-                    reject('Chromecast Receiver Application Id is missing');
-                }
-            });
-
-        return this.initPromise;
+        return ChromecastSender.initPromise;
     }
 
     initializeCastApi(chromecastReceiverAppId: string) {
@@ -73,22 +79,21 @@ export class ChromecastSender {
         });
 
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, event => {
-            if (this.onConnectedListener) {
-                if (this.castPlayer.isConnected) {
-                    const castSession = this.getCastSession();
-                    if (castSession) {
-                        const device = castSession.getCastDevice();
-                        if (device) {
-                            this.onConnectedListener({
-                                connected: true,
-                                friendlyName: device.friendlyName || 'Chromecast',
-                            });
-                            return;
-                        }
+            if (this.castPlayer.isConnected) {
+                const castSession = this.getCastSession();
+                if (castSession) {
+                    const device = castSession.getCastDevice();
+                    if (device) {
+                        this.dispatchConnectionInfo({
+                            available: true,
+                            connected: true,
+                            friendlyName: device.friendlyName || 'Chromecast',
+                        });
+                        return;
                     }
                 }
-                this.onConnectedListener({connected: false, friendlyName: ''});
             }
+            this.dispatchConnectionInfo({available: true, connected: false, friendlyName: ''});
         });
 
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED, () => {
@@ -108,25 +113,21 @@ export class ChromecastSender {
                         }
                     }
                 }
-                if (this.onPlayStateListener) {
-                    this.onPlayStateListener(state, info);
-                }
+                this.onPlayStateListeners.forEach(listener => listener(state, info));
             }
         });
 
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.DURATION_CHANGED, () => {
             if (this.castPlayer.isMediaLoaded) {
-                if (this.onDurationListener) {
-                    this.onDurationListener(this.castPlayer.duration);
-                }
+                this.onDurationListeners.forEach(listener => listener(this.castPlayer.duration));
             }
         });
 
         // @TODO consider clearInterval
         this.updateInterval = setInterval(() => {
             const mediaSession = this.getCastMediaSession();
-            if (mediaSession && this.onCurrentTimeListener) {
-                this.onCurrentTimeListener(mediaSession.getEstimatedTime());
+            if (mediaSession) {
+                this.onCurrentTimeListeners.forEach(listener => listener(mediaSession.getEstimatedTime()));
             }
         }, 500);
 
@@ -137,34 +138,73 @@ export class ChromecastSender {
                 let textTracks: TrackInfo[] = [];
 
                 if (this.castPlayer.mediaInfo.tracks && mediaSession) {
-                    if (this.onMediaTracksListener) {
-                        audioTracks = this.getTracksByType('AUDIO');
-                        textTracks = this.getTracksByType('TEXT');
-                        this.onMediaTracksListener(audioTracks, textTracks);
-                    }
+                    audioTracks = this.getTracksByType('AUDIO');
+                    textTracks = this.getTracksByType('TEXT');
+                    this.onMediaTracksListeners.forEach(listener => listener(audioTracks, textTracks));
                 }
             }
         });
     }
 
-    setOnConnectedListener(callback: (info: {connected: boolean; friendlyName: string}) => void) {
-        this.onConnectedListener = callback;
+    addOnConnectedListener(callback: (info: ChromecastConnectionInfo) => void) {
+        console.log('addConnectedListener!');
+        this.onConnectedListeners.push(callback);
+
+        if (this.lastConnectionInfo) {
+            this.dispatchConnectionInfo(this.lastConnectionInfo);
+        }
     }
 
-    setOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void) {
-        this.onPlayStateListener = callback;
+    removeOnConnectedListener(callback: (info: ChromecastConnectionInfo) => void) {
+        const index = this.onConnectedListeners.indexOf(callback);
+        if (index >= 0) {
+            console.log('removeConnectedListener!');
+            this.onConnectedListeners.splice(index, 1);
+        }
     }
 
-    setOnCurrentTimeListener(callback: (currentTime: number) => void) {
-        this.onCurrentTimeListener = callback;
+    addOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void) {
+        this.onPlayStateListeners.push(callback);
     }
 
-    setOnMediaTracksListener(callback: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void) {
-        this.onMediaTracksListener = callback;
+    removeOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void) {
+        const index = this.onPlayStateListeners.indexOf(callback);
+        if (index >= 0) {
+            this.onPlayStateListeners.splice(index, 1);
+        }
     }
 
-    setOnDurationListener(callback: (duration: number) => void) {
-        this.onDurationListener = callback;
+    addOnCurrentTimeListener(callback: (currentTime: number) => void) {
+        this.onCurrentTimeListeners.push(callback);
+    }
+
+    removeOnCurrentTimeListener(callback: (currentTime: number) => void) {
+        const index = this.onCurrentTimeListeners.indexOf(callback);
+        if (index >= 0) {
+            this.onCurrentTimeListeners.splice(index, 1);
+        }
+    }
+
+    addOnMediaTracksListener(callback: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void) {
+        this.onMediaTracksListeners.push(callback);
+    }
+
+    removeOnMediaTracksListener(callback: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void) {
+        const index = this.onMediaTracksListeners.indexOf(callback);
+        if (index >= 0) {
+            this.onMediaTracksListeners.splice(index, 1);
+        }
+    }
+
+    addOnDurationListener(callback: (duration: number) => void) {
+        this.onDurationListeners.push(callback);
+    }
+
+    removeOnDurationListener(callback: (duration: number) => void) {
+        const index = this.onDurationListeners.indexOf(callback);
+        if (index >= 0) {
+            this.onDurationListeners.splice(index, 1);
+        }
     }
 
     getSupportsHDR() {
@@ -256,7 +296,6 @@ export class ChromecastSender {
     }
 
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean) {
-        this.lastCurrentTimeMeasured = null;
         if (this.isConnected()) {
             const castSession = this.getCastSession();
             const mediaInfo = this.getCastMediaInfo(playConfig, article);
@@ -273,7 +312,6 @@ export class ChromecastSender {
 
     castVideoByParams(playParams: PlayParams) {
         console.log('castVideoByParams', playParams);
-        this.lastCurrentTimeMeasured = null;
         if (this.isConnected()) {
             const castSession = this.getCastSession();
 
@@ -379,5 +417,11 @@ export class ChromecastSender {
             newActiveTracks.push(selectedTrackId);
         }
         this.setActiveTracks(newActiveTracks, type);
+    }
+
+    private dispatchConnectionInfo(info: ChromecastConnectionInfo) {
+        this.lastConnectionInfo = info;
+        console.log('dispatchConnectionInfo', info, this.onConnectedListeners.length);
+        this.onConnectedListeners.forEach(listener => listener(info));
     }
 }
