@@ -21,7 +21,7 @@ export declare class VideoPlayer {
     setPoster(posterUrl: string): void;
     destroy(): void;
     getPlayer(): any;
-    private reset;
+    reset(): void;
     private getAndInitPlaySourcesFromConfig;
     private bindEvents;
     getCastSender(): ChromecastSender;

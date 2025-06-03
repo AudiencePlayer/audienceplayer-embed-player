@@ -229,7 +229,7 @@ export class VideoPlayer {
         return this.player;
     }
 
-    private reset() {
+    reset() {
         this.firstPlayingEvent = true;
         console.log('reset');
         this.destroy();
