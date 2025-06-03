@@ -19,7 +19,7 @@ import {ChromecastSender} from '../chromecast/chromecast-sender';
 
 export class VideoPlayer {
     private player: any = null;
-    private apiService: ApiService;
+    private apiService: ApiService = null;
     private castSender: ChromecastSender = null;
     private playerLoggerService: PlayerLoggerService;
     private localPlayConfig: PlayConfig; // this contains the play confif for a local playout, with CC it's a remote playout, and null.
@@ -32,7 +32,9 @@ export class VideoPlayer {
 
     constructor(private videojsInstance: any, baseUrl: string, projectId: number, chromecastReceiverAppId: string = null) {
         console.log('VideoPlayer.constructor');
-        this.apiService = new ApiService(baseUrl.replace(/\/*$/, ''), projectId);
+        if (typeof baseUrl === 'string' && projectId > 0) {
+            this.apiService = new ApiService(baseUrl.replace(/\/*$/, ''), projectId);
+        }
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
 
         createAudioTrackPlugin(videojsInstance);
@@ -171,13 +173,17 @@ export class VideoPlayer {
             return Promise.resolve();
         } else {
             console.log('playByParams, regular play, fetching play config');
-            this.apiService.setToken(playParams.token ? playParams.token : null);
+            if (this.apiService) {
+                this.apiService.setToken(playParams.token ? playParams.token : null);
 
-            return this.apiService
-                .getArticleAssetPlayConfig(playParams.articleId, playParams.assetId, playParams.continueFromPreviousPosition)
-                .then(config => {
-                    this.player.src(this.getAndInitPlaySourcesFromConfig(config));
-                });
+                return this.apiService
+                    .getArticleAssetPlayConfig(playParams.articleId, playParams.assetId, playParams.continueFromPreviousPosition)
+                    .then(config => {
+                        this.player.src(this.getAndInitPlaySourcesFromConfig(config));
+                    });
+            } else {
+                return Promise.reject('No API service available');
+            }
         }
     }
 

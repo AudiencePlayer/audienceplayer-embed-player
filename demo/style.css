@@ -25,6 +25,60 @@ body {
     height: 3em;
 }
 
+.media-player {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+}
+
+.media-player__video-player,
+.media-player__layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.media-player__video-player {
+    z-index: 0;
+}
+
+.media-player__overlay {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #000;
+    opacity: 0;
+    display: none; /* @TODO */
+}
+
+.media-player__meta {
+    color: #fff;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%);
+    display: none; /* @TODO */
+}
+
+.media-player--chromecast .media-player__overlay,
+.media-player--loading .media-player__overlay,
+.media-player--overlay .media-player__overlay {
+    opacity: 1;
+    z-index: 2;
+}
+
+.media-player--chromecast .media-player__meta,
+.media-player--overlay .media-player__meta {
+    z-index: 3;
+}
+
+.media-player--video .media-player__video-player {
+    z-index: 4;
+}
+
+.media-player--loading .media-player__loader {
+    z-index: 4;
+}
+
 .button-panel {
     display: flex;
     justify-content: center;
@@ -55,6 +109,16 @@ body {
 
 .button__play:before {
     content: '\f101';
+}
+
+.title {
+    margin: 1rem;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.parental {
+    margin: 1rem;
 }
 
 .param-form {
