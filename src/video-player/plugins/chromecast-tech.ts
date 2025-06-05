@@ -35,18 +35,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 this.textTracks().addEventListener('change', () => this.handleTextTrackChange());
                 this.audioTracks().addEventListener('change', () => this.handleAudioTrackChange());
 
-                this.on('dispose', () => {
-                    console.log('dispose');
-                    castSender.removeOnPlayStateListener(this.onPlayStateListener);
-                    castSender.removeOnCurrentTimeListener(this.onCurrentTimeListener);
-                    castSender.removeOnDurationListener(this.onDurationListener);
-                    castSender.removeOnMediaTracksListener(this.onMediaTracksListener);
-                    this.myPlayerController = null;
-                    this.myPlayer = null;
-                    this.source = null;
-                    this.didEnd = false;
-                });
-
                 console.log('castSender initialized');
 
                 this.triggerReady();
@@ -54,7 +42,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         static canPlaySource(x: any) {
-            return castSender && castSender.isConnected();
+            return !!x && castSender && castSender.isConnected();
         }
 
         static isSupported() {
@@ -69,6 +57,15 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             this.el_ = videojsInstance.dom.createEl('div', {
                 className: 'vjs-tech chromecast',
             });
+
+            /*
+            this._castingMessageEl = videojs.dom.createEl('div', {
+    className: 'vjs-casting-overlay',
+    innerHTML: 'Casting to device...'
+  });
+
+  el.appendChild(this._castingMessageEl);
+             */
 
             return this.el_;
         }
@@ -102,6 +99,10 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             console.log('chromecast-tech.src', source);
             this.source = source;
             this.didEnd = false;
+
+            if (!this.source) {
+                return;
+            }
 
             if (this.source && this.source.src === 'restore') {
                 this.trigger('loadstart');
@@ -248,11 +249,29 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
         dispose() {
             // Clean up anything your tech has created
+            console.log('dispose');
+            castSender.removeOnPlayStateListener(this.onPlayStateListener);
+            castSender.removeOnCurrentTimeListener(this.onCurrentTimeListener);
+            castSender.removeOnDurationListener(this.onDurationListener);
+            castSender.removeOnMediaTracksListener(this.onMediaTracksListener);
+
+            this.textTracks().removeEventListener('change');
+            this.audioTracks().removeEventListener('change');
+
+            this.myPlayerController = null;
+            this.myPlayer = null;
+            this.source = null;
+            this.didEnd = false;
+
             super.dispose();
         }
 
         private onPlayStateListener = (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => {
             if (!this.source) {
+                if (state === chrome.cast.media.PlayerState.IDLE || state === null) {
+                    console.log('No source, but idle - not restoring session');
+                    return;
+                }
                 console.log(
                     'Restoring session',
                     this.myPlayer.playerState,
@@ -284,20 +303,19 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
                 this.trigger('timeupdate');
             } else {
-                console.log('mediaInfoUpdate', state);
                 if (state === chrome.cast.media.PlayerState.PLAYING) {
                     this.trigger('play');
                     this.trigger('playing');
-                } else {
-                    if (state === chrome.cast.media.PlayerState.PAUSED) {
-                        this.trigger('pause');
-                    } else if (state === chrome.cast.media.PlayerState.BUFFERING) {
-                        this.trigger('waiting');
+                } else if (state === chrome.cast.media.PlayerState.PAUSED) {
+                    this.trigger('pause');
+                } else if (state === chrome.cast.media.PlayerState.BUFFERING) {
+                    this.trigger('waiting');
+                } else if (state === null || state === chrome.cast.media.PlayerState.IDLE) {
+                    console.log('IDLE, currentSrc', this.currentSrc());
+                    if (this.currentSrc()) {
+                        this.didEnd = true;
+                        this.trigger('ended');
                     }
-                    // else if (this.ended()) {
-                    //     console.log('FINISHED');
-                    //     this.trigger('finished');
-                    // }
                 }
             }
         };
@@ -306,7 +324,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             if (this.duration() > 0 && currentTime + 1 > this.duration()) {
                 console.log('didEnd => true');
                 this.didEnd = true;
-                setTimeout(() => this.trigger('ended'), 500);
+                this.trigger('ended');
             }
             this.trigger('timeupdate');
         };

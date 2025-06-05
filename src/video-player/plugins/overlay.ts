@@ -14,6 +14,11 @@ export function createOverlayPlugin(videojsInstance: any) {
 
             return el;
         }
+
+        updateContent(el: HTMLElement) {
+            this.el_.innerHTML = '';
+            this.el_.appendChild(el.cloneNode(true));
+        }
     }
 
     videojsInstance.registerComponent('overlay', Overlay);

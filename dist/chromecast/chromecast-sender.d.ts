@@ -42,10 +42,10 @@ export declare class ChromecastSender {
     getCastMediaInfoByParams(playParams: PlayParams, article?: Article): chrome.cast.media.MediaInfo;
     getCastSession(): cast.framework.CastSession;
     getCastMediaSession(): chrome.cast.media.Media;
-    castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean): Promise<chrome.cast.ErrorCode>;
-    castVideoByParams(playParams: PlayParams): Promise<chrome.cast.ErrorCode>;
+    castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean): void;
+    castVideoByParams(playParams: PlayParams): Promise<void>;
     isConnected(): boolean;
-    stopMedia(): void;
+    stopMedia(): Promise<void>;
     endSession(stopCasting: boolean): void;
     stopCasting(): void;
     getCastPlayer(): cast.framework.RemotePlayer;

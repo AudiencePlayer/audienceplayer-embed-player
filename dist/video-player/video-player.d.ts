@@ -19,8 +19,10 @@ export declare class VideoPlayer {
     playByParams(playParams: PlayParams): Promise<void>;
     play(playConfig: PlayConfig): void;
     setPoster(posterUrl: string): void;
+    updateOverlay(el: HTMLElement): void;
     destroy(): void;
     getPlayer(): any;
+    stop(): void;
     reset(): void;
     private getAndInitPlaySourcesFromConfig;
     private bindEvents;

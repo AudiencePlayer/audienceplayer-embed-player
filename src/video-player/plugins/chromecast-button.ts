@@ -9,10 +9,8 @@ export function createChromecastButtonPlugin(videojsInstance: any) {
             super(player, options);
         }
         createEl() {
-            console.log('ChromecastButton.createEl');
             const el = super.createEl();
             el.appendChild(singletonCastElement);
-
             return el;
         }
     }

@@ -102,7 +102,7 @@ export class ChromecastSender {
 
             // only when media is loaded, otherwise IDLE state will cause issues
             if (this.castPlayer.isMediaLoaded) {
-                if (this.castPlayer.mediaInfo) {
+                if (this.castPlayer.mediaInfo && state !== null && state !== chrome.cast.media.PlayerState.IDLE) {
                     const customData: any = this.castPlayer.mediaInfo.customData;
                     if (customData) {
                         // @TODO extraInfo will be deprecated
@@ -122,14 +122,6 @@ export class ChromecastSender {
                 this.onDurationListeners.forEach(listener => listener(this.castPlayer.duration));
             }
         });
-
-        // @TODO consider clearInterval
-        this.updateInterval = setInterval(() => {
-            const mediaSession = this.getCastMediaSession();
-            if (mediaSession) {
-                this.onCurrentTimeListeners.forEach(listener => listener(mediaSession.getEstimatedTime()));
-            }
-        }, 500);
 
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, () => {
             if (this.castPlayer.isMediaLoaded && this.castPlayer.mediaInfo) {
@@ -175,6 +167,14 @@ export class ChromecastSender {
     }
 
     addOnCurrentTimeListener(callback: (currentTime: number) => void) {
+        if (this.onCurrentTimeListeners.length === 0) {
+            this.updateInterval = setInterval(() => {
+                const mediaSession = this.getCastMediaSession();
+                if (mediaSession) {
+                    this.onCurrentTimeListeners.forEach(listener => listener(mediaSession.getEstimatedTime()));
+                }
+            }, 500);
+        }
         this.onCurrentTimeListeners.push(callback);
     }
 
@@ -182,6 +182,9 @@ export class ChromecastSender {
         const index = this.onCurrentTimeListeners.indexOf(callback);
         if (index >= 0) {
             this.onCurrentTimeListeners.splice(index, 1);
+        }
+        if (this.onCurrentTimeListeners.length === 0) {
+            clearInterval(this.updateInterval);
         }
     }
 
@@ -297,48 +300,75 @@ export class ChromecastSender {
 
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean) {
         if (this.isConnected()) {
-            const castSession = this.getCastSession();
-            const mediaInfo = this.getCastMediaInfo(playConfig, article);
+            this.stopMedia().then(() => {
+                const castSession = this.getCastSession();
+                const mediaInfo = this.getCastMediaInfo(playConfig, article);
 
-            if (mediaInfo) {
-                const request = new chrome.cast.media.LoadRequest(mediaInfo);
-                request.currentTime = continueFromPreviousPosition ? playConfig.currentTime : 0;
-                return castSession.loadMedia(request);
-            } else {
-                throw {message: 'Unexpected manifest format in articlePlayConfig ' + JSON.stringify(playConfig)};
-            }
+                if (mediaInfo) {
+                    const request = new chrome.cast.media.LoadRequest(mediaInfo);
+                    request.currentTime = continueFromPreviousPosition ? playConfig.currentTime : 0;
+                    return castSession.loadMedia(request);
+                } else {
+                    throw {message: 'Unexpected manifest format in articlePlayConfig ' + JSON.stringify(playConfig)};
+                }
+            });
         }
     }
 
-    castVideoByParams(playParams: PlayParams) {
-        console.log('castVideoByParams', playParams);
-        if (this.isConnected()) {
-            const castSession = this.getCastSession();
+    castVideoByParams(playParams: PlayParams): Promise<void> {
+        return new Promise((resolve, reject) => {
+            console.log('castVideoByParams', playParams);
+            if (this.isConnected()) {
+                this.stopMedia().then(() => {
+                    const castSession = this.getCastSession();
 
-            const mediaInfo = this.getCastMediaInfoByParams(playParams);
-            if (mediaInfo) {
-                console.log('mediaInfo', mediaInfo);
-                const request = new chrome.cast.media.LoadRequest(mediaInfo);
-                return castSession.loadMedia(request);
+                    const mediaInfo = this.getCastMediaInfoByParams(playParams);
+                    if (mediaInfo) {
+                        console.log('mediaInfo', mediaInfo);
+                        const request = new chrome.cast.media.LoadRequest(mediaInfo);
+                        castSession.loadMedia(request).then(errorCode => {
+                            console.log('castVideoByParams: loadMedia', errorCode);
+                            resolve();
+                        });
+                    } else {
+                        reject('Could not create media info request');
+                    }
+                });
             } else {
-                return Promise.reject('Could not create media info request');
+                reject('castVideoByParams: Not connected!');
             }
-        } else {
-            return Promise.reject('castVideoByParams: Not connected!');
-        }
+        });
     }
 
     isConnected() {
         return this.castPlayer && this.castPlayer.isConnected;
     }
 
-    stopMedia() {
-        if (this.castContext) {
-            const castSession = this.getCastSession();
-            if (castSession) {
-                castSession.getMediaSession().stop(new chrome.cast.media.StopRequest(), () => {}, () => {});
+    stopMedia(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (this.castContext) {
+                const castSession = this.getCastSession();
+                if (castSession) {
+                    const mediaSession = castSession.getMediaSession();
+                    if (mediaSession) {
+                        mediaSession.stop(
+                            new chrome.cast.media.StopRequest(),
+                            () => {
+                                console.log('stopMedia: stopped media session');
+                                resolve();
+                            },
+                            () => {
+                                console.log('stopMedia: dit NOT stop media session');
+                                resolve();
+                            }
+                        );
+                        return;
+                    }
+                }
             }
-        }
+            console.log('stopMedia: No session');
+            resolve();
+        });
     }
 
     endSession(stopCasting: boolean) {

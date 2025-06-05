@@ -12,6 +12,7 @@ export class EmbedPlayer {
     private videoPlayer: VideoPlayer;
     private castSender: ChromecastSender;
     private apiService: ApiService;
+    private initParams: InitParams;
 
     constructor(videojsInstance: any, properties: {projectId: number; apiBaseUrl: string; chromecastReceiverAppId: string}) {
         this.projectId = properties.projectId;
@@ -23,6 +24,7 @@ export class EmbedPlayer {
     }
 
     initVideoPlayer(initParams: InitParams) {
+        this.initParams = initParams;
         this.videoPlayer.init(initParams);
     }
 

@@ -39,7 +39,6 @@ export class VideoPlayer {
 
         createAudioTrackPlugin(videojsInstance);
         createChromecastButtonPlugin(videojsInstance);
-        createSkipIntroPlugin(videojsInstance);
         createCustomOverlaykPlugin(videojsInstance);
         createOverlayPlugin(videojsInstance);
         createPlaybackRatePlugin(videojsInstance);
@@ -50,34 +49,6 @@ export class VideoPlayer {
             this.castSender = new ChromecastSender(chromecastReceiverAppId);
 
             createChromecastTechPlugin(videojsInstance, this.castSender);
-
-            this.castSender.addOnConnectedListener(info => {
-                if (!this.player) {
-                    return;
-                }
-                const currentSources = this.player.currentSources();
-                const wasPlaying = !this.player.paused();
-                console.log('onConnectedListener', info, currentSources, wasPlaying);
-
-                // playParams exist
-                if (currentSources && currentSources.length > 0 && currentSources[0].playParams && this.player.currentType()) {
-                    if (!info.connected && this.player.currentType() === 'application/vnd.chromecast') {
-                        console.log('CC disconnected, was playing something remote');
-                        this.reset();
-                        if (wasPlaying) {
-                            this.player.addClass('vjs-waiting');
-                            setTimeout(() => this.playByParams(currentSources[0].playParams), 2000);
-                        }
-                    } else if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {
-                        console.log('CC connected, was playing something local');
-                        this.reset();
-                        if (wasPlaying) {
-                            this.player.addClass('vjs-waiting');
-                            setTimeout(() => this.playByParams(currentSources[0].playParams), 2000);
-                        }
-                    }
-                }
-            });
         }
     }
 
@@ -164,8 +135,6 @@ export class VideoPlayer {
     }
 
     playByParams(playParams: PlayParams): Promise<void> {
-        this.reset();
-
         if (this.castSender && this.castSender.isConnected()) {
             console.log('playByParams, with CC connected');
             this.localPlayConfig = null;
@@ -189,8 +158,6 @@ export class VideoPlayer {
 
     // @TODO .play can not be used together with chromecast-tech.
     play(playConfig: PlayConfig) {
-        this.reset();
-
         this.player.src(this.getAndInitPlaySourcesFromConfig(playConfig));
 
         if (this.initParams.fullscreen) {
@@ -202,22 +169,19 @@ export class VideoPlayer {
         this.player.poster(posterUrl);
     }
 
-    destroy() {
-        if (this.player) {
-            if (false === this.player.ended()) {
-                this.player.pause();
-                // only if we have not already caught the 'ended' event
-                // Be aware that the `stopped` emit also send along all kinds of info, so call _before_ disposing player
-                if (this.localPlayConfig) {
-                    this.playerLoggerService.onStop();
-                }
-            }
-
-            this.player.dispose();
+    updateOverlay(el: HTMLElement) {
+        const overlayComponent = this.player.overlay;
+        if (overlayComponent) {
+            overlayComponent.updateContent(el);
         }
+    }
 
-        if (this.localPlayConfig) {
-            this.playerLoggerService.destroy();
+    destroy() {
+        console.log('destroy');
+        this.stop();
+        // this.castSender.removeOnConnectedListener(this.onConnectedListener);
+        if (this.player) {
+            this.player.dispose();
         }
         this.player = null;
         this.currentAudioTrack = null;
@@ -229,11 +193,31 @@ export class VideoPlayer {
         return this.player;
     }
 
-    reset() {
+    stop() {
+        console.log('stop');
         this.firstPlayingEvent = true;
-        console.log('reset');
-        this.destroy();
-        this.init(this.initParams);
+        if (this.player) {
+            if (false === this.player.ended()) {
+                this.player.pause();
+                // only if we have not already caught the 'ended' event
+                // Be aware that the `stopped` emit also send along all kinds of info, so call _before_ disposing player
+                if (this.localPlayConfig) {
+                    this.playerLoggerService.onStop();
+                }
+            }
+            this.player.reset();
+        }
+
+        if (this.localPlayConfig) {
+            this.playerLoggerService.destroy();
+        }
+    }
+    // reset is needed in order to reset the tech, e.g. when switching from chromecast to local play
+    reset() {
+        console.log('reset', !!this.initParams);
+        if (this.initParams) {
+            this.init(this.initParams);
+        }
     }
 
     private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig) {
@@ -293,6 +277,8 @@ export class VideoPlayer {
     }
 
     private bindEvents() {
+        // this.castSender.addOnConnectedListener(this.onConnectedListener);
+
         this.player.on('error', () => {
             if (this.localPlayConfig) {
                 this.playerLoggerService.onError(JSON.stringify(this.player.error()));
@@ -497,4 +483,32 @@ export class VideoPlayer {
             }
         }
     }
+
+    // private onConnectedListener = (info: ChromecastConnectionInfo) => {
+    //     if (!this.player) {
+    //         return;
+    //     }
+    //     const currentSources = this.player.currentSources();
+    //     const wasPlaying = !this.player.paused();
+    //     console.log('onConnectedListener', info, currentSources, wasPlaying);
+    //
+    //     // playParams exist
+    //     if (currentSources && currentSources.length > 0 && currentSources[0].playParams && this.player.currentType()) {
+    //         if (!info.connected && this.player.currentType() === 'application/vnd.chromecast') {
+    //             console.log('CC disconnected, was playing something remote');
+    //             this.reset();
+    //             if (wasPlaying) {
+    //                 this.player.addClass('vjs-waiting');
+    //                 setTimeout(() => this.playByParams(this.initParams, currentSources[0].playParams), 2000);
+    //             }
+    //         } else if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {
+    //             console.log('CC connected, was playing something local');
+    //             this.reset();
+    //             if (wasPlaying) {
+    //                 this.player.addClass('vjs-waiting');
+    //                 setTimeout(() => this.playByParams(this.initParams, currentSources[0].playParams), 2000);
+    //             }
+    //         }
+    //     }
+    // }
 }
