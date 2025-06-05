@@ -1,7 +1,7 @@
 import {graphRequest} from './graph-request';
 import {articleAssetPlayMutation, articleQuery} from './queries';
 import {toArticle, toPlayConfig} from './converters';
-import {DeviceModelContextEnum} from '../models/play-params';
+import {DeviceModelContextEnum, PlayParams} from '../models/play-params';
 
 export class ApiService {
     private apiFetchUrl: string;
@@ -16,27 +16,6 @@ export class ApiService {
         this.token = token;
     }
 
-    getArticleAssetPlayConfig(
-        articleId: number,
-        assetId: number,
-        continueFromPreviousPosition: boolean,
-        deviceModelContext: DeviceModelContextEnum = null
-    ) {
-        return graphRequest(
-            this.apiFetchUrl,
-            articleAssetPlayMutation,
-            {articleId, assetId, protocols: ['dash', 'hls'], device_model_context: deviceModelContext},
-            this.token
-        ).then((response: any) => {
-            if (!response || !response.data || response.errors) {
-                const {message, code} = response.errors[0];
-                throw {message, code};
-            }
-
-            return toPlayConfig(response.data.ArticleAssetPlay, continueFromPreviousPosition);
-        });
-    }
-
     getArticle(articleId: number) {
         return graphRequest(this.apiFetchUrl, articleQuery, {articleId}, this.token).then((response: any) => {
             if (!response || !response.data || response.errors) {
@@ -44,6 +23,27 @@ export class ApiService {
                 throw {message, code};
             }
             return toArticle(response.data.Article);
+        });
+    }
+
+    getArticleAssetPlayConfig(playParams: PlayParams, deviceModelContext: DeviceModelContextEnum = null) {
+        return graphRequest(
+            this.apiFetchUrl,
+            articleAssetPlayMutation,
+            {
+                articleId: playParams.articleId,
+                assetId: playParams.assetId,
+                protocols: ['dash', 'hls'],
+                device_model_context: deviceModelContext,
+            },
+            this.token
+        ).then((response: any) => {
+            if (!response || !response.data || response.errors) {
+                const {message, code} = response.errors[0];
+                throw {message, code};
+            }
+
+            return toPlayConfig(response.data.ArticleAssetPlay, playParams.continueFromPreviousPosition);
         });
     }
 }

@@ -2,7 +2,7 @@ import {PlayConfig} from '../models/play-config';
 import {Article} from '../models/article';
 import {getArticleTitle} from '../api/converters';
 import {PlayParams} from '../models/play-params';
-import {ChromecastConnectionInfo, TrackInfo} from '../models/cast-info';
+import {ChromecastConnectionInfo, ChromecastPlayInfo, TrackInfo} from '../models/cast-info';
 
 export class ChromecastSender {
     private static initPromise: Promise<void> = null;
@@ -10,10 +10,11 @@ export class ChromecastSender {
     private castPlayer: cast.framework.RemotePlayer = null;
     private castPlayerController: cast.framework.RemotePlayerController = null;
     private lastConnectionInfo: ChromecastConnectionInfo = null;
+    private lastPlayState: chrome.cast.media.PlayerState = null;
     private updateInterval: any = null;
     private supportsHDR = false;
     private onConnectedListeners: Array<(info: ChromecastConnectionInfo) => void> = [];
-    private onPlayStateListeners: Array<(state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void> = [];
+    private onPlayStateListeners: Array<(state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => void> = [];
     private onCurrentTimeListeners: Array<(currentTime: number) => void> = [];
     private onMediaTracksListeners: Array<(audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void> = [];
     private onDurationListeners: Array<(duration: number) => void> = [];
@@ -93,11 +94,16 @@ export class ChromecastSender {
                     }
                 }
             }
+            if (this.lastPlayState !== null) {
+                this.lastPlayState = null;
+                this.dispatchPlayState(null, null);
+            }
             this.dispatchConnectionInfo({available: true, connected: false, friendlyName: ''});
         });
 
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED, () => {
             const state = this.castPlayer.playerState;
+            this.lastPlayState = state;
             let info: any = null;
 
             // only when media is loaded, otherwise IDLE state will cause issues
@@ -109,11 +115,11 @@ export class ChromecastSender {
                         if (customData.extraInfo) {
                             info = JSON.parse(customData.extraInfo);
                         } else if (customData.articleId && customData.assetId) {
-                            info = {articleId: customData.articleId, assetId: customData.assetId};
+                            info = {articleId: customData.articleId, assetId: customData.assetId, token: customData.token};
                         }
                     }
                 }
-                this.onPlayStateListeners.forEach(listener => listener(state, info));
+                this.dispatchPlayState(state, info);
             }
         });
 
@@ -139,7 +145,6 @@ export class ChromecastSender {
     }
 
     addOnConnectedListener(callback: (info: ChromecastConnectionInfo) => void) {
-        console.log('addConnectedListener!');
         this.onConnectedListeners.push(callback);
 
         if (this.lastConnectionInfo) {
@@ -150,16 +155,15 @@ export class ChromecastSender {
     removeOnConnectedListener(callback: (info: ChromecastConnectionInfo) => void) {
         const index = this.onConnectedListeners.indexOf(callback);
         if (index >= 0) {
-            console.log('removeConnectedListener!');
             this.onConnectedListeners.splice(index, 1);
         }
     }
 
-    addOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void) {
+    addOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => void) {
         this.onPlayStateListeners.push(callback);
     }
 
-    removeOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => void) {
+    removeOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => void) {
         const index = this.onPlayStateListeners.indexOf(callback);
         if (index >= 0) {
             this.onPlayStateListeners.splice(index, 1);
@@ -300,18 +304,19 @@ export class ChromecastSender {
 
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean) {
         if (this.isConnected()) {
-            this.stopMedia().then(() => {
-                const castSession = this.getCastSession();
-                const mediaInfo = this.getCastMediaInfo(playConfig, article);
+            //this.stopMedia().then(() => {
+            //this.endSession(false);
+            const castSession = this.getCastSession();
+            const mediaInfo = this.getCastMediaInfo(playConfig, article);
 
-                if (mediaInfo) {
-                    const request = new chrome.cast.media.LoadRequest(mediaInfo);
-                    request.currentTime = continueFromPreviousPosition ? playConfig.currentTime : 0;
-                    return castSession.loadMedia(request);
-                } else {
-                    throw {message: 'Unexpected manifest format in articlePlayConfig ' + JSON.stringify(playConfig)};
-                }
-            });
+            if (mediaInfo) {
+                const request = new chrome.cast.media.LoadRequest(mediaInfo);
+                request.currentTime = continueFromPreviousPosition ? playConfig.currentTime : 0;
+                return castSession.loadMedia(request);
+            } else {
+                throw {message: 'Unexpected manifest format in articlePlayConfig ' + JSON.stringify(playConfig)};
+            }
+            //});
         }
     }
 
@@ -319,21 +324,22 @@ export class ChromecastSender {
         return new Promise((resolve, reject) => {
             console.log('castVideoByParams', playParams);
             if (this.isConnected()) {
-                this.stopMedia().then(() => {
-                    const castSession = this.getCastSession();
+                //this.stopMedia().then(() => {
+                //this.endSession(false);
+                const castSession = this.getCastSession();
 
-                    const mediaInfo = this.getCastMediaInfoByParams(playParams);
-                    if (mediaInfo) {
-                        console.log('mediaInfo', mediaInfo);
-                        const request = new chrome.cast.media.LoadRequest(mediaInfo);
-                        castSession.loadMedia(request).then(errorCode => {
-                            console.log('castVideoByParams: loadMedia', errorCode);
-                            resolve();
-                        });
-                    } else {
-                        reject('Could not create media info request');
-                    }
-                });
+                const mediaInfo = this.getCastMediaInfoByParams(playParams);
+                if (mediaInfo) {
+                    console.log('mediaInfo', mediaInfo);
+                    const request = new chrome.cast.media.LoadRequest(mediaInfo);
+                    castSession.loadMedia(request).then(errorCode => {
+                        console.log('castVideoByParams: loadMedia', errorCode);
+                        resolve();
+                    });
+                } else {
+                    reject('Could not create media info request');
+                }
+                //});
             } else {
                 reject('castVideoByParams: Not connected!');
             }
@@ -453,5 +459,10 @@ export class ChromecastSender {
         this.lastConnectionInfo = info;
         console.log('dispatchConnectionInfo', info, this.onConnectedListeners.length);
         this.onConnectedListeners.forEach(listener => listener(info));
+    }
+
+    private dispatchPlayState(state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) {
+        console.log('dispatchPlayState', state, info, this.onPlayStateListeners.length);
+        this.onPlayStateListeners.forEach(listener => listener(state, info));
     }
 }

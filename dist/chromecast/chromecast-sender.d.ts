@@ -3,7 +3,7 @@
 import { PlayConfig } from '../models/play-config';
 import { Article } from '../models/article';
 import { PlayParams } from '../models/play-params';
-import { ChromecastConnectionInfo, TrackInfo } from '../models/cast-info';
+import { ChromecastConnectionInfo, ChromecastPlayInfo, TrackInfo } from '../models/cast-info';
 export declare class ChromecastSender {
     private chromecastReceiverAppId;
     private static initPromise;
@@ -11,6 +11,7 @@ export declare class ChromecastSender {
     private castPlayer;
     private castPlayerController;
     private lastConnectionInfo;
+    private lastPlayState;
     private updateInterval;
     private supportsHDR;
     private onConnectedListeners;
@@ -23,14 +24,8 @@ export declare class ChromecastSender {
     initializeCastApi(chromecastReceiverAppId: string): void;
     addOnConnectedListener(callback: (info: ChromecastConnectionInfo) => void): void;
     removeOnConnectedListener(callback: (info: ChromecastConnectionInfo) => void): void;
-    addOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: {
-        articleId: number;
-        assetId: number;
-    }) => void): void;
-    removeOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: {
-        articleId: number;
-        assetId: number;
-    }) => void): void;
+    addOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => void): void;
+    removeOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => void): void;
     addOnCurrentTimeListener(callback: (currentTime: number) => void): void;
     removeOnCurrentTimeListener(callback: (currentTime: number) => void): void;
     addOnMediaTracksListener(callback: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void): void;
@@ -42,7 +37,7 @@ export declare class ChromecastSender {
     getCastMediaInfoByParams(playParams: PlayParams, article?: Article): chrome.cast.media.MediaInfo;
     getCastSession(): cast.framework.CastSession;
     getCastMediaSession(): chrome.cast.media.Media;
-    castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean): void;
+    castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean): Promise<chrome.cast.ErrorCode>;
     castVideoByParams(playParams: PlayParams): Promise<void>;
     isConnected(): boolean;
     stopMedia(): Promise<void>;
@@ -60,4 +55,5 @@ export declare class ChromecastSender {
     setActiveTracks(trackIds: number[], type: string): void;
     setActiveTrackById(selectedTrackId: number, type: string): void;
     private dispatchConnectionInfo;
+    private dispatchPlayState;
 }

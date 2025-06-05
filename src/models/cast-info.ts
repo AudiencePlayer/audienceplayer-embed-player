@@ -7,7 +7,7 @@ export interface ChromecastConnectionInfo {
 export interface ChromecastPlayInfo {
     articleId: number;
     assetId: number;
-    hasMedia: boolean;
+    token: string;
 }
 
 export interface TrackInfo {

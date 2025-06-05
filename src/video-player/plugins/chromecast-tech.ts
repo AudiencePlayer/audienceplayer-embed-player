@@ -1,6 +1,6 @@
 import {ChromecastSender} from '../../chromecast/chromecast-sender';
 import {getNativeLanguage} from '../../utils/locale';
-import {TrackInfo} from '../../models/cast-info';
+import {ChromecastPlayInfo, TrackInfo} from '../../models/cast-info';
 
 export function createChromecastTechPlugin(videojsInstance: any, castSender: ChromecastSender) {
     const Tech = videojsInstance.getComponent('Tech');
@@ -266,7 +266,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             super.dispose();
         }
 
-        private onPlayStateListener = (state: chrome.cast.media.PlayerState, info: {articleId: number; assetId: number}) => {
+        private onPlayStateListener = (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => {
             if (!this.source) {
                 if (state === chrome.cast.media.PlayerState.IDLE || state === null) {
                     console.log('No source, but idle - not restoring session');
@@ -303,6 +303,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
                 this.trigger('timeupdate');
             } else {
+                console.log(state + ' currentSrc', this.currentSrc());
                 if (state === chrome.cast.media.PlayerState.PLAYING) {
                     this.trigger('play');
                     this.trigger('playing');
@@ -310,19 +311,12 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                     this.trigger('pause');
                 } else if (state === chrome.cast.media.PlayerState.BUFFERING) {
                     this.trigger('waiting');
-                } else if (state === null || state === chrome.cast.media.PlayerState.IDLE) {
-                    console.log('IDLE, currentSrc', this.currentSrc());
-                    if (this.currentSrc()) {
-                        this.didEnd = true;
-                        this.trigger('ended');
-                    }
                 }
             }
         };
         private onCurrentTimeListener = (currentTime: number) => {
             this.lastCurrentTime = currentTime;
             if (this.duration() > 0 && currentTime + 1 > this.duration()) {
-                console.log('didEnd => true');
                 this.didEnd = true;
                 this.trigger('ended');
             }

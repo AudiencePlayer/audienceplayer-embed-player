@@ -23,11 +23,12 @@ export declare class VideoPlayer {
     destroy(): void;
     getPlayer(): any;
     stop(): void;
-    reset(): void;
     private getAndInitPlaySourcesFromConfig;
     private bindEvents;
     getCastSender(): ChromecastSender;
     private checkSelectedTracks;
     private setDefaultTextTrack;
     private setDefaultAudioTrack;
+    private onConnectedListener;
+    private onPlayStateListener;
 }

@@ -16,6 +16,7 @@ import {createSubtitlesButtonPlugin} from './plugins/subtitles-button';
 import {ApiService} from '../api/api-service';
 import {createChromecastTechPlugin} from './plugins/chromecast-tech';
 import {ChromecastSender} from '../chromecast/chromecast-sender';
+import {ChromecastConnectionInfo, ChromecastPlayInfo} from '../models/cast-info';
 
 export class VideoPlayer {
     private player: any = null;
@@ -53,6 +54,7 @@ export class VideoPlayer {
     }
 
     init(initParams: InitParams) {
+        console.log('video-player.init');
         this.destroy();
 
         this.localPlayConfig = null;
@@ -145,11 +147,9 @@ export class VideoPlayer {
             if (this.apiService) {
                 this.apiService.setToken(playParams.token ? playParams.token : null);
 
-                return this.apiService
-                    .getArticleAssetPlayConfig(playParams.articleId, playParams.assetId, playParams.continueFromPreviousPosition)
-                    .then(config => {
-                        this.player.src(this.getAndInitPlaySourcesFromConfig(config));
-                    });
+                return this.apiService.getArticleAssetPlayConfig(playParams).then(config => {
+                    this.player.src(this.getAndInitPlaySourcesFromConfig(config, playParams.token));
+                });
             } else {
                 return Promise.reject('No API service available');
             }
@@ -177,9 +177,12 @@ export class VideoPlayer {
     }
 
     destroy() {
-        console.log('destroy');
+        console.log('video-player.destroy');
         this.stop();
-        // this.castSender.removeOnConnectedListener(this.onConnectedListener);
+        this.playerLoggerService.destroy();
+        this.castSender.removeOnConnectedListener(this.onConnectedListener);
+        this.castSender.removeOnPlayStateListener(this.onPlayStateListener);
+
         if (this.player) {
             this.player.dispose();
         }
@@ -194,7 +197,7 @@ export class VideoPlayer {
     }
 
     stop() {
-        console.log('stop');
+        console.log('video-player.stop');
         this.firstPlayingEvent = true;
         if (this.player) {
             if (false === this.player.ended()) {
@@ -207,20 +210,9 @@ export class VideoPlayer {
             }
             this.player.reset();
         }
-
-        if (this.localPlayConfig) {
-            this.playerLoggerService.destroy();
-        }
-    }
-    // reset is needed in order to reset the tech, e.g. when switching from chromecast to local play
-    reset() {
-        console.log('reset', !!this.initParams);
-        if (this.initParams) {
-            this.init(this.initParams);
-        }
     }
 
-    private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig) {
+    private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig, token: string = null) {
         this.localPlayConfig = playConfig;
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
@@ -252,7 +244,7 @@ export class VideoPlayer {
                   })),
               };
 
-        const playParams = {playParams: {articleId: playConfig.articleId, assetId: playConfig.assetId}};
+        const playParams = {playParams: {articleId: playConfig.articleId, assetId: playConfig.assetId, token}};
 
         const playSources = playConfig.entitlements
             .map(entitlement => {
@@ -277,7 +269,8 @@ export class VideoPlayer {
     }
 
     private bindEvents() {
-        // this.castSender.addOnConnectedListener(this.onConnectedListener);
+        this.castSender.addOnConnectedListener(this.onConnectedListener);
+        this.castSender.addOnPlayStateListener(this.onPlayStateListener);
 
         this.player.on('error', () => {
             if (this.localPlayConfig) {
@@ -484,31 +477,46 @@ export class VideoPlayer {
         }
     }
 
-    // private onConnectedListener = (info: ChromecastConnectionInfo) => {
-    //     if (!this.player) {
-    //         return;
-    //     }
-    //     const currentSources = this.player.currentSources();
-    //     const wasPlaying = !this.player.paused();
-    //     console.log('onConnectedListener', info, currentSources, wasPlaying);
-    //
-    //     // playParams exist
-    //     if (currentSources && currentSources.length > 0 && currentSources[0].playParams && this.player.currentType()) {
-    //         if (!info.connected && this.player.currentType() === 'application/vnd.chromecast') {
-    //             console.log('CC disconnected, was playing something remote');
-    //             this.reset();
-    //             if (wasPlaying) {
-    //                 this.player.addClass('vjs-waiting');
-    //                 setTimeout(() => this.playByParams(this.initParams, currentSources[0].playParams), 2000);
-    //             }
-    //         } else if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {
-    //             console.log('CC connected, was playing something local');
-    //             this.reset();
-    //             if (wasPlaying) {
-    //                 this.player.addClass('vjs-waiting');
-    //                 setTimeout(() => this.playByParams(this.initParams, currentSources[0].playParams), 2000);
-    //             }
-    //         }
-    //     }
-    // }
+    private onConnectedListener = (info: ChromecastConnectionInfo) => {
+        if (!this.player) {
+            return;
+        }
+        const currentSources = this.player.currentSources();
+        const wasPlaying = !this.player.paused();
+        console.log('onConnectedListener', info, currentSources, wasPlaying);
+
+        // playParams exist
+        if (currentSources && currentSources.length > 0 && currentSources[0].playParams && this.player.currentType()) {
+            if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {
+                console.log('CC connected, was playing something local');
+                this.stop();
+                //if (wasPlaying) {
+                this.player.addClass('vjs-waiting');
+                setTimeout(() => this.playByParams(currentSources[0].playParams), 3000);
+                //}
+            }
+        }
+    };
+
+    private onPlayStateListener = (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => {
+        if (state === null || state === chrome.cast.media.PlayerState.IDLE) {
+            const wasPlaying = !this.player.paused();
+            const currentSources = this.player.currentSources();
+            console.log('video-player.cc ended', wasPlaying, currentSources);
+
+            if (
+                currentSources &&
+                currentSources.length > 0 &&
+                currentSources[0].playParams &&
+                this.player.currentType() === 'application/vnd.chromecast'
+            ) {
+                console.log('CC disconnected, was playing something remote');
+                this.stop();
+                // if (wasPlaying) {
+                this.player.addClass('vjs-waiting');
+                setTimeout(() => this.playByParams(currentSources[0].playParams), 3000);
+                // }
+            }
+        }
+    };
 }

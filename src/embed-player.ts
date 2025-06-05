@@ -48,7 +48,7 @@ export class EmbedPlayer {
         this.apiService.setToken(playParams.token ? playParams.token : null);
 
         return this.apiService
-            .getArticleAssetPlayConfig(playParams.articleId, playParams.assetId, playParams.continueFromPreviousPosition)
+            .getArticleAssetPlayConfig(playParams)
             .then(config => {
                 this.playVideo(config);
                 return config;
@@ -84,22 +84,19 @@ export class EmbedPlayer {
         castButtonContaner.appendChild(castButton);
     }
 
-    castVideo({articleId, assetId, token, continueFromPreviousPosition}: PlayParams) {
-        if (!articleId) {
+    castVideo(playParams: PlayParams) {
+        if (!playParams.articleId) {
             return Promise.reject('articleId property is missing');
         }
-        if (!assetId) {
+        if (!playParams.assetId) {
             return Promise.reject('assetId property is missing');
         }
 
-        this.apiService.setToken(token);
+        this.apiService.setToken(playParams.token);
 
-        return Promise.all([
-            this.apiService.getArticleAssetPlayConfig(articleId, assetId, continueFromPreviousPosition),
-            this.apiService.getArticle(articleId),
-        ])
+        return Promise.all([this.apiService.getArticleAssetPlayConfig(playParams), this.apiService.getArticle(playParams.articleId)])
             .then(([config, article]) => {
-                this.castSender.castVideo(config, article, continueFromPreviousPosition);
+                this.castSender.castVideo(config, article, playParams.continueFromPreviousPosition);
                 return config;
             })
             .catch(error => {
