@@ -10,7 +10,7 @@ export class ChromecastSender {
     private castPlayer: cast.framework.RemotePlayer = null;
     private castPlayerController: cast.framework.RemotePlayerController = null;
     private lastConnectionInfo: ChromecastConnectionInfo = null;
-    private lastPlayState: chrome.cast.media.PlayerState = null;
+    private lastPlayStateInfo: {state: chrome.cast.media.PlayerState; info: ChromecastPlayInfo} = null;
     private updateInterval: any = null;
     private supportsHDR = false;
     private onConnectedListeners: Array<(info: ChromecastConnectionInfo) => void> = [];
@@ -94,8 +94,8 @@ export class ChromecastSender {
                     }
                 }
             }
-            if (this.lastPlayState !== null) {
-                this.lastPlayState = null;
+            if (!this.castPlayer.isConnected && this.lastPlayStateInfo !== null) {
+                this.lastPlayStateInfo = null;
                 this.dispatchPlayState(null, null);
             }
             this.dispatchConnectionInfo({available: true, connected: false, friendlyName: ''});
@@ -103,7 +103,6 @@ export class ChromecastSender {
 
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED, () => {
             const state = this.castPlayer.playerState;
-            this.lastPlayState = state;
             let info: any = null;
 
             // only when media is loaded, otherwise IDLE state will cause issues
@@ -161,6 +160,10 @@ export class ChromecastSender {
 
     addOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => void) {
         this.onPlayStateListeners.push(callback);
+
+        if (this.lastPlayStateInfo !== null) {
+            this.dispatchPlayState(this.lastPlayStateInfo.state, this.lastPlayStateInfo.info);
+        }
     }
 
     removeOnPlayStateListener(callback: (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => void) {
@@ -463,6 +466,7 @@ export class ChromecastSender {
 
     private dispatchPlayState(state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) {
         console.log('dispatchPlayState', state, info, this.onPlayStateListeners.length);
+        this.lastPlayStateInfo = {state, info};
         this.onPlayStateListeners.forEach(listener => listener(state, info));
     }
 }

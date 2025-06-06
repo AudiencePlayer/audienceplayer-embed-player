@@ -11,7 +11,7 @@ export declare class ChromecastSender {
     private castPlayer;
     private castPlayerController;
     private lastConnectionInfo;
-    private lastPlayState;
+    private lastPlayStateInfo;
     private updateInterval;
     private supportsHDR;
     private onConnectedListeners;

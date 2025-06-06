@@ -79,17 +79,21 @@
 }
 
 /* overlay plugin */
-.video-js .vjs-overlay {
+.video-js .vjs-overlay,
+.video-js .vjs-custom-overlay {
     position: absolute;
-    z-index: 2;
+    z-index: 1;
     top: 0;
     left: 0;
+    visibility: visible;
+    transition: visibility 0.3s, opacity 0.3s;
+}
+
+.video-js .vjs-overlay {
+    pointer-events: none;
     bottom: 0;
     right: 0;
-    pointer-events: none;
-    visibility: visible;
     opacity: 0;
-    transition: visibility 0.3s, opacity 0.3s;
 }
 
 .video-js.vjs-user-active .vjs-overlay {
