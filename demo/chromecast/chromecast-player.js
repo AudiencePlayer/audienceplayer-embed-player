@@ -28,8 +28,6 @@ import {VideoPlayer} from '../../dist/bundle.js';
     const continueFromPreviousPosition = localStorage.getItem('continueFromPreviousPosition');
     const tokenParameter = token ? {token} : {};
 
-    const containerEl = document.querySelector('.media-player');
-    const splashEl = document.querySelector('.media-player__overlay');
     const metaEl = document.querySelector('.media-player__meta');
 
     const initParam = {
@@ -37,6 +35,7 @@ import {VideoPlayer} from '../../dist/bundle.js';
         options: {
             autoplay: true,
             overlay: {element: metaEl},
+            poster: posterImageUrl,
         },
         chromecastButton: true,
     };
@@ -50,12 +49,6 @@ import {VideoPlayer} from '../../dist/bundle.js';
 
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('setButton').addEventListener('click', () => storeValues(true));
-
-    if (posterImageUrl) {
-        splashEl.style.backgroundImage = `url(${posterImageUrl})`;
-    }
-
-    // chromecastReceiverAppId
 
     const videoPlayer = new VideoPlayer(videojs, apiBaseUrl, projectId, chromecastReceiverAppId);
     videoPlayer.init(initParam);

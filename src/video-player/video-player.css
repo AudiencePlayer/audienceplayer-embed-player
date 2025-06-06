@@ -68,6 +68,7 @@
     height: 2em;
 }
 
+/* chromecast button plugin */
 .video-js .vjs-chromecast-button {
     display: inline-block;
     margin: 0.5em;
@@ -77,6 +78,7 @@
     height: 2em;
 }
 
+/* overlay plugin */
 .video-js .vjs-overlay {
     position: absolute;
     z-index: 2;
@@ -94,6 +96,7 @@
     opacity: 1;
 }
 
+/* skip intro button */
 .video-js .vjs-skip-intro-button {
     position: absolute;
     display: flex;
@@ -128,4 +131,28 @@
     font-size: 1.8em;
     line-height: inherit;
     text-align: center;
+}
+
+/* when chromecast is connected, show the overlay */
+.video-js.vjs-chromecast-connected .vjs-overlay {
+    opacity: 1;
+}
+
+/* when chromecast is connected, show the control bar, even when user is inactive and playing */
+.video-js.vjs-chromecast-connected.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-control-bar {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: unset;
+}
+
+/* poster remains visible */
+.video-js.vjs-chromecast-connected.vjs-has-started .vjs-poster,
+.video-js.vjs-chromecast-connected.vjs-using-native-controls .vjs-poster {
+    display: inline-block !important;
+}
+
+/* poster */
+.video-js .vjs-poster img {
+    object-fit: cover;
+    object-position: center;
 }

@@ -485,6 +485,11 @@ export class VideoPlayer {
         const wasPlaying = !this.player.paused();
         console.log('onConnectedListener', info, currentSources, wasPlaying);
 
+        if (info.connected) {
+            this.player.addClass('vjs-chromecast-connected');
+        } else {
+            this.player.removeClass('vjs-chromecast-connected');
+        }
         // playParams exist
         if (currentSources && currentSources.length > 0 && currentSources[0].playParams && this.player.currentType()) {
             if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {

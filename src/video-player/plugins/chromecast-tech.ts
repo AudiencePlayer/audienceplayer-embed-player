@@ -97,6 +97,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
         setSource(source: any) {
             console.log('chromecast-tech.src', source);
+
             this.source = source;
             this.didEnd = false;
 
