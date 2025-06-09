@@ -14,6 +14,7 @@ export interface PlayConfig {
         end: number;
         label: string;
     };
+    continuePaused?: boolean;
 }
 
 export interface PlayEntitlement {

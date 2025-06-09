@@ -43,7 +43,7 @@ export class ApiService {
                 throw {message, code};
             }
 
-            return toPlayConfig(response.data.ArticleAssetPlay, playParams.continueFromPreviousPosition);
+            return toPlayConfig(response.data.ArticleAssetPlay, playParams);
         });
     }
 }

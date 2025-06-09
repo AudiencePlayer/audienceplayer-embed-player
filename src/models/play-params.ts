@@ -14,6 +14,7 @@ export interface PlayParams {
     assetId: number;
     token: string;
     continueFromPreviousPosition: boolean;
+    continuePaused?: boolean;
 }
 
 export enum DeviceModelContextEnum {

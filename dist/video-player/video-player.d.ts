@@ -31,4 +31,5 @@ export declare class VideoPlayer {
     private setDefaultAudioTrack;
     private onConnectedListener;
     private onPlayStateListener;
+    private continueWithCurrentSources;
 }

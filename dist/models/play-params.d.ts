@@ -15,6 +15,7 @@ export interface PlayParams {
     assetId: number;
     token: string;
     continueFromPreviousPosition: boolean;
+    continuePaused?: boolean;
 }
 export declare enum DeviceModelContextEnum {
     chromecast_legacy = "chromecast_legacy",

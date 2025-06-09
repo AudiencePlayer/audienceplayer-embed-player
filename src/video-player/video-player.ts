@@ -148,7 +148,7 @@ export class VideoPlayer {
                 this.apiService.setToken(playParams.token ? playParams.token : null);
 
                 return this.apiService.getArticleAssetPlayConfig(playParams).then(config => {
-                    this.player.src(this.getAndInitPlaySourcesFromConfig(config, playParams.token));
+                    this.player.src(this.getAndInitPlaySourcesFromConfig(config, playParams));
                 });
             } else {
                 return Promise.reject('No API service available');
@@ -212,7 +212,7 @@ export class VideoPlayer {
         }
     }
 
-    private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig, token: string = null) {
+    private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig, originalPlayParams: PlayParams = null) {
         this.localPlayConfig = playConfig;
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
@@ -244,7 +244,14 @@ export class VideoPlayer {
                   })),
               };
 
-        const playParams = {playParams: {articleId: playConfig.articleId, assetId: playConfig.assetId, token}};
+        const playParams = {
+            playParams: {
+                articleId: playConfig.articleId,
+                assetId: playConfig.assetId,
+                token: originalPlayParams ? originalPlayParams.token : null,
+                continueFromPreviousPosition: originalPlayParams ? originalPlayParams.continueFromPreviousPosition : true,
+            },
+        };
 
         const playSources = playConfig.entitlements
             .map(entitlement => {
@@ -284,6 +291,9 @@ export class VideoPlayer {
                     this.firstPlayingEvent = false;
                     if (this.localPlayConfig && this.localPlayConfig.currentTime > 0) {
                         this.player.currentTime(this.localPlayConfig.currentTime);
+                    }
+                    if (this.localPlayConfig && this.localPlayConfig.continuePaused) {
+                        this.player.pause();
                     }
                 }
                 this.checkSelectedTracks();
@@ -481,47 +491,48 @@ export class VideoPlayer {
         if (!this.player) {
             return;
         }
-        const currentSources = this.player.currentSources();
-        const wasPlaying = !this.player.paused();
-        console.log('onConnectedListener', info, currentSources, wasPlaying);
+
+        console.log('onConnectedListener', info);
 
         if (info.connected) {
             this.player.addClass('vjs-chromecast-connected');
         } else {
             this.player.removeClass('vjs-chromecast-connected');
         }
-        // playParams exist
-        if (currentSources && currentSources.length > 0 && currentSources[0].playParams && this.player.currentType()) {
-            if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {
-                console.log('CC connected, was playing something local');
-                this.stop();
-                //if (wasPlaying) {
-                this.player.addClass('vjs-waiting');
-                setTimeout(() => this.playByParams(currentSources[0].playParams), 3000);
-                //}
-            }
+
+        if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {
+            this.continueWithCurrentSources();
         }
     };
 
     private onPlayStateListener = (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => {
         if (state === null || state === chrome.cast.media.PlayerState.IDLE) {
-            const wasPlaying = !this.player.paused();
-            const currentSources = this.player.currentSources();
-            console.log('video-player.cc ended', wasPlaying, currentSources);
+            console.log('video-player.cc ended');
 
-            if (
-                currentSources &&
-                currentSources.length > 0 &&
-                currentSources[0].playParams &&
-                this.player.currentType() === 'application/vnd.chromecast'
-            ) {
-                console.log('CC disconnected, was playing something remote');
-                this.stop();
-                // if (wasPlaying) {
-                this.player.addClass('vjs-waiting');
-                setTimeout(() => this.playByParams(currentSources[0].playParams), 3000);
-                // }
+            if (this.player.currentType() === 'application/vnd.chromecast') {
+                this.continueWithCurrentSources();
             }
         }
     };
+
+    private continueWithCurrentSources() {
+        const currentSources = this.player.currentSources();
+        const continuePaused = this.player.paused();
+
+        console.log('continueWithCurrentSources', currentSources, continuePaused);
+
+        if (currentSources && currentSources.length > 0 && currentSources[0].playParams && this.player.currentType()) {
+            this.stop();
+
+            this.player.addClass('vjs-waiting');
+            setTimeout(
+                () =>
+                    this.playByParams({
+                        ...currentSources[0].playParams,
+                        continuePaused,
+                    }),
+                3000
+            );
+        }
+    }
 }
