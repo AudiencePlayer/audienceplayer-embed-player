@@ -314,7 +314,10 @@ export class ChromecastSender {
     }
 
     getCastSession() {
-        return this.castContext.getCurrentSession();
+        if (this.castContext) {
+            return this.castContext.getCurrentSession();
+        }
+        return null;
     }
 
     getCastMediaSession() {
@@ -326,8 +329,6 @@ export class ChromecastSender {
 
     castVideo(playConfig: PlayConfig, article: Article, continueFromPreviousPosition: boolean) {
         if (this.isConnected()) {
-            //this.stopMedia().then(() => {
-            //this.endSession(false);
             const castSession = this.getCastSession();
             const mediaInfo = this.getCastMediaInfo(playConfig, article);
 
@@ -338,7 +339,6 @@ export class ChromecastSender {
             } else {
                 throw {message: 'Unexpected manifest format in articlePlayConfig ' + JSON.stringify(playConfig)};
             }
-            //});
         }
     }
 

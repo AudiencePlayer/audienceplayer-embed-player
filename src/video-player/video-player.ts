@@ -145,15 +145,22 @@ export class VideoPlayer {
             return Promise.resolve();
         } else {
             if (this.apiService) {
+                this.player.addClass('vjs-waiting');
                 this.apiService.setToken(playParams.token ? playParams.token : null);
 
-                return this.apiService.getArticleAssetPlayConfig(playParams).then(config => {
-                    if (!this.stopped) {
-                        this.player.src(this.getAndInitPlaySourcesFromConfig(config, playParams));
-                    } else {
-                        console.log('playByParams, play stopped');
-                    }
-                });
+                return this.apiService
+                    .getArticleAssetPlayConfig(playParams)
+                    .then(config => {
+                        if (!this.stopped) {
+                            this.player.src(this.getAndInitPlaySourcesFromConfig(config, playParams));
+                        } else {
+                            this.player.removeClass('vjs-waiting');
+                            console.log('playByParams, play stopped');
+                        }
+                    })
+                    .catch(() => {
+                        this.player.removeClass('vjs-waiting');
+                    });
             } else {
                 return Promise.reject('No API service available');
             }
@@ -210,6 +217,9 @@ export class VideoPlayer {
             clearTimeout(this.continueTimeout);
             this.continueTimeout = null;
         }
+        if (this.castSender && this.castSender.getCastMediaSession()) {
+            this.castSender.endSession(false);
+        }
         if (this.player) {
             if (false === this.player.ended()) {
                 this.player.pause();
@@ -219,6 +229,7 @@ export class VideoPlayer {
                     this.playerLoggerService.onStop();
                 }
             }
+            this.player.removeClass('vjs-waiting');
             this.player.reset();
         }
     }
