@@ -160,7 +160,6 @@ export class VideoPlayer {
         }
     }
 
-    // @TODO .play can not be used together with chromecast-tech.
     play(playConfig: PlayConfig) {
         this.stopped = false;
         this.player.src(this.getAndInitPlaySourcesFromConfig(playConfig));
@@ -185,9 +184,11 @@ export class VideoPlayer {
         console.log('video-player.destroy');
         this.stop();
         this.playerLoggerService.destroy();
-        this.castSender.removeOnConnectedListener(this.onConnectedListener);
-        this.castSender.removeOnPlayStateListener(this.onPlayStateListener);
 
+        if (this.castSender) {
+            this.castSender.removeOnConnectedListener(this.onConnectedListener);
+            this.castSender.removeOnPlayStateListener(this.onPlayStateListener);
+        }
         if (this.player) {
             this.player.dispose();
         }
@@ -278,9 +279,10 @@ export class VideoPlayer {
     }
 
     private bindEvents() {
-        this.castSender.addOnConnectedListener(this.onConnectedListener);
-        this.castSender.addOnPlayStateListener(this.onPlayStateListener);
-
+        if (this.castSender) {
+            this.castSender.addOnConnectedListener(this.onConnectedListener);
+            this.castSender.addOnPlayStateListener(this.onPlayStateListener);
+        }
         this.player.on('error', () => {
             if (this.localPlayConfig) {
                 this.playerLoggerService.onError(JSON.stringify(this.player.error()));

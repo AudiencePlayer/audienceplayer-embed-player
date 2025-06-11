@@ -21,8 +21,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         constructor(options: any) {
             super(options);
 
-            console.log('ChromecastTech', options);
-
             castSender.init().then(() => {
                 this.myPlayer = castSender.getCastPlayer();
                 this.myPlayerController = castSender.getCastPlayerController();
@@ -34,8 +32,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
                 this.textTracks().addEventListener('change', () => this.handleTextTrackChange());
                 this.audioTracks().addEventListener('change', () => this.handleAudioTrackChange());
-
-                console.log('castSender initialized');
 
                 this.triggerReady();
             });
@@ -86,8 +82,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         setSource(source: any) {
-            console.log('chromecast-tech.src', source);
-
             this.source = source;
             this.didEnd = false;
 
@@ -103,7 +97,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                     .castVideoByParams(source.playParams)
                     .then(() => {
                         this.trigger('waiting');
-                        console.log('castVideoByParams requested CC');
                     })
                     .catch(err => console.log(err));
             }
@@ -118,7 +111,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 const duration = this.duration();
 
                 if (newTime > duration) {
-                    console.log('Skip seek ', newTime, duration);
                     return;
                 }
                 // Seeking to any place within (approximately) 1 second of the end of the item
@@ -137,7 +129,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
         duration() {
             if (!this.myPlayer) {
-                console.log('duration call, but no player');
                 return NaN;
             }
             // console.log('duration', this.myPlayer.duration);
@@ -153,7 +144,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         seekable() {
-            // TODO If the source is live adjust the seekable `TimeRanges` accordingly.
+            // @TODO If the source is live adjust the seekable `TimeRanges` accordingly.
             return this.videojs.createTimeRange(0, this.duration());
         }
 
@@ -240,7 +231,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
         dispose() {
             // Clean up anything your tech has created
-            console.log('dispose');
             castSender.removeOnPlayStateListener(this.onPlayStateListener);
             castSender.removeOnCurrentTimeListener(this.onCurrentTimeListener);
             castSender.removeOnDurationListener(this.onDurationListener);
@@ -262,14 +252,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 if (state === chrome.cast.media.PlayerState.IDLE || state === null) {
                     return;
                 }
-                console.log(
-                    'Restoring session',
-                    this.myPlayer.playerState,
-                    this.myPlayer.isMediaLoaded,
-                    this.myPlayer.duration,
-                    info,
-                    this.player
-                );
                 // @TODO do we also need a loadedmetadata in regular case
                 this.source = {src: 'restore', type: 'application/vnd.chromecast', playParams: {...info}};
                 this.didEnd = false;
@@ -346,5 +328,4 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
     }
 
     videojsInstance.registerTech('chromecast', ChromecastTech);
-    console.log('registered chromecast tech');
 }

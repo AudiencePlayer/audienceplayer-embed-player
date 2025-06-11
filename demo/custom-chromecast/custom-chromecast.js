@@ -28,7 +28,7 @@ import {ChromecastSender, ChromecastControls} from '../../dist/bundle.js';
 
             const controls = new ChromecastControls(castSender);
 
-            castSender.setOnConnectedListener(({connected, friendlyName}) => {
+            castSender.addOnConnectedListener(({connected, friendlyName}) => {
                 output.innerText = connected ? 'Connected to ' + friendlyName : 'Not connected';
             });
         });
