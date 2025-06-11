@@ -18,6 +18,7 @@ export class ChromecastSender {
     private onCurrentTimeListeners: Array<(currentTime: number) => void> = [];
     private onMediaTracksListeners: Array<(audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void> = [];
     private onDurationListeners: Array<(duration: number) => void> = [];
+    private onApiErrorListeners: Array<(error: {code: number; message: string}, playParams: PlayParams) => void> = [];
 
     constructor(private chromecastReceiverAppId: string) {
         console.log('ChromecastSender', chromecastReceiverAppId);
@@ -71,8 +72,15 @@ export class ChromecastSender {
             if (this.castPlayer.isConnected) {
                 const castSession = this.getCastSession();
                 castSession.addMessageListener('urn:x-cast:com.audienceplayer.messagebus', (namespace, message) => {
-                    const capabilities = JSON.parse(message);
-                    this.supportsHDR = capabilities.is_hdr_supported;
+                    const messageObject = JSON.parse(message);
+                    if (typeof messageObject.is_hdr_supported === 'boolean') {
+                        this.supportsHDR = messageObject && messageObject.is_hdr_supported;
+                    } else if (typeof messageObject.error === 'object' && messageObject.error.code) {
+                        const error = {code: messageObject.error.code, message: messageObject.error.message};
+                        this.onApiErrorListeners.forEach(listener => {
+                            listener(error, messageObject.playParams);
+                        });
+                    }
                 });
             } else {
                 this.supportsHDR = false;
@@ -217,6 +225,17 @@ export class ChromecastSender {
         }
     }
 
+    addOnApiErrorListener(callback: (error: {code: number; message: string}, playParams: PlayParams) => void) {
+        this.onApiErrorListeners.push(callback);
+    }
+
+    removeOnApiErrorListener(callback: (error: {code: number; message: string}, playParams: PlayParams) => void) {
+        const index = this.onApiErrorListeners.indexOf(callback);
+        if (index >= 0) {
+            this.onApiErrorListeners.splice(index, 1);
+        }
+    }
+
     getSupportsHDR() {
         return this.supportsHDR;
     }
@@ -327,8 +346,6 @@ export class ChromecastSender {
         return new Promise((resolve, reject) => {
             console.log('castVideoByParams', playParams);
             if (this.isConnected()) {
-                //this.stopMedia().then(() => {
-                //this.endSession(false);
                 const castSession = this.getCastSession();
 
                 const mediaInfo = this.getCastMediaInfoByParams(playParams);
@@ -342,7 +359,6 @@ export class ChromecastSender {
                 } else {
                     reject('Could not create media info request');
                 }
-                //});
             } else {
                 reject('castVideoByParams: Not connected!');
             }

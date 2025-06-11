@@ -19,6 +19,7 @@ export declare class ChromecastSender {
     private onCurrentTimeListeners;
     private onMediaTracksListeners;
     private onDurationListeners;
+    private onApiErrorListeners;
     constructor(chromecastReceiverAppId: string);
     init(): Promise<void>;
     initializeCastApi(chromecastReceiverAppId: string): void;
@@ -32,6 +33,14 @@ export declare class ChromecastSender {
     removeOnMediaTracksListener(callback: (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void): void;
     addOnDurationListener(callback: (duration: number) => void): void;
     removeOnDurationListener(callback: (duration: number) => void): void;
+    addOnApiErrorListener(callback: (error: {
+        code: number;
+        message: string;
+    }, playParams: PlayParams) => void): void;
+    removeOnApiErrorListener(callback: (error: {
+        code: number;
+        message: string;
+    }, playParams: PlayParams) => void): void;
     getSupportsHDR(): boolean;
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article): chrome.cast.media.MediaInfo;
     getCastMediaInfoByParams(playParams: PlayParams, article?: Article): chrome.cast.media.MediaInfo;

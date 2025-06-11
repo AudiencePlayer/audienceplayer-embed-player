@@ -76,7 +76,8 @@ export class VideoPlayer {
         videoElement.setAttribute('tabIndex', '0');
         videoElement.setAttribute('width', '100%');
         videoElement.setAttribute('height', '100%');
-        videoElement.disableRemotePlayback = !supportsNativeHLS(this.videojsInstance); // this will hide the chromecast button. We want to keep Airplay
+        // this will hide the internal video element chromecast button. We want to keep Airplay, so only if native HLS is not supported
+        videoElement.disableRemotePlayback = !supportsNativeHLS(this.videojsInstance);
 
         videoContainer.appendChild(videoElement);
 
