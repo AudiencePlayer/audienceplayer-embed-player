@@ -57,16 +57,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             this.el_ = videojsInstance.dom.createEl('div', {
                 className: 'vjs-tech chromecast',
             });
-
-            /*
-            this._castingMessageEl = videojs.dom.createEl('div', {
-    className: 'vjs-casting-overlay',
-    innerHTML: 'Casting to device...'
-  });
-
-  el.appendChild(this._castingMessageEl);
-             */
-
             return this.el_;
         }
 
@@ -270,7 +260,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         private onPlayStateListener = (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => {
             if (!this.source) {
                 if (state === chrome.cast.media.PlayerState.IDLE || state === null) {
-                    console.log('No source, but idle - not restoring session');
                     return;
                 }
                 console.log(
@@ -304,7 +293,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
                 this.trigger('timeupdate');
             } else {
-                console.log(state + ' currentSrc', this.currentSrc());
                 if (state === chrome.cast.media.PlayerState.PLAYING) {
                     this.trigger('play');
                     this.trigger('playing');

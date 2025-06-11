@@ -23,16 +23,17 @@ export class VideoPlayer {
     private apiService: ApiService = null;
     private castSender: ChromecastSender = null;
     private playerLoggerService: PlayerLoggerService;
-    private localPlayConfig: PlayConfig; // this contains the play confif for a local playout, with CC it's a remote playout, and null.
+    private localPlayConfig: PlayConfig; // this contains the play config for a local playout, with CC it's a remote playout, and null.
     private firstPlayingEvent: boolean;
     private currentTextTrack: string;
     private currentAudioTrack: string;
     private metadataLoaded: boolean;
     private currentTime: number;
     private initParams: InitParams;
+    private stopped = false; // to make sure that if stop() was called, no async playout methods can continue play
+    private continueTimeout: any = null;
 
     constructor(private videojsInstance: any, baseUrl: string = null, projectId: number = 0, chromecastReceiverAppId: string = null) {
-        console.log('VideoPlayer.constructor');
         if (baseUrl && typeof baseUrl === 'string' && projectId > 0) {
             this.apiService = new ApiService(baseUrl.replace(/\/*$/, ''), projectId);
         }
@@ -54,9 +55,9 @@ export class VideoPlayer {
     }
 
     init(initParams: InitParams) {
-        console.log('video-player.init');
         this.destroy();
 
+        this.stopped = false;
         this.localPlayConfig = null;
         this.initParams = initParams;
         const videoContainer = initParams.selector instanceof Element ? initParams.selector : document.querySelector(initParams.selector);
@@ -80,7 +81,6 @@ export class VideoPlayer {
         videoContainer.appendChild(videoElement);
 
         const techOrder = this.castSender ? ['chromecast', 'html5'] : ['html5']; // chromecast first, to make it the `active tech`.
-        console.log('init with techOrder', techOrder);
 
         const playOptions = {
             fluid: false,
@@ -137,18 +137,21 @@ export class VideoPlayer {
     }
 
     playByParams(playParams: PlayParams): Promise<void> {
+        this.stopped = false;
         if (this.castSender && this.castSender.isConnected()) {
-            console.log('playByParams, with CC connected');
             this.localPlayConfig = null;
             this.player.src({src: 'chromecast', type: 'application/vnd.chromecast', playParams});
             return Promise.resolve();
         } else {
-            console.log('playByParams, regular play, fetching play config');
             if (this.apiService) {
                 this.apiService.setToken(playParams.token ? playParams.token : null);
 
                 return this.apiService.getArticleAssetPlayConfig(playParams).then(config => {
-                    this.player.src(this.getAndInitPlaySourcesFromConfig(config, playParams));
+                    if (!this.stopped) {
+                        this.player.src(this.getAndInitPlaySourcesFromConfig(config, playParams));
+                    } else {
+                        console.log('playByParams, play stopped');
+                    }
                 });
             } else {
                 return Promise.reject('No API service available');
@@ -158,6 +161,7 @@ export class VideoPlayer {
 
     // @TODO .play can not be used together with chromecast-tech.
     play(playConfig: PlayConfig) {
+        this.stopped = false;
         this.player.src(this.getAndInitPlaySourcesFromConfig(playConfig));
 
         if (this.initParams.fullscreen) {
@@ -199,6 +203,11 @@ export class VideoPlayer {
     stop() {
         console.log('video-player.stop');
         this.firstPlayingEvent = true;
+        this.stopped = true;
+        if (this.continueTimeout) {
+            clearTimeout(this.continueTimeout);
+            this.continueTimeout = null;
+        }
         if (this.player) {
             if (false === this.player.ended()) {
                 this.player.pause();
@@ -212,7 +221,7 @@ export class VideoPlayer {
         }
     }
 
-    private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig, originalPlayParams: PlayParams = null) {
+    private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig, playParams: PlayParams = null) {
         this.localPlayConfig = playConfig;
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
@@ -244,24 +253,15 @@ export class VideoPlayer {
                   })),
               };
 
-        const playParams = {
-            playParams: {
-                articleId: playConfig.articleId,
-                assetId: playConfig.assetId,
-                token: originalPlayParams ? originalPlayParams.token : null,
-                continueFromPreviousPosition: originalPlayParams ? originalPlayParams.continueFromPreviousPosition : true,
-            },
-        };
-
         const playSources = playConfig.entitlements
             .map(entitlement => {
                 const emeOptions = getEmeOptionsFromEntitlement(this.videojsInstance, entitlement);
                 return {
                     src: entitlement.src,
                     type: entitlement.type,
+                    playParams,
                     ...emeOptions,
                     ...trackParam,
-                    ...playParams,
                 };
             })
             .filter(playOption => {
@@ -271,6 +271,7 @@ export class VideoPlayer {
         // if (playSources.find(source => source.keySystems && source.keySystems['com.apple.fps.1_0'])) {
         //
         // }
+        console.log('playSources', playSources);
 
         return playSources;
     }
@@ -492,8 +493,6 @@ export class VideoPlayer {
             return;
         }
 
-        console.log('onConnectedListener', info);
-
         if (info.connected) {
             this.player.addClass('vjs-chromecast-connected');
         } else {
@@ -507,8 +506,6 @@ export class VideoPlayer {
 
     private onPlayStateListener = (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => {
         if (state === null || state === chrome.cast.media.PlayerState.IDLE) {
-            console.log('video-player.cc ended');
-
             if (this.player.currentType() === 'application/vnd.chromecast') {
                 this.continueWithCurrentSources();
             }
@@ -519,20 +516,17 @@ export class VideoPlayer {
         const currentSources = this.player.currentSources();
         const continuePaused = this.player.paused();
 
-        console.log('continueWithCurrentSources', currentSources, continuePaused);
-
-        if (currentSources && currentSources.length > 0 && currentSources[0].playParams && this.player.currentType()) {
+        if (!this.stopped && currentSources && currentSources.length > 0 && currentSources[0].playParams && this.player.currentType()) {
             this.stop();
 
             this.player.addClass('vjs-waiting');
-            setTimeout(
-                () =>
-                    this.playByParams({
-                        ...currentSources[0].playParams,
-                        continuePaused,
-                    }),
-                3000
-            );
+            this.continueTimeout = setTimeout(() => {
+                this.continueTimeout = null;
+                this.playByParams({
+                    ...currentSources[0].playParams,
+                    continuePaused,
+                });
+            }, 3000);
         }
     }
 }

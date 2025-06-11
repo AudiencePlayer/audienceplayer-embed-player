@@ -465,7 +465,6 @@ export class ChromecastSender {
     }
 
     private dispatchPlayState(state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) {
-        console.log('dispatchPlayState', state, info, this.onPlayStateListeners.length);
         this.lastPlayStateInfo = {state, info};
         this.onPlayStateListeners.forEach(listener => listener(state, info));
     }
