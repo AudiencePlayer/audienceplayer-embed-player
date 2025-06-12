@@ -1,4 +1,5 @@
 import { PlayerOptions } from './player-options';
+import { Article } from './article';
 export interface InitParams {
     selector: string | HTMLElement;
     options: PlayerOptions;
@@ -16,6 +17,7 @@ export interface PlayParams {
     token: string;
     continueFromPreviousPosition: boolean;
     continuePaused?: boolean;
+    article?: Article;
 }
 export declare enum DeviceModelContextEnum {
     chromecast_legacy = "chromecast_legacy",

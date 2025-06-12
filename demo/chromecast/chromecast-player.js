@@ -26,9 +26,8 @@ import {VideoPlayer} from '../../dist/bundle.js';
     const posterImageUrl = localStorage.getItem('posterImageUrl');
     const chromecastReceiverAppId = localStorage.getItem('chromecastReceiverAppId');
     const continueFromPreviousPosition = localStorage.getItem('continueFromPreviousPosition');
-    const tokenParameter = token ? {token} : {};
 
-    const metaEl = document.querySelector('.media-player__meta');
+    const metaEl = document.querySelector('.media-player__meta').cloneNode(true);
 
     const initParam = {
         selector: '.media-player__video-player',
@@ -45,6 +44,12 @@ import {VideoPlayer} from '../../dist/bundle.js';
         assetId,
         token,
         continueFromPreviousPosition,
+        article: {
+            metas: {
+                title: 'Test video',
+            },
+            images: [],
+        },
     };
 
     document.getElementById('video-button-start').addEventListener('click', playVideo);
@@ -59,6 +64,10 @@ import {VideoPlayer} from '../../dist/bundle.js';
         videoPlayer
             .playByParams(playParams)
             .then(() => {
+                const playerInstance = videoPlayer.getPlayer();
+                playerInstance.on('ended', () => {
+                    resetVideo();
+                });
                 // containerEl.classList.add('media-player--video');
             })
             .catch(e => {

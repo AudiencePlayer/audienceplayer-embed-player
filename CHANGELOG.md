@@ -1,10 +1,11 @@
 # 4.0.0
 
+Added chromecast functionality to the player. Internally this is done as a videojs `tech`.
+The `VideoPlayer` constructor.
+
 `VideoPlayer.play()` method no longer needs `initParams` argument
 
 Chromecast `mediaInfo.customData` should contain properties `articleId` and `assetId` instead of the JSON string `extraInfo` which contained the `articleId` and `assetId`.
-
-`ChromecastSender` constructor gets the chromecast receiver id as argument instead of `ChromecastSender.init()`.
 
 # 3.0.1
 

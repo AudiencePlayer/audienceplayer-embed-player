@@ -209,26 +209,28 @@ export class VideoPlayer {
     }
 
     stop() {
-        this.firstPlayingEvent = true;
-        this.stopped = true;
-        if (this.continueTimeout) {
-            clearTimeout(this.continueTimeout);
-            this.continueTimeout = null;
-        }
-        if (this.castSender && this.castSender.getCastMediaSession()) {
-            this.castSender.endSession(false);
-        }
-        if (this.player) {
-            if (false === this.player.ended()) {
-                this.player.pause();
-                // only if we have not already caught the 'ended' event
-                // Be aware that the `stopped` emit also send along all kinds of info, so call _before_ disposing player
-                if (this.localPlayConfig) {
-                    this.playerLoggerService.onStop();
-                }
+        if (!this.stopped) {
+            this.stopped = true;
+            this.firstPlayingEvent = true;
+            if (this.continueTimeout) {
+                clearTimeout(this.continueTimeout);
+                this.continueTimeout = null;
             }
-            this.player.removeClass('vjs-waiting');
-            this.player.reset();
+            if (this.castSender && this.castSender.getCastMediaSession()) {
+                this.castSender.endSession(false);
+            }
+            if (this.player) {
+                if (false === this.player.ended()) {
+                    this.player.pause();
+                    // only if we have not already caught the 'ended' event
+                    // Be aware that the `stopped` emit also send along all kinds of info, so call _before_ disposing player
+                    if (this.localPlayConfig) {
+                        this.playerLoggerService.onStop();
+                    }
+                }
+                this.player.removeClass('vjs-waiting');
+                this.player.reset();
+            }
         }
     }
 
@@ -513,9 +515,19 @@ export class VideoPlayer {
 
     private onPlayStateListener = (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => {
         if (state === null || state === chrome.cast.media.PlayerState.IDLE) {
+            this.player.removeClass('vjs-chromecast-has-media');
+
             if (this.player.currentType() === 'application/vnd.chromecast') {
-                this.continueWithCurrentSources();
+                // chromecast could have become IDLE due to closed connection,
+                // so check if no longer connected to continue with current sources after a small timeout
+                setTimeout(() => {
+                    if (this.castSender && !this.castSender.isConnected()) {
+                        this.continueWithCurrentSources();
+                    }
+                }, 300);
             }
+        } else {
+            this.player.addClass('vjs-chromecast-has-media');
         }
     };
 

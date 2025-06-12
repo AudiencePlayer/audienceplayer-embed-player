@@ -299,10 +299,12 @@ export class ChromecastSender {
         return null;
     }
 
-    getCastMediaInfoByParams(playParams: PlayParams, article?: Article) {
+    getCastMediaInfoByParams(playParams: PlayParams) {
         const mediaInfo = new chrome.cast.media.MediaInfo('contentIdPlaceHolder', 'application/vnd.cast-media');
 
-        this.addMediaInfoToMetaData(article, mediaInfo);
+        if (playParams.article) {
+            this.addMediaInfoToMetaData(playParams.article, mediaInfo);
+        }
 
         mediaInfo.customData = {
             ...playParams,
@@ -342,7 +344,6 @@ export class ChromecastSender {
 
     castVideoByParams(playParams: PlayParams): Promise<void> {
         return new Promise((resolve, reject) => {
-            console.log('castVideoByParams', playParams);
             if (this.isConnected()) {
                 const castSession = this.getCastSession();
 
@@ -421,7 +422,7 @@ export class ChromecastSender {
             mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
             mediaInfo.metadata.title = getArticleTitle(article);
 
-            const image = article.images.length ? article.images[0] : null;
+            const image = article.images && article.images.length ? article.images[0] : null;
             // pick high available resolution
             mediaInfo.metadata.images = image ? [new chrome.cast.Image(`${image.baseUrl}/1920x1080/${image.fileName}`)] : [];
         }

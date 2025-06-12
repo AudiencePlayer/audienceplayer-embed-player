@@ -8,23 +8,19 @@ import {getArticleBackgroundImage, getResizedUrl, toPlayConfigError} from './api
 export class EmbedPlayer {
     private projectId: number;
     private apiBaseUrl: string;
-    private chromecastReceiverAppId: string;
     private videoPlayer: VideoPlayer;
     private castSender: ChromecastSender;
     private apiService: ApiService;
-    private initParams: InitParams;
 
     constructor(videojsInstance: any, properties: {projectId: number; apiBaseUrl: string; chromecastReceiverAppId: string}) {
         this.projectId = properties.projectId;
         this.apiBaseUrl = properties.apiBaseUrl.replace(/\/*$/, '');
-        this.chromecastReceiverAppId = properties.chromecastReceiverAppId ? properties.chromecastReceiverAppId : null;
         this.apiService = new ApiService(this.apiBaseUrl, this.projectId);
-        this.videoPlayer = new VideoPlayer(videojsInstance, this.apiBaseUrl, this.projectId);
-        this.castSender = new ChromecastSender(properties.chromecastReceiverAppId);
+        this.videoPlayer = new VideoPlayer(videojsInstance, this.apiBaseUrl, this.projectId, properties.chromecastReceiverAppId);
+        this.castSender = this.videoPlayer.getCastSender();
     }
 
     initVideoPlayer(initParams: InitParams) {
-        this.initParams = initParams;
         this.videoPlayer.init(initParams);
     }
 
@@ -45,18 +41,7 @@ export class EmbedPlayer {
         if (!playParams.assetId) {
             return Promise.reject('assetId property is missing');
         }
-        this.apiService.setToken(playParams.token ? playParams.token : null);
-
-        return this.apiService
-            .getArticleAssetPlayConfig(playParams)
-            .then(config => {
-                this.playVideo(config);
-                return config;
-            })
-            .catch(error => {
-                console.log(toPlayConfigError(error.code));
-                throw error;
-            });
+        return this.videoPlayer.playByParams(playParams);
     }
 
     destroy() {
@@ -69,13 +54,6 @@ export class EmbedPlayer {
 
     getVideoPlayer() {
         return this.videoPlayer.getPlayer();
-    }
-
-    initChromecast() {
-        if (!this.chromecastReceiverAppId) {
-            return Promise.reject('No Chromecast receiver app id');
-        }
-        return this.castSender.init();
     }
 
     appendChromecastButton(selector: string | Element) {

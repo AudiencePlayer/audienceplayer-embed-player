@@ -134,85 +134,13 @@ Please take note that it is possible to create multiple instances of the EmbedPl
 ## Usage with ChromeCast
 
 Besides just using the embedded player, when you have an AudiencePlayer ChromeCast receiver application, you can offer
-video playout via a ChromeCast device that is on the same local network.
+video playout via a ChromeCast device.
 In the below example, it is shown how you can set this up with the `chromecast receiver app id` which you will then have
 received from AudiencePlayer.
 
-Add the `ChromecastControls` class;
-
-### using npm
-
-```js
-import {ChromecastControls} from 'embed-player';
-```
-
-### manual implementation
-
-In the manual implementation the ChromecastControls are available from the main bundle.
-
-```javascript
-import {ChromecastControls} from 'bundle.js';
-```
-
-### example
-
-```javascript
-const chromecastReceiverAppId = `000000`; // replace with the receiver app id
-const token = ''; // replace with your JWT access token or do not provide the `token` property
-const posterImageUrl = 'https://path/to/image'; // or do not provide the `posterImageUrl` property
-const player = new EmbedPlayer(videojs /* global instance of videojs */, {projectId, apiBaseUrl, chromecastReceiverAppId});
-
-// the #cast-wrapper element will contain the ChromeCast button; you should place this in a recognisable spot next
-// to the play-button/thumbnail or in the menu.
-player.initChromecast().then(() => {
-    const controls = new ChromecastControls(player.getCastPlayer(), player.getCastPlayerController());
-
-    // add the chromecast button
-    player.appendChromecastButton('#cast-wrapper');
-});
-
-// call the playVideo function `onClick` of the play-button/thumbnail
-function playVideo() {
-    if (player.isConnected()) {
-        // there is a ChromeCast connection; cast the video
-        player
-            .castVideo({
-                articleId,
-                assetId,
-                token,
-                continueFromPreviousPosition: true,
-            })
-            .catch(error => console.error(error));
-    } else {
-        // ChromeCast is not connected; play the video directly
-        player
-            .play({
-                selector: '.video-wrapper',
-                options: {
-                    poster: posterImageUrl,
-                    autoplay: true,
-                },
-                articleId,
-                assetId,
-                token,
-                continueFromPreviousPosition: true,
-            })
-            .catch(error => {
-                console.error(error);
-            });
-    }
-}
-
-// to stop casting (the cast controls contain a stop button)
-function stopCastVideo() {
-    player.stopCasting();
-    player.destroy();
-}
-```
-
 ### Important to note:
 
-In the demo/chromecast, a number of layers are used and shown depending of the state of the player (e.g. when chromecast is connected the chromecast controls are shown).
+In the demo/chromecast, a number of layers are used and shown depending on the state of the player (e.g. when chromecast is connected the chromecast controls are shown).
 For your own implementation, you can customize this behavior.
 
 ### Supported browsers

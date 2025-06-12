@@ -142,12 +142,11 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         seekable() {
-            /*
-            @TODO If the source is live adjust the seekable `TimeRanges` accordingly.
-            // Return an empty TimeRanges to disable seeking UI
-            return videojs.createTimeRanges();
-             */
-            return this.videojs.createTimeRange(0, this.duration());
+            const duration = this.duration();
+            if (duration > 0) {
+                return videojsInstance.time.createTimeRanges(0, duration);
+            }
+            return videojsInstance.time.createTimeRanges();
         }
 
         handleTextTrackChange() {

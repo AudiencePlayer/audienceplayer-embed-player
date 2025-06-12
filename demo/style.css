@@ -31,8 +31,7 @@ body {
     padding-top: 56.25%;
 }
 
-.media-player__video-player,
-.media-player__layer {
+.media-player__video-player {
     position: absolute;
     top: 0;
     left: 0;
@@ -40,27 +39,28 @@ body {
     height: 100%;
 }
 
-.media-player__video-player {
-    z-index: 0;
+.media-player__hidden {
+    display: none;
 }
 
 .media-player__meta {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
     color: #fff;
     background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%);
     height: auto;
 }
 
-.media-player--chromecast .media-player__meta,
-.media-player--overlay .media-player__meta {
-    z-index: 3;
+.media-player__meta .title {
+    margin: 1rem;
+    font-size: 2rem;
+    font-weight: bold;
 }
 
-.media-player--video .media-player__video-player {
-    z-index: 4;
-}
-
-.media-player--loading .media-player__loader {
-    z-index: 4;
+.media-player__meta .parental {
+    margin: 1rem;
 }
 
 .button-panel {
@@ -93,16 +93,6 @@ body {
 
 .button__play:before {
     content: '\f101';
-}
-
-.title {
-    margin: 1rem;
-    font-size: 2rem;
-    font-weight: bold;
-}
-
-.parental {
-    margin: 1rem;
 }
 
 .param-form {

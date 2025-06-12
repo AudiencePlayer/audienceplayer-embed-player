@@ -1,4 +1,5 @@
 import {PlayerOptions} from './player-options';
+import {Article} from './article';
 
 export interface InitParams {
     selector: string | HTMLElement;
@@ -15,6 +16,7 @@ export interface PlayParams {
     token: string;
     continueFromPreviousPosition: boolean;
     continuePaused?: boolean;
+    article?: Article;
 }
 
 export enum DeviceModelContextEnum {
