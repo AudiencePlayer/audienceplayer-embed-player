@@ -6,8 +6,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
     const Tech = videojsInstance.getComponent('Tech');
     const dom = videojsInstance.dom || videojsInstance;
 
-    console.log('createChromecastTechPlugin');
-
     class ChromecastTech extends Tech {
         private myPlayerController: cast.framework.RemotePlayerController = null;
         private myPlayer: cast.framework.RemotePlayer = null;
@@ -144,7 +142,11 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         }
 
         seekable() {
-            // @TODO If the source is live adjust the seekable `TimeRanges` accordingly.
+            /*
+            @TODO If the source is live adjust the seekable `TimeRanges` accordingly.
+            // Return an empty TimeRanges to disable seeking UI
+            return videojs.createTimeRanges();
+             */
             return this.videojs.createTimeRange(0, this.duration());
         }
 
@@ -312,10 +314,11 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 this.audioTracks().addTrack(track);
             });
 
+            Array.from(this.textTracks()).forEach((track: any) => this.textTracks().removeTrack(track));
             textTracks.forEach(textTrack => {
-                Array.from(this.textTracks()).forEach((track: any) => this.textTracks().removeTrack(track));
                 const track = new videojsInstance.TextTrack({
                     tech: this,
+                    id: textTrack.id,
                     label: getNativeLanguage(textTrack.locale),
                     kind: 'subtitles',
                     language: textTrack.locale,

@@ -188,7 +188,6 @@ export class VideoPlayer {
     }
 
     destroy() {
-        console.log('video-player.destroy');
         this.stop();
         this.playerLoggerService.destroy();
 
@@ -210,7 +209,6 @@ export class VideoPlayer {
     }
 
     stop() {
-        console.log('video-player.stop');
         this.firstPlayingEvent = true;
         this.stopped = true;
         if (this.continueTimeout) {
@@ -280,11 +278,6 @@ export class VideoPlayer {
             .filter(playOption => {
                 return (playOption.type === MimeTypeHls && configureHLSOnly) || !configureHLSOnly;
             });
-
-        // if (playSources.find(source => source.keySystems && source.keySystems['com.apple.fps.1_0'])) {
-        //
-        // }
-        console.log('playSources', playSources);
 
         return playSources;
     }

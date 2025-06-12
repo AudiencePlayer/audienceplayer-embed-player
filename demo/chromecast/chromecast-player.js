@@ -50,6 +50,7 @@ import {VideoPlayer} from '../../dist/bundle.js';
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('setButton').addEventListener('click', () => storeValues(true));
     document.getElementById('stopButton').addEventListener('click', () => stopVideo());
+    document.getElementById('resetButton').addEventListener('click', () => resetVideo());
 
     const videoPlayer = new VideoPlayer(videojs, apiBaseUrl, projectId, chromecastReceiverAppId);
     videoPlayer.init(initParam);
@@ -67,6 +68,10 @@ import {VideoPlayer} from '../../dist/bundle.js';
 
     function stopVideo() {
         videoPlayer.stop();
+    }
+
+    function resetVideo() {
+        videoPlayer.init(initParam);
     }
 
     function storeProperty(name) {

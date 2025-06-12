@@ -21,7 +21,6 @@ export class ChromecastSender {
     private onApiErrorListeners: Array<(error: {code: number; message: string}, playParams: PlayParams) => void> = [];
 
     constructor(private chromecastReceiverAppId: string) {
-        console.log('ChromecastSender', chromecastReceiverAppId);
         if (ChromecastSender.initPromise) {
             throw Error('ChromecastSender already initialized');
         }
@@ -59,7 +58,6 @@ export class ChromecastSender {
     }
 
     initializeCastApi(chromecastReceiverAppId: string) {
-        console.log('initializeCastApi', chromecastReceiverAppId);
         cast.framework.CastContext.getInstance().setOptions({
             receiverApplicationId: chromecastReceiverAppId,
             autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
@@ -454,9 +452,9 @@ export class ChromecastSender {
                 mediaSession.editTracksInfo(
                     tracksInfoRequest,
                     () => {
-                        // @TODO
+                        /* success */
                     },
-                    (error: chrome.cast.Error) => console.error('ChromeCast', error)
+                    (error: chrome.cast.Error) => console.error('ChromecastSender.setActiveTracks', trackIds, error)
                 );
             } else {
                 console.error('setActiveTracks called but no media session');
@@ -476,7 +474,6 @@ export class ChromecastSender {
 
     private dispatchConnectionInfo(info: ChromecastConnectionInfo) {
         this.lastConnectionInfo = info;
-        console.log('dispatchConnectionInfo', info, this.onConnectedListeners.length);
         this.onConnectedListeners.forEach(listener => listener(info));
     }
 
