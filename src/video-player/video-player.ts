@@ -31,7 +31,7 @@ export class VideoPlayer {
     private currentTime: number;
     private initParams: InitParams;
     private stopped = false; // to make sure that if stop() was called, no async playout methods can continue play
-    private continueTimeout: any = null;
+    private continueTimeout: any = null; // a timeout before continuing a play session when switching to or from chromecast
 
     constructor(private videojsInstance: any, baseUrl: string = null, projectId: number = 0, chromecastReceiverAppId: string = null) {
         if (baseUrl && typeof baseUrl === 'string' && projectId > 0) {
@@ -129,7 +129,6 @@ export class VideoPlayer {
             ...initParams.options,
         };
 
-        // this.videojsInstance.use('*', this.middleware);
         this.player = this.videojsInstance(videoElement, playOptions);
         this.player.eme();
         this.player.eme.initLegacyFairplay();
@@ -137,6 +136,8 @@ export class VideoPlayer {
         this.bindEvents();
     }
 
+    // when chromecast is connected, set the src with playParams so the chromecast-tech will pick it up
+    // otherwise fetch the play config and set the src with it
     playByParams(playParams: PlayParams): Promise<void> {
         this.stopped = false;
         if (this.castSender && this.castSender.isConnected()) {
@@ -151,11 +152,11 @@ export class VideoPlayer {
                 return this.apiService
                     .getArticleAssetPlayConfig(playParams)
                     .then(config => {
+                        // since fetching is async, the player may be stopped, and we do not want to start play
                         if (!this.stopped) {
                             this.player.src(this.getAndInitPlaySourcesFromConfig(config, playParams));
                         } else {
                             this.player.removeClass('vjs-waiting');
-                            console.log('playByParams, play stopped');
                         }
                     })
                     .catch(() => {
@@ -169,10 +170,14 @@ export class VideoPlayer {
 
     play(playConfig: PlayConfig) {
         this.stopped = false;
-        this.player.src(this.getAndInitPlaySourcesFromConfig(playConfig));
+        if (this.castSender && this.castSender.isConnected()) {
+            console.error('video-player: play() is not supported when chromecast is connected');
+        } else {
+            this.player.src(this.getAndInitPlaySourcesFromConfig(playConfig));
 
-        if (this.initParams.fullscreen) {
-            this.player.requestFullscreen();
+            if (this.initParams.fullscreen) {
+                this.player.requestFullscreen();
+            }
         }
     }
 
@@ -180,6 +185,7 @@ export class VideoPlayer {
         this.player.poster(posterUrl);
     }
 
+    // update the HTML of the overlay plugin
     updateOverlay(el: HTMLElement) {
         const overlayComponent = this.player.overlay;
         if (overlayComponent) {
@@ -208,6 +214,9 @@ export class VideoPlayer {
         return this.player;
     }
 
+    // stop the player, end the session in case of chromecast
+    // if it's currently playing, pause it.
+    // reset the player to its initial state
     stop() {
         if (!this.stopped) {
             this.stopped = true;
@@ -360,7 +369,6 @@ export class VideoPlayer {
 
         if (skipIntroComponent) {
             skipIntroComponent.on('skip', () => {
-                // @TODO for CC
                 if (this.localPlayConfig) {
                     this.player.currentTime(this.localPlayConfig.skipIntro.end);
                 }

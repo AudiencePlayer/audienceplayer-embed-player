@@ -12,7 +12,6 @@ export interface PlayConfig {
     skipIntro?: {
         start: number;
         end: number;
-        label: string;
     };
     continuePaused?: boolean;
 }

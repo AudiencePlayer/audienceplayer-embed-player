@@ -63,6 +63,15 @@ export function toPlayConfig(config: any, playParams: PlayParams): PlayConfig {
     }));
 
     const currentTime = playParams.continueFromPreviousPosition && config.appa < config.time_marker_end ? config.appa : 0;
+    const skipIntro =
+        config.time_marker_intro_end > 0 && config.time_marker_intro_end > config.time_marker_intro_start
+            ? {
+                  skipIntro: {
+                      start: config.time_marker_intro_start,
+                      end: config.time_marker_intro_end,
+                  },
+              }
+            : {};
 
     return {
         entitlements: entitlements,
@@ -76,6 +85,7 @@ export function toPlayConfig(config: any, playParams: PlayParams): PlayConfig {
         audioLocale: config.user_audio_locale,
         localTimeDelta: isNaN(timeStamp) ? 0 : Date.now() - timeStamp,
         aspectRatio: config.aspect_ratio.replace('x', ':'),
+        ...skipIntro,
     };
 }
 
