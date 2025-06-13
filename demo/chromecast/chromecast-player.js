@@ -35,6 +35,7 @@ import {VideoPlayer} from '../../dist/bundle.js';
             autoplay: true,
             overlay: {element: metaEl},
             poster: posterImageUrl,
+            skipIntro: {label: 'Skip intro'},
         },
         chromecastButton: true,
     };

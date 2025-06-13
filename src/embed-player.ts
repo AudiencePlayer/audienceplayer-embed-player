@@ -72,15 +72,10 @@ export class EmbedPlayer {
 
         this.apiService.setToken(playParams.token);
 
-        return Promise.all([this.apiService.getArticleAssetPlayConfig(playParams), this.apiService.getArticle(playParams.articleId)])
-            .then(([config, article]) => {
-                this.castSender.castVideo(config, article, playParams.continueFromPreviousPosition);
-                return config;
-            })
-            .catch(error => {
-                console.log(toPlayConfigError(error.code));
-                throw error;
-            });
+        return this.apiService.getArticle(playParams.articleId).then(article => {
+            playParams.article = article;
+            return this.castSender.castVideoByParams(playParams);
+        });
     }
 
     getCastSender() {

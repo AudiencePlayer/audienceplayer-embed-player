@@ -24,7 +24,7 @@ export declare class EmbedPlayer {
     playVideo(config: PlayConfig): void;
     getVideoPlayer(): any;
     appendChromecastButton(selector: string | Element): void;
-    castVideo(playParams: PlayParams): Promise<PlayConfig>;
+    castVideo(playParams: PlayParams): Promise<void>;
     getCastSender(): ChromecastSender;
     getCastPlayer(): cast.framework.RemotePlayer;
     getCastPlayerController(): cast.framework.RemotePlayerController;

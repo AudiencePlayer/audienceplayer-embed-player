@@ -127,21 +127,15 @@ player.destroy();
 // DOM element refered by the selector, e.g. `.video-wrapper` can now safely be removed.
 ```
 
-An example of this can be found in https://github.com/AudiencePlayer/audienceplayer-embed-player-projects/tree/main/src, where the queryString params can be used to set the needed variables.
-
-Please take note that it is possible to create multiple instances of the EmbedPlayer and play multiple video's at the same time. This however is not tested and not officially supported.
+Please take note that it is possible to create multiple instances of the EmbedPlayer and play multiple video's at the same time. This, however, is not tested and not officially supported.
 
 ## Usage with ChromeCast
 
-Besides just using the embedded player, when you have an AudiencePlayer ChromeCast receiver application, you can offer
-video playout via a ChromeCast device.
-In the below example, it is shown how you can set this up with the `chromecast receiver app id` which you will then have
-received from AudiencePlayer.
+See `demo/chromecast` for the integrated chromecast demo.
 
-### Important to note:
+In case you need a custom implementation of the Chromecast controls, check `demo/custom-chromecast`
 
-In the demo/chromecast, a number of layers are used and shown depending on the state of the player (e.g. when chromecast is connected the chromecast controls are shown).
-For your own implementation, you can customize this behavior.
+The demo projects will be expanded in the future, also showing a "Casting to device" message.
 
 ### Supported browsers
 
