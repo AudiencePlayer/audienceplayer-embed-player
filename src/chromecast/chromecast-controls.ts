@@ -26,9 +26,9 @@ export class ChromecastControls {
     }
 
     bindEvents() {
-        this.castSender.addOnMediaTracksListener(() => {
+        this.castSender.addOnMediaTracksListener((audioTracks: TrackInfo[], textTracks: TrackInfo[]) => {
             if (this.rootElement && this.player.mediaInfo) {
-                this.renderTracks();
+                this.renderTracks(audioTracks, textTracks);
             }
         });
 
@@ -144,18 +144,10 @@ export class ChromecastControls {
         });
     }
 
-    renderTracks() {
+    renderTracks(audioTracks: TrackInfo[], textTracks: TrackInfo[]) {
         const sessionMediaInfo = cast.framework.CastContext.getInstance()
             .getCurrentSession()
             .getMediaSession();
-        let audioTracks: TrackInfo[] = [];
-        let textTracks: TrackInfo[] = [];
-
-        // @TODO
-        // if (this.player.mediaInfo && this.player.mediaInfo.tracks && sessionMediaInfo) {
-        //     audioTracks = this.getTracksByType('AUDIO');
-        //     textTracks = this.getTracksByType('TEXT');
-        // }
 
         if (sessionMediaInfo && sessionMediaInfo.media) {
             if (sessionMediaInfo.media.streamType === chrome.cast.media.StreamType.LIVE) {
@@ -282,14 +274,13 @@ export class ChromecastControls {
             event.stopPropagation();
             const selectedTrackId = +event.target.value;
 
-            // @TODO
-            // const newActiveTracks = this.getActiveTracksByType(type === 'AUDIO' ? 'TEXT' : 'AUDIO');
-            // const activeTracksOfType = this.getActiveTracksByType(type);
-            // const index = activeTracksOfType.indexOf(selectedTrackId);
-            // if (type === 'AUDIO' || (type === 'TEXT' && index === -1)) {
-            //     newActiveTracks.push(selectedTrackId);
-            // }
-            // this.setActiveTracks(newActiveTracks, type);
+            const newActiveTracks = this.castSender.getActiveTracksByType(type === 'AUDIO' ? 'TEXT' : 'AUDIO');
+            const activeTracksOfType = this.castSender.getActiveTracksByType(type);
+            const index = activeTracksOfType.indexOf(selectedTrackId);
+            if (type === 'AUDIO' || (type === 'TEXT' && index === -1)) {
+                newActiveTracks.push(selectedTrackId);
+            }
+            this.castSender.setActiveTracks(newActiveTracks, type);
         }
     }
 

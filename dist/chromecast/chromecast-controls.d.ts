@@ -14,7 +14,7 @@ export declare class ChromecastControls {
     setPlayButtonClass(): void;
     bindEventsToControls(): void;
     bindEventsToMenu(buttonSelector: string): void;
-    renderTracks(): void;
+    renderTracks(audioTracks: TrackInfo[], textTracks: TrackInfo[]): void;
     getTracksList(tracks: TrackInfo[], type: string): HTMLUListElement;
     getTransformedDurationValue(value: number): string;
     setProgressBarValues(): void;
