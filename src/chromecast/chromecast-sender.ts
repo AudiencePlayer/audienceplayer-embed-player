@@ -13,6 +13,7 @@ export class ChromecastSender {
     private lastPlayStateInfo: {state: chrome.cast.media.PlayerState; info: ChromecastPlayInfo} = null;
     private updateInterval: any = null;
     private supportsHDR = false;
+    private playConfig: PlayConfig = null;
     private onConnectedListeners: Array<(info: ChromecastConnectionInfo) => void> = [];
     private onPlayStateListeners: Array<(state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => void> = [];
     private onCurrentTimeListeners: Array<(currentTime: number) => void> = [];
@@ -78,6 +79,8 @@ export class ChromecastSender {
                         this.onApiErrorListeners.forEach(listener => {
                             listener(error, messageObject.playParams);
                         });
+                    } else if (typeof messageObject.playConfig === 'object') {
+                        this.playConfig = messageObject.playConfig;
                     }
                 });
             } else {
@@ -238,6 +241,10 @@ export class ChromecastSender {
         return this.supportsHDR;
     }
 
+    getPlayConfig() {
+        return this.playConfig;
+    }
+
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article) {
         if (articlePlayConfig && articlePlayConfig.entitlements && articlePlayConfig.entitlements.length > 0) {
             let contentType = null;
@@ -333,6 +340,7 @@ export class ChromecastSender {
             const mediaInfo = this.getCastMediaInfo(playConfig, article);
 
             if (mediaInfo) {
+                this.playConfig = null;
                 const request = new chrome.cast.media.LoadRequest(mediaInfo);
                 request.currentTime = continueFromPreviousPosition ? playConfig.currentTime : 0;
                 return castSession.loadMedia(request);
@@ -349,10 +357,9 @@ export class ChromecastSender {
 
                 const mediaInfo = this.getCastMediaInfoByParams(playParams);
                 if (mediaInfo) {
-                    console.log('mediaInfo', mediaInfo);
+                    this.playConfig = null;
                     const request = new chrome.cast.media.LoadRequest(mediaInfo);
                     castSession.loadMedia(request).then(errorCode => {
-                        console.log('castVideoByParams: loadMedia', errorCode);
                         resolve();
                     });
                 } else {

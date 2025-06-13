@@ -14,6 +14,7 @@ export declare class ChromecastSender {
     private lastPlayStateInfo;
     private updateInterval;
     private supportsHDR;
+    private playConfig;
     private onConnectedListeners;
     private onPlayStateListeners;
     private onCurrentTimeListeners;
@@ -42,6 +43,7 @@ export declare class ChromecastSender {
         message: string;
     }, playParams: PlayParams) => void): void;
     getSupportsHDR(): boolean;
+    getPlayConfig(): PlayConfig;
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article): chrome.cast.media.MediaInfo;
     getCastMediaInfoByParams(playParams: PlayParams): chrome.cast.media.MediaInfo;
     getCastSession(): cast.framework.CastSession;

@@ -343,25 +343,22 @@ export class VideoPlayer {
         const skipIntroComponent = this.player.skipIntro;
 
         this.player.on('timeupdate', () => {
-            if (this.localPlayConfig) {
-                const tempTime = Math.ceil(this.player.currentTime()) || 0;
-                if (this.currentTime !== tempTime) {
-                    this.currentTime = tempTime;
+            const tempTime = Math.ceil(this.player.currentTime()) || 0;
+            if (this.currentTime !== tempTime) {
+                this.currentTime = tempTime;
+
+                if (this.localPlayConfig) {
                     this.checkSelectedTracks();
+                    this.playerLoggerService.onCurrentTimeUpdated(this.currentTime);
+                }
 
-                    if (this.localPlayConfig) {
-                        this.playerLoggerService.onCurrentTimeUpdated(this.currentTime);
-                    }
+                const skipIntroConfig = this.getSkipIntroConfig();
 
-                    if (!!this.localPlayConfig && !!this.localPlayConfig.skipIntro && skipIntroComponent) {
-                        if (
-                            this.localPlayConfig.skipIntro.start <= this.currentTime &&
-                            this.localPlayConfig.skipIntro.end >= this.currentTime
-                        ) {
-                            skipIntroComponent.trigger('show');
-                        } else {
-                            skipIntroComponent.trigger('hide');
-                        }
+                if (skipIntroConfig && skipIntroComponent) {
+                    if (skipIntroConfig.start <= this.currentTime && skipIntroConfig.end >= this.currentTime) {
+                        skipIntroComponent.trigger('show');
+                    } else {
+                        skipIntroComponent.trigger('hide');
                     }
                 }
             }
@@ -369,8 +366,9 @@ export class VideoPlayer {
 
         if (skipIntroComponent) {
             skipIntroComponent.on('skip', () => {
-                if (this.localPlayConfig) {
-                    this.player.currentTime(this.localPlayConfig.skipIntro.end);
+                const skipIntroConfig = this.getSkipIntroConfig();
+                if (skipIntroConfig) {
+                    this.player.currentTime(skipIntroConfig.end);
                 }
             });
         }
@@ -562,5 +560,17 @@ export class VideoPlayer {
                 });
             }, 3000);
         }
+    }
+
+    private getSkipIntroConfig() {
+        if (this.localPlayConfig) {
+            return this.localPlayConfig.skipIntro;
+        } else if (this.castSender) {
+            const remoteConfig = this.castSender.getPlayConfig();
+            if (remoteConfig && remoteConfig.skipIntro) {
+                return remoteConfig.skipIntro;
+            }
+        }
+        return null;
     }
 }

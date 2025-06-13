@@ -34,4 +34,5 @@ export declare class VideoPlayer {
     private onConnectedListener;
     private onPlayStateListener;
     private continueWithCurrentSources;
+    private getSkipIntroConfig;
 }
