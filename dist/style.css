@@ -156,6 +156,10 @@
 }
 
 /* poster */
+.video-js .vjs-poster {
+    cursor: unset;
+}
+
 .video-js .vjs-poster img {
     object-fit: cover;
     object-position: center;

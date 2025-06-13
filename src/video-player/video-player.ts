@@ -502,10 +502,17 @@ export class VideoPlayer {
             return;
         }
 
+        const fsButton = this.player.controlBar.getChild('fullscreenToggle');
         if (info.connected) {
             this.player.addClass('vjs-chromecast-connected');
+            if (fsButton) {
+                fsButton.hide();
+            }
         } else {
             this.player.removeClass('vjs-chromecast-connected');
+            if (fsButton) {
+                fsButton.show();
+            }
         }
 
         if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {
