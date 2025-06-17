@@ -225,9 +225,6 @@ export class VideoPlayer {
                 clearTimeout(this.continueTimeout);
                 this.continueTimeout = null;
             }
-            if (this.castSender && this.castSender.getCastMediaSession()) {
-                this.castSender.endSession(false);
-            }
             if (this.player) {
                 if (false === this.player.ended()) {
                     this.player.pause();
@@ -241,6 +238,10 @@ export class VideoPlayer {
                 this.player.reset();
             }
         }
+    }
+
+    isStopped(): boolean {
+        return this.stopped;
     }
 
     private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig, playParams: PlayParams = null) {

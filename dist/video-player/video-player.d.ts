@@ -25,6 +25,7 @@ export declare class VideoPlayer {
     destroy(): void;
     getPlayer(): any;
     stop(): void;
+    isStopped(): boolean;
     private getAndInitPlaySourcesFromConfig;
     private bindEvents;
     getCastSender(): ChromecastSender;

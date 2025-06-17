@@ -308,6 +308,8 @@ export class ChromecastSender {
 
     getCastMediaInfoByParams(playParams: PlayParams) {
         const mediaInfo = new chrome.cast.media.MediaInfo('contentIdPlaceHolder', 'application/vnd.cast-media');
+        // make sure the content id is unique, so the reciever will fire media info.
+        mediaInfo.contentId = 'asset-' + playParams.assetId + '-' + Math.random();
 
         if (playParams.article) {
             this.addMediaInfoToMetaData(playParams.article, mediaInfo);

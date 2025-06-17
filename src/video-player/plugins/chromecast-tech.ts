@@ -244,6 +244,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             this.myPlayer = null;
             this.source = null;
             this.didEnd = false;
+            this.lastCurrentTime = 0;
 
             super.dispose();
         }
@@ -288,7 +289,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         };
         private onCurrentTimeListener = (currentTime: number) => {
             this.lastCurrentTime = currentTime;
-            if (this.duration() > 0 && currentTime + 1 > this.duration()) {
+            if (this.duration() > 0 && currentTime + 1 > this.duration() && !this.didEnd) {
                 this.didEnd = true;
                 this.trigger('ended');
             }
