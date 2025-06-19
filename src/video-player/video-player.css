@@ -112,10 +112,10 @@
     height: 3em;
     line-height: 3em;
     padding: 0 1em;
-    border: 1px solid #fff;
+    border: 2px solid #fff;
     border-radius: 0.5em;
     cursor: pointer;
-    background-color: #000;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .video-js .vjs-skip-intro-button.vjs-skip-intro-button--hidden {
