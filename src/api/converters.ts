@@ -1,8 +1,9 @@
 import {PlayConfig, PlayEntitlement, ArticlePlayErrors, MimeType, MimeTypeHls, MimeTypeDash, MimeTypeMp4} from '../models/play-config';
 import {Article} from '../models/article';
 import {FileData} from '../models/file-data';
+import {PlayParams} from '../models/play-params';
 
-export function toPlayConfig(config: any, continueFromPreviousPosition: boolean): PlayConfig {
+export function toPlayConfig(config: any, playParams: PlayParams): PlayConfig {
     const timeStamp = Date.parse(config.issued_at);
     const entitlements: PlayEntitlement[] = [];
 
@@ -61,19 +62,30 @@ export function toPlayConfig(config: any, continueFromPreviousPosition: boolean)
         label: item.locale_label,
     }));
 
-    const currentTime = continueFromPreviousPosition && config.appa < config.time_marker_end ? config.appa : 0;
+    const currentTime = playParams.continueFromPreviousPosition && config.appa < config.time_marker_end ? config.appa : 0;
+    const skipIntro =
+        config.time_marker_intro_end > 0 && config.time_marker_intro_end > config.time_marker_intro_start
+            ? {
+                  skipIntro: {
+                      start: config.time_marker_intro_start,
+                      end: config.time_marker_intro_end,
+                  },
+              }
+            : {};
 
     return {
         entitlements: entitlements,
         subtitles: subtitles,
         pulseToken: config.pulse_token,
         currentTime: currentTime,
+        continuePaused: playParams.continuePaused,
         articleId: config.article_id,
         assetId: config.asset_id,
         subtitleLocale: config.user_subtitle_locale,
         audioLocale: config.user_audio_locale,
         localTimeDelta: isNaN(timeStamp) ? 0 : Date.now() - timeStamp,
         aspectRatio: config.aspect_ratio.replace('x', ':'),
+        ...skipIntro,
     };
 }
 

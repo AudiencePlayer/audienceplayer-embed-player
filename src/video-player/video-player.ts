@@ -3,7 +3,7 @@ import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
-import {InitParams} from '../models/play-params';
+import {InitParams, PlayParams} from '../models/play-params';
 import {createHotKeysFunction} from './hotkeys';
 import {getISO2Locale} from '../utils/locale';
 import {createSkipIntroPlugin} from './plugins/skip-intro';
@@ -13,33 +13,53 @@ import {createCustomOverlaykPlugin} from './plugins/custom-overlay';
 import {createOverlayPlugin} from './plugins/overlay';
 import {createPlaybackRatePlugin} from './plugins/playback-rate-button';
 import {createSubtitlesButtonPlugin} from './plugins/subtitles-button';
+import {ApiService} from '../api/api-service';
+import {createChromecastTechPlugin} from './plugins/chromecast-tech';
+import {ChromecastSender} from '../chromecast/chromecast-sender';
+import {ChromecastConnectionInfo, ChromecastPlayInfo} from '../models/cast-info';
 
 export class VideoPlayer {
     private player: any = null;
+    private apiService: ApiService = null;
+    private castSender: ChromecastSender = null;
     private playerLoggerService: PlayerLoggerService;
-    private articlePlayConfig: PlayConfig;
+    private localPlayConfig: PlayConfig; // this contains the play config for a local playout, with CC it's a remote playout, and null.
     private firstPlayingEvent: boolean;
     private currentTextTrack: string;
     private currentAudioTrack: string;
     private metadataLoaded: boolean;
     private currentTime: number;
+    private initParams: InitParams;
+    private stopped = false; // to make sure that if stop() was called, no async playout methods can continue play
+    private continueTimeout: any = null; // a timeout before continuing a play session when switching to or from chromecast
 
-    constructor(private videojsInstance: any, baseUrl: string, projectId: number) {
+    constructor(private videojsInstance: any, baseUrl: string = null, projectId: number = 0, chromecastReceiverAppId: string = null) {
+        if (baseUrl && typeof baseUrl === 'string' && projectId > 0) {
+            this.apiService = new ApiService(baseUrl.replace(/\/*$/, ''), projectId);
+        }
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
 
         createAudioTrackPlugin(videojsInstance);
         createChromecastButtonPlugin(videojsInstance);
-        createSkipIntroPlugin(videojsInstance);
         createCustomOverlaykPlugin(videojsInstance);
         createOverlayPlugin(videojsInstance);
         createPlaybackRatePlugin(videojsInstance);
         createSkipIntroPlugin(videojsInstance);
         createSubtitlesButtonPlugin(videojsInstance);
+
+        if (chromecastReceiverAppId) {
+            this.castSender = new ChromecastSender(chromecastReceiverAppId);
+
+            createChromecastTechPlugin(videojsInstance, this.castSender);
+        }
     }
 
     init(initParams: InitParams) {
         this.destroy();
 
+        this.stopped = false;
+        this.localPlayConfig = null;
+        this.initParams = initParams;
         const videoContainer = initParams.selector instanceof Element ? initParams.selector : document.querySelector(initParams.selector);
 
         if (!videoContainer) {
@@ -56,14 +76,18 @@ export class VideoPlayer {
         videoElement.setAttribute('tabIndex', '0');
         videoElement.setAttribute('width', '100%');
         videoElement.setAttribute('height', '100%');
-        videoElement.disableRemotePlayback = !supportsNativeHLS(this.videojsInstance); // this will hide the chromecast button. We want to keep Airplay
+        // this will hide the internal video element chromecast button. We want to keep Airplay, so only if native HLS is not supported
+        videoElement.disableRemotePlayback = !supportsNativeHLS(this.videojsInstance);
 
         videoContainer.appendChild(videoElement);
+
+        const techOrder = this.castSender ? ['chromecast', 'html5'] : ['html5']; // chromecast first, to make it the `active tech`.
 
         const playOptions = {
             fluid: false,
             fill: true,
             responsive: true,
+            techOrder,
             controls: true,
             controlBar: {
                 pictureInPictureToggle: false,
@@ -107,21 +131,124 @@ export class VideoPlayer {
 
         this.player = this.videojsInstance(videoElement, playOptions);
         this.player.eme();
+        this.player.eme.initLegacyFairplay();
+
         this.bindEvents();
     }
 
-    play(playConfig: PlayConfig, initParams: InitParams) {
-        this.firstPlayingEvent = true;
-        if (!this.player || (this.player && this.player.currentSrc())) {
-            this.destroy();
-            this.init(initParams);
+    // when chromecast is connected, set the src with playParams so the chromecast-tech will pick it up
+    // otherwise fetch the play config and set the src with it
+    playByParams(playParams: PlayParams): Promise<void> {
+        this.stopped = false;
+        if (this.castSender && this.castSender.isConnected()) {
+            this.localPlayConfig = null;
+            this.player.src({src: 'chromecast', type: 'application/vnd.chromecast', playParams});
+            return Promise.resolve();
+        } else {
+            if (this.apiService) {
+                this.player.addClass('vjs-waiting');
+                this.apiService.setToken(playParams.token ? playParams.token : null);
+
+                return this.apiService
+                    .getArticleAssetPlayConfig(playParams)
+                    .then(config => {
+                        // since fetching is async, the player may be stopped, and we do not want to start play
+                        if (!this.stopped) {
+                            this.player.src(this.getAndInitPlaySourcesFromConfig(config, playParams));
+                        } else {
+                            this.player.removeClass('vjs-waiting');
+                        }
+                    })
+                    .catch(() => {
+                        this.player.removeClass('vjs-waiting');
+                    });
+            } else {
+                return Promise.reject('No API service available');
+            }
         }
+    }
 
-        this.articlePlayConfig = playConfig;
+    play(playConfig: PlayConfig) {
+        this.stopped = false;
+        if (this.castSender && this.castSender.isConnected()) {
+            console.error('video-player: play() is not supported when chromecast is connected');
+        } else {
+            this.player.src(this.getAndInitPlaySourcesFromConfig(playConfig));
 
+            if (this.initParams.fullscreen) {
+                this.player.requestFullscreen();
+            }
+        }
+    }
+
+    setPoster(posterUrl: string) {
+        this.player.poster(posterUrl);
+    }
+
+    // update the HTML of the overlay plugin
+    updateOverlay(el: HTMLElement) {
+        const overlayComponent = this.player.overlay;
+        if (overlayComponent) {
+            overlayComponent.updateContent(el);
+        }
+    }
+
+    destroy() {
+        this.stop();
+        this.playerLoggerService.destroy();
+
+        if (this.castSender) {
+            this.castSender.removeOnConnectedListener(this.onConnectedListener);
+            this.castSender.removeOnPlayStateListener(this.onPlayStateListener);
+        }
+        if (this.player) {
+            this.player.dispose();
+        }
+        this.player = null;
+        this.currentAudioTrack = null;
+        this.currentTextTrack = null;
+        this.currentTime = -1;
+    }
+
+    getPlayer(): any {
+        return this.player;
+    }
+
+    // stop the player, end the session in case of chromecast
+    // if it's currently playing, pause it.
+    // reset the player to its initial state
+    stop() {
+        if (!this.stopped) {
+            this.stopped = true;
+            this.firstPlayingEvent = true;
+            if (this.continueTimeout) {
+                clearTimeout(this.continueTimeout);
+                this.continueTimeout = null;
+            }
+            if (this.player) {
+                if (false === this.player.ended()) {
+                    this.player.pause();
+                    // only if we have not already caught the 'ended' event
+                    // Be aware that the `stopped` emit also send along all kinds of info, so call _before_ disposing player
+                    if (this.localPlayConfig) {
+                        this.playerLoggerService.onStop();
+                    }
+                }
+                this.player.removeClass('vjs-waiting');
+                this.player.reset();
+            }
+        }
+    }
+
+    isStopped(): boolean {
+        return this.stopped;
+    }
+
+    private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig, playParams: PlayParams = null) {
+        this.localPlayConfig = playConfig;
         this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
-        // simple assumption: eigher support FPS or Widevine
+        // simple assumption: either support FPS or Widevine
         const supportsFPS = supportsHLS(this.videojsInstance);
         const supportsWidevine = !supportsFPS;
         // usable HLS sources are supported without DRM (protectionInfo) or when FPS is supported
@@ -136,95 +263,82 @@ export class VideoPlayer {
         // configure HLS only in case of `supportsHLS` or when no other sources available.
         const configureHLSOnly =
             (supportsHLS(this.videojsInstance) || (dashSources.length === 0 && mp4Sources.length === 0)) && hlsSources.length > 0;
+
+        const trackParam = configureHLSOnly
+            ? {}
+            : {
+                  textTracks: playConfig.subtitles.map(track => ({
+                      kind: track.kind,
+                      src: track.src,
+                      srclang: track.srclang,
+                      label: track.label,
+                      enabled: track.srclang === playConfig.subtitleLocale,
+                  })),
+              };
+
         const playSources = playConfig.entitlements
             .map(entitlement => {
                 const emeOptions = getEmeOptionsFromEntitlement(this.videojsInstance, entitlement);
                 return {
                     src: entitlement.src,
                     type: entitlement.type,
+                    playParams,
                     ...emeOptions,
+                    ...trackParam,
                 };
             })
             .filter(playOption => {
                 return (playOption.type === MimeTypeHls && configureHLSOnly) || !configureHLSOnly;
             });
 
-        if (playSources.find(source => source.keySystems && source.keySystems['com.apple.fps.1_0'])) {
-            this.player.eme.initLegacyFairplay();
-        }
-        this.player.src(playSources);
-
-        if (initParams.fullscreen) {
-            this.player.requestFullscreen();
-        }
-
-        if (!configureHLSOnly) {
-            // non HLS only needs the text tracks
-            playConfig.subtitles.forEach(track => {
-                this.player.addRemoteTextTrack({
-                    kind: track.kind,
-                    src: track.src,
-                    srclang: track.srclang,
-                    label: track.label,
-                    enabled: track.srclang === playConfig.subtitleLocale,
-                });
-            });
-        }
-    }
-
-    setPoster(posterUrl: string) {
-        this.player.poster(posterUrl);
-    }
-
-    destroy() {
-        if (this.player) {
-            if (false === this.player.ended()) {
-                this.player.pause();
-                // only if we have not already caught the 'ended' event
-                // Be aware that the `stopped` emit also send along all kinds of info, so call _before_ disposing player
-                this.playerLoggerService.onStop();
-            }
-
-            this.player.dispose();
-        }
-
-        this.playerLoggerService.destroy();
-        this.player = null;
-        this.currentAudioTrack = null;
-        this.currentTextTrack = null;
-        this.currentTime = -1;
-    }
-
-    getPlayer(): any {
-        return this.player;
+        return playSources;
     }
 
     private bindEvents() {
+        if (this.castSender) {
+            this.castSender.addOnConnectedListener(this.onConnectedListener);
+            this.castSender.addOnPlayStateListener(this.onPlayStateListener);
+        }
         this.player.on('error', () => {
-            this.playerLoggerService.onError(JSON.stringify(this.player.error()));
+            if (this.localPlayConfig) {
+                this.playerLoggerService.onError(JSON.stringify(this.player.error()));
+            }
         });
 
         this.player.on('playing', () => {
-            if (this.firstPlayingEvent) {
-                this.firstPlayingEvent = false;
-                if (this.articlePlayConfig.currentTime > 0) {
-                    this.player.currentTime(this.articlePlayConfig.currentTime);
+            if (this.localPlayConfig) {
+                if (this.firstPlayingEvent) {
+                    this.firstPlayingEvent = false;
+                    if (this.localPlayConfig && this.localPlayConfig.currentTime > 0) {
+                        this.player.currentTime(this.localPlayConfig.currentTime);
+                    }
+                    if (this.localPlayConfig && this.localPlayConfig.continuePaused) {
+                        this.player.pause();
+                    }
                 }
+                this.checkSelectedTracks();
+                this.playerLoggerService.onPlaying();
             }
-            this.checkSelectedTracks();
-            this.playerLoggerService.onPlaying();
         });
 
         this.player.on('pause', () => {
-            this.checkSelectedTracks();
-            if (this.player.paused() && !this.player.ended()) {
-                this.playerLoggerService.onPause();
+            if (this.localPlayConfig) {
+                this.checkSelectedTracks();
+                if (this.player.paused() && !this.player.ended()) {
+                    if (this.localPlayConfig) {
+                        this.playerLoggerService.onPause();
+                    }
+                }
             }
         });
 
         this.player.on('ended', () => {
-            this.checkSelectedTracks();
-            this.playerLoggerService.onStop();
+            if (this.localPlayConfig) {
+                this.checkSelectedTracks();
+                if (this.localPlayConfig) {
+                    this.playerLoggerService.onStop();
+                }
+            }
         });
 
         const skipIntroComponent = this.player.skipIntro;
@@ -233,16 +347,16 @@ export class VideoPlayer {
             const tempTime = Math.ceil(this.player.currentTime()) || 0;
             if (this.currentTime !== tempTime) {
                 this.currentTime = tempTime;
-                this.checkSelectedTracks();
 
-                this.playerLoggerService.onCurrentTimeUpdated(this.currentTime);
+                if (this.localPlayConfig) {
+                    this.checkSelectedTracks();
+                    this.playerLoggerService.onCurrentTimeUpdated(this.currentTime);
+                }
 
-                if (!!this.articlePlayConfig.skipIntro && skipIntroComponent) {
-                    const seconds = this.currentTime / 1000;
-                    if (
-                        this.articlePlayConfig.skipIntro.start <= this.currentTime &&
-                        this.articlePlayConfig.skipIntro.end >= this.currentTime
-                    ) {
+                const skipIntroConfig = this.getSkipIntroConfig();
+
+                if (skipIntroConfig && skipIntroComponent) {
+                    if (skipIntroConfig.start <= this.currentTime && skipIntroConfig.end >= this.currentTime) {
                         skipIntroComponent.trigger('show');
                     } else {
                         skipIntroComponent.trigger('hide');
@@ -253,32 +367,50 @@ export class VideoPlayer {
 
         if (skipIntroComponent) {
             skipIntroComponent.on('skip', () => {
-                this.player.currentTime(this.articlePlayConfig.skipIntro.end);
+                const skipIntroConfig = this.getSkipIntroConfig();
+                if (skipIntroConfig) {
+                    this.player.currentTime(skipIntroConfig.end);
+                }
             });
         }
 
         this.player.on('durationchange', () => {
-            this.checkSelectedTracks();
-            this.playerLoggerService.onDurationUpdated(this.player.duration());
+            if (this.localPlayConfig) {
+                this.checkSelectedTracks();
+                this.playerLoggerService.onDurationUpdated(this.player.duration());
+            }
         });
 
         this.player.on('loadedmetadata', () => {
-            const audioTrackList = this.player.audioTracks();
-            if (audioTrackList && audioTrackList.length > 0) {
-                // set default tracks when available
-                this.setDefaultAudioTrack();
-                this.setDefaultTextTrack();
-                this.metadataLoaded = true;
-            } else {
-                // unfortunately there is no reliable way to know when iOS native binding to text-tracks is done
-                // (even after first play event, this is not true), so we resort to an old fashioned timeout
-                setTimeout(() => {
+            if (this.localPlayConfig) {
+                const selectedSource = this.player.currentSource();
+                const textTracks = selectedSource.textTracks || [];
+
+                textTracks.forEach((track: any) => {
+                    this.player.addRemoteTextTrack(track, false);
+                });
+
+                const audioTrackList = this.player.audioTracks();
+                if (audioTrackList && audioTrackList.length > 0) {
+                    // set default tracks when available
                     this.setDefaultAudioTrack();
                     this.setDefaultTextTrack();
                     this.metadataLoaded = true;
-                }, 1000);
+                } else {
+                    // unfortunately there is no reliable way to know when iOS native binding to text-tracks is done
+                    // (even after first play event, this is not true), so we resort to an old fashioned timeout
+                    setTimeout(() => {
+                        this.setDefaultAudioTrack();
+                        this.setDefaultTextTrack();
+                        this.metadataLoaded = true;
+                    }, 1000);
+                }
             }
         });
+    }
+
+    getCastSender() {
+        return this.castSender;
     }
 
     private checkSelectedTracks() {
@@ -312,26 +444,32 @@ export class VideoPlayer {
             }
         }
 
-        this.playerLoggerService.updateProperties({
-            textTrack: selectedTextTrack,
-            audioTrack: selectedAudioTrack,
-            resolution: selectedResolution,
-        });
+        if (this.localPlayConfig) {
+            this.playerLoggerService.updateProperties({
+                textTrack: selectedTextTrack,
+                audioTrack: selectedAudioTrack,
+                resolution: selectedResolution,
+            });
+        }
 
         if (this.currentTextTrack !== null && this.currentTextTrack !== selectedTextTrack) {
-            this.playerLoggerService.onTextTrackChanged(selectedTextTrack);
+            if (this.localPlayConfig) {
+                this.playerLoggerService.onTextTrackChanged(selectedTextTrack);
+            }
         }
 
         this.currentTextTrack = selectedTextTrack;
 
         if (this.currentAudioTrack !== null && this.currentAudioTrack !== selectedAudioTrack) {
-            this.playerLoggerService.onAudioTrackChanged(selectedAudioTrack);
+            if (this.localPlayConfig) {
+                this.playerLoggerService.onAudioTrackChanged(selectedAudioTrack);
+            }
         }
         this.currentAudioTrack = selectedAudioTrack;
     }
 
     private setDefaultTextTrack() {
-        if (this.articlePlayConfig.subtitleLocale) {
+        if (this.localPlayConfig && this.localPlayConfig.subtitleLocale) {
             const tracks = this.player.textTracks();
             for (let i = 0; i < tracks.length; i++) {
                 // textTracks is not a real array so no iterators here
@@ -342,7 +480,7 @@ export class VideoPlayer {
             // it must be split up in to two loops, because two 'showing' items will break
             for (let i = 0; i < tracks.length; i++) {
                 const trackLocale = getISO2Locale(tracks[i].language);
-                if (trackLocale === this.articlePlayConfig.subtitleLocale.toLowerCase() && tracks[i].kind === 'subtitles') {
+                if (trackLocale === this.localPlayConfig.subtitleLocale.toLowerCase() && tracks[i].kind === 'subtitles') {
                     tracks[i].mode = 'showing';
                     break;
                 }
@@ -351,18 +489,89 @@ export class VideoPlayer {
     }
 
     private setDefaultAudioTrack() {
-        if (this.articlePlayConfig.audioLocale) {
+        if (this.localPlayConfig && this.localPlayConfig.audioLocale) {
             const audioTracks = this.player.audioTracks();
             for (let i = 0; i < audioTracks.length; i++) {
                 const trackLocale = getISO2Locale(audioTracks[i].language);
                 if (
-                    (this.articlePlayConfig.audioLocale && trackLocale === this.articlePlayConfig.audioLocale.toLowerCase()) ||
-                    (this.articlePlayConfig.audioLocale === '' && i === 0)
+                    (this.localPlayConfig.audioLocale && trackLocale === this.localPlayConfig.audioLocale.toLowerCase()) ||
+                    (this.localPlayConfig.audioLocale === '' && i === 0)
                 ) {
                     audioTracks[i].enabled = true;
                     break;
                 }
             }
         }
+    }
+
+    private onConnectedListener = (info: ChromecastConnectionInfo) => {
+        if (!this.player) {
+            return;
+        }
+
+        const fsButton = this.player.controlBar.getChild('fullscreenToggle');
+        if (info.connected) {
+            this.player.addClass('vjs-chromecast-connected');
+            if (fsButton) {
+                fsButton.hide();
+            }
+        } else {
+            this.player.removeClass('vjs-chromecast-connected');
+            if (fsButton) {
+                fsButton.show();
+            }
+        }
+
+        if (info.connected && this.player.currentType() !== 'application/vnd.chromecast') {
+            this.continueWithCurrentSources();
+        }
+    };
+
+    private onPlayStateListener = (state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) => {
+        if (state === null || state === chrome.cast.media.PlayerState.IDLE) {
+            this.player.removeClass('vjs-chromecast-has-media');
+
+            if (this.player.currentType() === 'application/vnd.chromecast') {
+                // chromecast could have become IDLE due to closed connection,
+                // so check if no longer connected to continue with current sources after a small timeout
+                setTimeout(() => {
+                    if (this.castSender && !this.castSender.isConnected()) {
+                        this.continueWithCurrentSources();
+                    }
+                }, 300);
+            }
+        } else {
+            this.player.addClass('vjs-chromecast-has-media');
+        }
+    };
+
+    private continueWithCurrentSources() {
+        const currentSources = this.player.currentSources();
+        const continuePaused = this.player.paused();
+
+        if (!this.stopped && currentSources && currentSources.length > 0 && currentSources[0].playParams && this.player.currentType()) {
+            this.stop();
+
+            this.player.addClass('vjs-waiting');
+            this.continueTimeout = setTimeout(() => {
+                this.continueTimeout = null;
+                this.playByParams({
+                    ...currentSources[0].playParams,
+                    continuePaused,
+                });
+            }, 3000);
+        }
+    }
+
+    private getSkipIntroConfig() {
+        if (this.localPlayConfig) {
+            return this.localPlayConfig.skipIntro;
+        } else if (this.castSender) {
+            const remoteConfig = this.castSender.getPlayConfig();
+            if (remoteConfig && remoteConfig.skipIntro) {
+                return remoteConfig.skipIntro;
+            }
+        }
+        return null;
     }
 }

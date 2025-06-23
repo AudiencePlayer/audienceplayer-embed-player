@@ -1,3 +1,7 @@
+# 4.0.0
+
+Added chromecast functionality to the player. Internally this is done as a videojs `tech`.
+
 # 3.0.1
 
 Expose logging as a package for internal use.

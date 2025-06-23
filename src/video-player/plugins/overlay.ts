@@ -9,10 +9,15 @@ export function createOverlayPlugin(videojsInstance: any) {
             });
 
             if (this.options_.element) {
-                el.appendChild(this.options_.element.cloneNode(true));
+                el.appendChild(this.options_.element);
             }
 
             return el;
+        }
+
+        updateContent(el: HTMLElement) {
+            this.el_.innerHTML = '';
+            this.el_.appendChild(el);
         }
     }
 

@@ -12,8 +12,8 @@ export interface PlayConfig {
     skipIntro?: {
         start: number;
         end: number;
-        label: string;
     };
+    continuePaused?: boolean;
 }
 
 export interface PlayEntitlement {

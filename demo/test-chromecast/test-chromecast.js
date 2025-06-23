@@ -3,43 +3,57 @@ import {ChromecastSender, ChromecastControls} from '../../dist/bundle.js';
 (function() {
     const urlQueryString = window.location.search;
     const urlParams = new URLSearchParams(urlQueryString);
-    const allProperties = ['articleId', 'assetId', 'chromecastReceiver', 'token'];
+    const allProperties = ['protocol', 'src', 'chromecastReceiver', 'mediaProvider'];
 
     loadValues();
     storeValues(false);
 
     const chromecastReceiver = localStorage.getItem('chromecastReceiver');
-    const castSender = new ChromecastSender(chromecastReceiver);
+    const castSender = new ChromecastSender();
 
     const output = document.querySelector('#output');
 
     document.getElementById('video-button-start').addEventListener('click', playVideo);
     document.getElementById('setButton').addEventListener('click', () => storeValues(true));
 
-    const initPromise = castSender.init();
+    castSender.init(chromecastReceiver).then(() => {
+        const castButtonContaner = document.querySelector('#cast-button');
+        const castButton = document.createElement('google-cast-launcher');
+        castButtonContaner.appendChild(castButton);
 
-    onInit();
+        const controls = new ChromecastControls(castSender.getCastPlayer(), castSender.getCastPlayerController());
 
-    function onInit() {
-        initPromise.then(() => {
-            const castButtonContaner = document.querySelector('#cast-button');
-            const castButton = document.createElement('google-cast-launcher');
-            castButtonContaner.appendChild(castButton);
-
-            const controls = new ChromecastControls(castSender);
-
-            castSender.addOnConnectedListener(({connected, friendlyName}) => {
-                output.innerText = connected ? 'Connected to ' + friendlyName : 'Not connected';
-            });
+        castSender.onConnectedListener(({connected, friendlyName}) => {
+            output.innerText = connected ? 'Connected to ' + friendlyName : 'Not connected';
         });
-    }
+    });
 
     function playVideo() {
-        const assetId = +localStorage.getItem('assetId');
-        const articleId = +localStorage.getItem('articleId');
-        const token = localStorage.getItem('token');
+        const protocol = localStorage.getItem('protocol');
+        const src = localStorage.getItem('src');
+        const mediaProvider = localStorage.getItem('mediaProvider');
 
-        castSender.castVideoByParams({assetId, articleId, token});
+        const config = {
+            pulseToken: null,
+            entitlements: [
+                {
+                    src: src,
+                    type: protocol,
+                    protectionInfo: null,
+                    mediaProvider: mediaProvider,
+                },
+            ],
+            subtitles: [],
+            audioLocale: '',
+        };
+        const article = {
+            id: 1,
+            name: 'test video',
+            metas: {title: 'Test video'},
+            posters: [],
+            images: [],
+        };
+        castSender.castVideo(config, article, true);
     }
 
     function storeProperty(name) {

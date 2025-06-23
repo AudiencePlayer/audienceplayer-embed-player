@@ -29,6 +29,8 @@ export const articleAssetPlayMutation = `
             aspect_ratio
             issued_at
             time_marker_end
+            time_marker_intro_start
+            time_marker_intro_end
         }
     }
 `;

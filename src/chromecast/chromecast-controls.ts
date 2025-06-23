@@ -1,12 +1,9 @@
 import {getNativeLanguage} from '../utils/locale';
-
-interface TrackInfo {
-    id: number;
-    locale: string;
-    active: boolean;
-}
+import {TrackInfo} from '../models/cast-info';
+import {ChromecastSender} from './chromecast-sender';
 
 export class ChromecastControls {
+    private castSender: ChromecastSender;
     private currentStatus: chrome.cast.media.PlayerState;
     private playerController: cast.framework.RemotePlayerController;
     private player: cast.framework.RemotePlayer;
@@ -14,12 +11,13 @@ export class ChromecastControls {
     private totalDuration: number;
     private currentTime: number;
 
-    constructor(player: cast.framework.RemotePlayer, controller: cast.framework.RemotePlayerController, selector?: string | HTMLElement) {
-        this.player = player;
-        this.playerController = controller;
-        this.totalDuration = player.duration || 0;
-        this.currentTime = player.currentTime || 0;
-        this.currentStatus = player.playerState;
+    constructor(castSender: ChromecastSender, selector?: string | HTMLElement) {
+        this.castSender = castSender;
+        this.player = this.castSender.getCastPlayer();
+        this.playerController = this.castSender.getCastPlayerController();
+        this.totalDuration = this.player.duration || 0;
+        this.currentTime = this.player.currentTime || 0;
+        this.currentStatus = this.player.playerState;
         this.createChromecastControlsTemplate(selector);
         this.bindEvents();
         this.setPlayButtonClass();
@@ -28,23 +26,23 @@ export class ChromecastControls {
     }
 
     bindEvents() {
-        this.playerController.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, () => {
+        this.castSender.addOnMediaTracksListener((audioTracks: TrackInfo[], textTracks: TrackInfo[]) => {
             if (this.rootElement && this.player.mediaInfo) {
-                this.renderTracks();
+                this.renderTracks(audioTracks, textTracks);
             }
         });
 
-        this.playerController.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, e => {
+        this.castSender.addOnCurrentTimeListener(e => {
             if (this.rootElement) {
-                this.currentTime = e.value;
+                this.currentTime = e;
                 this.totalDuration = this.player.duration;
                 this.setProgressBarValues();
             }
         });
 
-        this.playerController.addEventListener(cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED, e => {
+        this.castSender.addOnPlayStateListener(e => {
             if (this.rootElement) {
-                this.currentStatus = e.value;
+                this.currentStatus = e;
                 this.checkChromecastContainerVisibility();
                 this.setPlayButtonClass();
                 this.setProgressBarValues();
@@ -58,24 +56,24 @@ export class ChromecastControls {
         const chromecastControlsTemplateString = `
         <div class="chromecast-controls video-js vjs-workinghover">
             <div class="vjs-control-bar">
-                
+
                 <button class="play-pause-button vjs-play-control vjs-control vjs-button vjs-paused" type="button" title="Play" aria-disabled="false">
                     <span class="vjs-icon-placeholder" aria-hidden="true"></span><span class="vjs-control-text" aria-live="polite">Play</span>
                 </button>
-                
+
                <div class="chromecast-controls__progress-bar">
                  <div class="chromecast-controls__progress-bar__current vjs-time-control"></div>
                  <div class="chromecast-controls__progress-bar-slider-container">
                     <input type="range"
                         value="0"
-                        class="chromecast-controls__progress-bar__slider" 
+                        class="chromecast-controls__progress-bar__slider"
                         min="0"
                         max="100"/>
                     <div class="chromecast-controls__progress-bar__slider-left"></div>
-                </div>    
+                </div>
                  <div class="chromecast-controls__progress-bar__total vjs-time-control"></div>
                </div>
-                
+
                 <div class="vjs-subtitles-button vjs-menu-button vjs-menu-button-popup vjs-control vjs-button">
                     <button class="vjs-subtitles-button vjs-menu-button vjs-menu-button-popup vjs-button" type="button" aria-disabled="false" aria-haspopup="true" aria-expanded="false">
                         <span class="vjs-icon-placeholder" aria-hidden="true"></span>
@@ -83,7 +81,7 @@ export class ChromecastControls {
                     </button>
                     <div class="vjs-menu"></div>
                 </div>
-                
+
                 <div class="vjs-audio-button vjs-menu-button vjs-menu-button-popup vjs-control vjs-button">
                     <button class="vjs-audio-button vjs-menu-button vjs-menu-button-popup vjs-button" type="button" aria-disabled="false" title="Audio Track" aria-haspopup="true" aria-expanded="false">
                         <span class="vjs-icon-placeholder" aria-hidden="true"></span>
@@ -91,7 +89,7 @@ export class ChromecastControls {
                     </button>
                     <div class="vjs-menu"></div>
                 </div>
-                
+
                 <div class="vjs-control vjs-button vjs-chromecast-button">
                     <google-cast-launcher></google-cast-launcher>
                 </div>
@@ -146,17 +144,10 @@ export class ChromecastControls {
         });
     }
 
-    renderTracks() {
+    renderTracks(audioTracks: TrackInfo[], textTracks: TrackInfo[]) {
         const sessionMediaInfo = cast.framework.CastContext.getInstance()
             .getCurrentSession()
             .getMediaSession();
-        let audioTracks: TrackInfo[] = [];
-        let textTracks: TrackInfo[] = [];
-
-        if (this.player.mediaInfo && this.player.mediaInfo.tracks && sessionMediaInfo) {
-            audioTracks = this.getTracksByType('AUDIO');
-            textTracks = this.getTracksByType('TEXT');
-        }
 
         if (sessionMediaInfo && sessionMediaInfo.media) {
             if (sessionMediaInfo.media.streamType === chrome.cast.media.StreamType.LIVE) {
@@ -211,25 +202,6 @@ export class ChromecastControls {
             tracksListElement.appendChild(listItemElement);
         });
         return tracksListElement;
-    }
-
-    getActiveTracksByType(type: string) {
-        return this.getTracksByType(type)
-            .filter(track => track.active)
-            .map(track => +track.id);
-    }
-
-    getTracksByType(type: string) {
-        const sessionMediaInfo = cast.framework.CastContext.getInstance()
-            .getCurrentSession()
-            .getMediaSession();
-        return this.player.mediaInfo.tracks
-            .filter(track => track.type === type)
-            .map(track => ({
-                id: track.trackId,
-                locale: track.language,
-                active: sessionMediaInfo.activeTrackIds && sessionMediaInfo.activeTrackIds.indexOf(track.trackId) !== -1,
-            }));
     }
 
     getTransformedDurationValue(value: number) {
@@ -301,32 +273,14 @@ export class ChromecastControls {
             event.preventDefault();
             event.stopPropagation();
             const selectedTrackId = +event.target.value;
-            const newActiveTracks = this.getActiveTracksByType(type === 'AUDIO' ? 'TEXT' : 'AUDIO');
-            const activeTracksOfType = this.getActiveTracksByType(type);
+
+            const newActiveTracks = this.castSender.getActiveTracksByType(type === 'AUDIO' ? 'TEXT' : 'AUDIO');
+            const activeTracksOfType = this.castSender.getActiveTracksByType(type);
             const index = activeTracksOfType.indexOf(selectedTrackId);
             if (type === 'AUDIO' || (type === 'TEXT' && index === -1)) {
                 newActiveTracks.push(selectedTrackId);
             }
-            this.setActiveTracks(newActiveTracks, type);
-        }
-    }
-
-    setActiveTracks(trackIds: number[], type: string) {
-        if (this.player && this.player.isConnected) {
-            const media = cast.framework.CastContext.getInstance()
-                .getCurrentSession()
-                .getMediaSession();
-            const tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackIds);
-            media.editTracksInfo(
-                tracksInfoRequest,
-                () => {
-                    this.toggleMenu(
-                        this.getElement(type === 'AUDIO' ? '.vjs-audio-button .vjs-menu' : '.vjs-subtitles-button .vjs-menu'),
-                        this.getElement(type === 'AUDIO' ? 'div.vjs-audio-button' : 'div.vjs-subtitles-button')
-                    );
-                },
-                (error: chrome.cast.Error) => console.error('ChromeCast', error)
-            );
+            this.castSender.setActiveTracks(newActiveTracks, type);
         }
     }
 

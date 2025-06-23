@@ -1,7 +1,8 @@
 import { PlayConfig, ArticlePlayErrors, MimeType } from '../models/play-config';
 import { Article } from '../models/article';
 import { FileData } from '../models/file-data';
-export declare function toPlayConfig(config: any, continueFromPreviousPosition: boolean): PlayConfig;
+import { PlayParams } from '../models/play-params';
+export declare function toPlayConfig(config: any, playParams: PlayParams): PlayConfig;
 export declare function toArticleMetas(metas: any): any;
 export declare function toArticle(article: any): Article;
 export declare function toFile(file: any): FileData;

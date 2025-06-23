@@ -68,7 +68,9 @@
     height: 2em;
 }
 
+/* chromecast button plugin */
 .video-js .vjs-chromecast-button {
+    display: inline-block;
     margin: 0.5em;
     padding: 0;
     cursor: pointer;
@@ -76,23 +78,29 @@
     height: 2em;
 }
 
-.video-js .vjs-overlay {
+/* overlay plugin */
+.video-js .vjs-overlay,
+.video-js .vjs-custom-overlay {
     position: absolute;
-    z-index: 2;
+    z-index: 1;
     top: 0;
     left: 0;
+    visibility: visible;
+    transition: visibility 0.3s, opacity 0.3s;
+}
+
+.video-js .vjs-overlay {
+    pointer-events: none;
     bottom: 0;
     right: 0;
-    pointer-events: none;
-    visibility: visible;
     opacity: 0;
-    transition: visibility 0.3s, opacity 0.3s;
 }
 
 .video-js.vjs-user-active .vjs-overlay {
     opacity: 1;
 }
 
+/* skip intro button */
 .video-js .vjs-skip-intro-button {
     position: absolute;
     display: flex;
@@ -104,9 +112,10 @@
     height: 3em;
     line-height: 3em;
     padding: 0 1em;
-    border: 1px solid #fff;
+    border: 2px solid #fff;
     border-radius: 0.5em;
     cursor: pointer;
+    background-color: rgba(0,0,0,0.5);
 }
 
 .video-js .vjs-skip-intro-button.vjs-skip-intro-button--hidden {
@@ -127,6 +136,34 @@
     font-size: 1.8em;
     line-height: inherit;
     text-align: center;
+}
+
+/* when chromecast is connected, show the overlay */
+.video-js.vjs-chromecast-connected .vjs-overlay {
+    opacity: 1;
+}
+
+/* when chromecast is connected, show the control bar, even when user is inactive and playing */
+.video-js.vjs-chromecast-connected.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-control-bar {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: unset;
+}
+
+/* poster remains visible */
+.video-js.vjs-chromecast-connected.vjs-has-started .vjs-poster,
+.video-js.vjs-chromecast-connected.vjs-using-native-controls .vjs-poster {
+    display: inline-block !important;
+}
+
+/* poster */
+.video-js .vjs-poster {
+    cursor: unset;
+}
+
+.video-js .vjs-poster img {
+    object-fit: cover;
+    object-position: center;
 }
 
 .chromecast-controls.video-js {

@@ -6,20 +6,16 @@
         <title>AudiencePlayer Embed Player</title>
         <link href="../../dist/videojs-packaged.css" rel="stylesheet" />
         <link href="../../dist/style.css" rel="stylesheet" />
-        <link href="style.css" rel="stylesheet" />
+        <link href="../style.css" rel="stylesheet" />
     </head>
     <body>
         <div class="page">
-            <div class="media-player media-player--overlay">
-                <div class="media-player__layer media-player__video-player"></div>
-                <div class="media-player__layer media-player__meta">
-                    <div class="title">Title</div>
-                    <div class="parental">Parental</div>
-                </div>
-                <div class="media-player__layer media-player__chromecast-controls"></div>
-                <div class="media-player__layer media-player__overlay"></div>
-                <div class="media-player__layer media-player__loader vjs-waiting">
-                    <div class="vjs-loading-spinner"></div>
+            <div class="media-player">
+                <div class="media-player__video-player"></div>
+                <div class="media-player__hidden">
+                    <div class="media-player__meta">
+                        <div class="title">Test video</div>
+                    </div>
                 </div>
             </div>
             <form class="param-form">
@@ -49,9 +45,10 @@
             </form>
             <div class="button-panel">
                 <button class="button" id="setButton">Save & reload</button>
-                <button class="button button__back" id="video-button-destroy">destroy</button>
                 <button class="button button__play" id="video-button-start"></button>
-                <div class="button" id="cast-button"></div>
+                <button class="button" id="resetButton">reset</button>
+                <button class="button" id="stopButton">stop</button>
+                <google-cast-launcher class="button"></google-cast-launcher>
             </div>
         </div>
         <script src="../../dist/videojs-packaged.js"></script>

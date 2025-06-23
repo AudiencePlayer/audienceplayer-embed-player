@@ -1,11 +1,10 @@
 /// <reference types="chromecast-caf-sender" />
 import { ChromecastSender } from './chromecast/chromecast-sender';
 import { PlayConfig } from './models/play-config';
-import { InitParams, PlayParams, PlayParamsChromecast } from './models/play-params';
+import { InitParams, PlayParams } from './models/play-params';
 export declare class EmbedPlayer {
     private projectId;
     private apiBaseUrl;
-    private chromecastReceiverAppId;
     private videoPlayer;
     private castSender;
     private apiService;
@@ -20,13 +19,12 @@ export declare class EmbedPlayer {
         width: number;
         height: number;
     }): Promise<void>;
-    play(playParams: PlayParams): Promise<PlayConfig>;
+    play(playParams: PlayParams): Promise<void>;
     destroy(): void;
-    playVideo(config: PlayConfig, playParams: PlayParams): void;
+    playVideo(config: PlayConfig): void;
     getVideoPlayer(): any;
-    initChromecast(): Promise<void>;
     appendChromecastButton(selector: string | Element): void;
-    castVideo({ articleId, assetId, token, continueFromPreviousPosition }: PlayParamsChromecast): Promise<PlayConfig>;
+    castVideo(playParams: PlayParams): Promise<void>;
     getCastSender(): ChromecastSender;
     getCastPlayer(): cast.framework.RemotePlayer;
     getCastPlayerController(): cast.framework.RemotePlayerController;

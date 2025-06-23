@@ -2,13 +2,12 @@ import {VideoPlayer} from './video-player/video-player';
 import {ChromecastSender} from './chromecast/chromecast-sender';
 import {ApiService} from './api/api-service';
 import {PlayConfig} from './models/play-config';
-import {InitParams, PlayParams, PlayParamsChromecast} from './models/play-params';
+import {InitParams, PlayParams} from './models/play-params';
 import {getArticleBackgroundImage, getResizedUrl, toPlayConfigError} from './api/converters';
 
 export class EmbedPlayer {
     private projectId: number;
     private apiBaseUrl: string;
-    private chromecastReceiverAppId: string;
     private videoPlayer: VideoPlayer;
     private castSender: ChromecastSender;
     private apiService: ApiService;
@@ -16,10 +15,9 @@ export class EmbedPlayer {
     constructor(videojsInstance: any, properties: {projectId: number; apiBaseUrl: string; chromecastReceiverAppId: string}) {
         this.projectId = properties.projectId;
         this.apiBaseUrl = properties.apiBaseUrl.replace(/\/*$/, '');
-        this.chromecastReceiverAppId = properties.chromecastReceiverAppId ? properties.chromecastReceiverAppId : null;
         this.apiService = new ApiService(this.apiBaseUrl, this.projectId);
-        this.videoPlayer = new VideoPlayer(videojsInstance, this.apiBaseUrl, this.projectId);
-        this.castSender = new ChromecastSender();
+        this.videoPlayer = new VideoPlayer(videojsInstance, this.apiBaseUrl, this.projectId, properties.chromecastReceiverAppId);
+        this.castSender = this.videoPlayer.getCastSender();
     }
 
     initVideoPlayer(initParams: InitParams) {
@@ -43,37 +41,19 @@ export class EmbedPlayer {
         if (!playParams.assetId) {
             return Promise.reject('assetId property is missing');
         }
-        this.apiService.setToken(playParams.token ? playParams.token : null);
-
-        return this.apiService
-            .getArticleAssetPlayConfig(playParams.articleId, playParams.assetId, playParams.continueFromPreviousPosition)
-            .then(config => {
-                this.playVideo(config, playParams);
-                return config;
-            })
-            .catch(error => {
-                console.log(toPlayConfigError(error.code));
-                throw error;
-            });
+        return this.videoPlayer.playByParams(playParams);
     }
 
     destroy() {
         this.videoPlayer.destroy();
     }
 
-    playVideo(config: PlayConfig, playParams: PlayParams) {
-        this.videoPlayer.play(config, playParams);
+    playVideo(config: PlayConfig) {
+        this.videoPlayer.play(config);
     }
 
     getVideoPlayer() {
         return this.videoPlayer.getPlayer();
-    }
-
-    initChromecast() {
-        if (!this.chromecastReceiverAppId) {
-            return Promise.reject('No Chromecast receiver app id');
-        }
-        return this.castSender.init(this.chromecastReceiverAppId);
     }
 
     appendChromecastButton(selector: string | Element) {
@@ -82,28 +62,20 @@ export class EmbedPlayer {
         castButtonContaner.appendChild(castButton);
     }
 
-    castVideo({articleId, assetId, token, continueFromPreviousPosition}: PlayParamsChromecast) {
-        if (!articleId) {
+    castVideo(playParams: PlayParams) {
+        if (!playParams.articleId) {
             return Promise.reject('articleId property is missing');
         }
-        if (!assetId) {
+        if (!playParams.assetId) {
             return Promise.reject('assetId property is missing');
         }
 
-        this.apiService.setToken(token);
+        this.apiService.setToken(playParams.token);
 
-        return Promise.all([
-            this.apiService.getArticleAssetPlayConfig(articleId, assetId, continueFromPreviousPosition),
-            this.apiService.getArticle(articleId),
-        ])
-            .then(([config, article]) => {
-                this.castSender.castVideo(config, article, continueFromPreviousPosition);
-                return config;
-            })
-            .catch(error => {
-                console.log(toPlayConfigError(error.code));
-                throw error;
-            });
+        return this.apiService.getArticle(playParams.articleId).then(article => {
+            playParams.article = article;
+            return this.castSender.castVideoByParams(playParams);
+        });
     }
 
     getCastSender() {
