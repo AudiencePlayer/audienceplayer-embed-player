@@ -159,8 +159,9 @@ export class VideoPlayer {
                             this.player.removeClass('vjs-waiting');
                         }
                     })
-                    .catch(() => {
+                    .catch(ex => {
                         this.player.removeClass('vjs-waiting');
+                        throw ex;
                     });
             } else {
                 return Promise.reject('No API service available');

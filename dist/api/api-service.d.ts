@@ -5,5 +5,5 @@ export declare class ApiService {
     constructor(baseUrl: string, projectId: number);
     setToken(token: string): void;
     getArticle(articleId: number): Promise<import("../models/article").Article>;
-    getArticleAssetPlayConfig(playParams: PlayParams, deviceModelContext?: DeviceModelContextEnum): Promise<import("..").PlayConfig>;
+    getArticleAssetPlayConfig(playParams: PlayParams, deviceModelContext?: DeviceModelContextEnum, supportsDRM?: boolean): Promise<import("..").PlayConfig>;
 }
