@@ -61,7 +61,7 @@ export class ChromecastSender {
     initializeCastApi(chromecastReceiverAppId: string) {
         cast.framework.CastContext.getInstance().setOptions({
             receiverApplicationId: chromecastReceiverAppId,
-            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED, // rejoin when reloading the page
+            autoJoinPolicy: chrome.cast.AutoJoinPolicy.TAB_AND_ORIGIN_SCOPED, // to rejoin when reloading the page on the same tab
         });
         this.castContext = cast.framework.CastContext.getInstance();
         this.castPlayer = new cast.framework.RemotePlayer();
@@ -116,24 +116,27 @@ export class ChromecastSender {
             const state = this.castPlayer.playerState;
             let info: any = null;
 
-            if (this.castPlayer.mediaInfo && state !== null && state !== chrome.cast.media.PlayerState.IDLE) {
-                const customData: any = this.castPlayer.mediaInfo.customData;
-                if (customData) {
-                    // @TODO extraInfo will be deprecated
-                    if (customData.extraInfo) {
-                        const parsedInfo = JSON.parse(customData.extraInfo);
-                        if (parsedInfo.articleId && parsedInfo.assetId) {
-                            info = {articleId: parsedInfo.articleId, assetId: parsedInfo.assetId};
-                            if (customData.token) {
-                                info.token = customData.token;
+            // only when media is loaded, otherwise IDLE state will cause issues
+            if (this.castPlayer.isMediaLoaded) {
+                if (this.castPlayer.mediaInfo && state !== null && state !== chrome.cast.media.PlayerState.IDLE) {
+                    const customData: any = this.castPlayer.mediaInfo.customData;
+                    if (customData) {
+                        // @TODO extraInfo will be deprecated
+                        if (customData.extraInfo) {
+                            const parsedInfo = JSON.parse(customData.extraInfo);
+                            if (parsedInfo.articleId && parsedInfo.assetId) {
+                                info = {articleId: parsedInfo.articleId, assetId: parsedInfo.assetId};
+                                if (customData.token) {
+                                    info.token = customData.token;
+                                }
                             }
+                        } else if (customData.articleId && customData.assetId) {
+                            info = {articleId: customData.articleId, assetId: customData.assetId, token: customData.token};
                         }
-                    } else if (customData.articleId && customData.assetId) {
-                        info = {articleId: customData.articleId, assetId: customData.assetId, token: customData.token};
                     }
                 }
+                this.dispatchPlayState(state, info);
             }
-            this.dispatchPlayState(state, info);
         });
 
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.DURATION_CHANGED, () => {
