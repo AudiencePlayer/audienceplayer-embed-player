@@ -42,7 +42,6 @@ export class ApiService {
                 const {message, code} = response.errors[0];
                 throw {message, code};
             }
-            console.log('response', response.data.ArticleAssetPlay);
 
             return toPlayConfig(response.data.ArticleAssetPlay, playParams, supportsDRM);
         });

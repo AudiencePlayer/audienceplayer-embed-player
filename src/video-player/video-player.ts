@@ -188,9 +188,11 @@ export class VideoPlayer {
 
     // update the HTML of the overlay plugin
     updateOverlay(el: HTMLElement) {
-        const overlayComponent = this.player.overlay;
-        if (overlayComponent) {
-            overlayComponent.updateContent(el);
+        if (this.player) {
+            const overlayComponent = this.player.overlay;
+            if (overlayComponent) {
+                overlayComponent.updateContent(el);
+            }
         }
     }
 
@@ -219,13 +221,13 @@ export class VideoPlayer {
     // if it's currently playing, pause it.
     // reset the player to its initial state
     stop() {
+        if (this.continueTimeout) {
+            clearTimeout(this.continueTimeout);
+            this.continueTimeout = null;
+        }
         if (!this.stopped) {
             this.stopped = true;
             this.firstPlayingEvent = true;
-            if (this.continueTimeout) {
-                clearTimeout(this.continueTimeout);
-                this.continueTimeout = null;
-            }
             if (this.player) {
                 if (false === this.player.ended()) {
                     this.player.pause();
