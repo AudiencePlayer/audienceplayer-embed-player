@@ -31,7 +31,7 @@ export function createSkipIntroPlugin(videojsInstance: any) {
                 show();
                 clearTimeout(timeoutHandle);
                 // @ts-ignore timout handle
-                timeoutHandle = setTimeout(function() {
+                timeoutHandle = setTimeout(function () {
                     hide();
                     timeoutHandle = 0;
                 }, 10000);
@@ -71,7 +71,7 @@ export function createSkipIntroPlugin(videojsInstance: any) {
             this.on('show', showHandler);
             this.on('hide', hideHandler);
 
-            this.on('dispose', function() {
+            this.on('dispose', function () {
                 this.off('show', showHandler);
                 this.off('hide', hideHandler);
 

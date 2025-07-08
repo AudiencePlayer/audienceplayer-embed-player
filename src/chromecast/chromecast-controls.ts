@@ -145,9 +145,7 @@ export class ChromecastControls {
     }
 
     renderTracks(audioTracks: TrackInfo[], textTracks: TrackInfo[]) {
-        const sessionMediaInfo = cast.framework.CastContext.getInstance()
-            .getCurrentSession()
-            .getMediaSession();
+        const sessionMediaInfo = cast.framework.CastContext.getInstance().getCurrentSession().getMediaSession();
 
         if (sessionMediaInfo && sessionMediaInfo.media) {
             if (sessionMediaInfo.media.streamType === chrome.cast.media.StreamType.LIVE) {

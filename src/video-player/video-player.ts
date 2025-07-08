@@ -33,7 +33,12 @@ export class VideoPlayer {
     private stopped = false; // to make sure that if stop() was called, no async playout methods can continue play
     private continueTimeout: any = null; // a timeout before continuing a play session when switching to or from chromecast
 
-    constructor(private videojsInstance: any, baseUrl: string = null, projectId: number = 0, chromecastReceiverAppId: string = null) {
+    constructor(
+        private videojsInstance: any,
+        baseUrl: string = null,
+        projectId: number = 0,
+        chromecastReceiverAppId: string = null
+    ) {
         if (baseUrl && typeof baseUrl === 'string' && projectId > 0) {
             this.apiService = new ApiService(baseUrl.replace(/\/*$/, ''), projectId);
         }
