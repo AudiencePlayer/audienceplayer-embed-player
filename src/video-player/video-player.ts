@@ -33,7 +33,12 @@ export class VideoPlayer {
     private stopped = false; // to make sure that if stop() was called, no async playout methods can continue play
     private continueTimeout: any = null; // a timeout before continuing a play session when switching to or from chromecast
 
-    constructor(private videojsInstance: any, baseUrl: string = null, projectId: number = 0, chromecastReceiverAppId: string = null) {
+    constructor(
+        private videojsInstance: any,
+        baseUrl: string = null,
+        projectId: number = 0,
+        chromecastReceiverAppId: string = null
+    ) {
         if (baseUrl && typeof baseUrl === 'string' && projectId > 0) {
             this.apiService = new ApiService(baseUrl.replace(/\/*$/, ''), projectId);
         }
@@ -159,8 +164,9 @@ export class VideoPlayer {
                             this.player.removeClass('vjs-waiting');
                         }
                     })
-                    .catch(() => {
+                    .catch(ex => {
                         this.player.removeClass('vjs-waiting');
+                        throw ex;
                     });
             } else {
                 return Promise.reject('No API service available');
@@ -187,9 +193,11 @@ export class VideoPlayer {
 
     // update the HTML of the overlay plugin
     updateOverlay(el: HTMLElement) {
-        const overlayComponent = this.player.overlay;
-        if (overlayComponent) {
-            overlayComponent.updateContent(el);
+        if (this.player) {
+            const overlayComponent = this.player.overlay;
+            if (overlayComponent) {
+                overlayComponent.updateContent(el);
+            }
         }
     }
 
@@ -218,13 +226,13 @@ export class VideoPlayer {
     // if it's currently playing, pause it.
     // reset the player to its initial state
     stop() {
+        if (this.continueTimeout) {
+            clearTimeout(this.continueTimeout);
+            this.continueTimeout = null;
+        }
         if (!this.stopped) {
             this.stopped = true;
             this.firstPlayingEvent = true;
-            if (this.continueTimeout) {
-                clearTimeout(this.continueTimeout);
-                this.continueTimeout = null;
-            }
             if (this.player) {
                 if (false === this.player.ended()) {
                     this.player.pause();

@@ -86,7 +86,9 @@
     top: 0;
     left: 0;
     visibility: visible;
-    transition: visibility 0.3s, opacity 0.3s;
+    transition:
+        visibility 0.3s,
+        opacity 0.3s;
 }
 
 .video-js .vjs-overlay {
@@ -106,7 +108,9 @@
     display: flex;
     z-index: 2;
     opacity: 1;
-    transition: visibility 0.3s, opacity 0.3s;
+    transition:
+        visibility 0.3s,
+        opacity 0.3s;
     bottom: 5em;
     left: 1.75em;
     height: 3em;

@@ -61,7 +61,7 @@ export class ChromecastSender {
     initializeCastApi(chromecastReceiverAppId: string) {
         cast.framework.CastContext.getInstance().setOptions({
             receiverApplicationId: chromecastReceiverAppId,
-            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+            autoJoinPolicy: chrome.cast.AutoJoinPolicy.TAB_AND_ORIGIN_SCOPED, // to rejoin when reloading the page on the same tab
         });
         this.castContext = cast.framework.CastContext.getInstance();
         this.castPlayer = new cast.framework.RemotePlayer();
@@ -70,19 +70,21 @@ export class ChromecastSender {
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, event => {
             if (this.castPlayer.isConnected) {
                 const castSession = this.getCastSession();
-                castSession.addMessageListener('urn:x-cast:com.audienceplayer.messagebus', (namespace, message) => {
-                    const messageObject = JSON.parse(message);
-                    if (typeof messageObject.is_hdr_supported === 'boolean') {
-                        this.supportsHDR = messageObject && messageObject.is_hdr_supported;
-                    } else if (typeof messageObject.error === 'object' && messageObject.error.code) {
-                        const error = {code: messageObject.error.code, message: messageObject.error.message};
-                        this.onApiErrorListeners.forEach(listener => {
-                            listener(error, messageObject.playParams);
-                        });
-                    } else if (typeof messageObject.playConfig === 'object') {
-                        this.playConfig = messageObject.playConfig;
-                    }
-                });
+                if (castSession) {
+                    castSession.addMessageListener('urn:x-cast:com.audienceplayer.messagebus', (namespace, message) => {
+                        const messageObject = JSON.parse(message);
+                        if (typeof messageObject.is_hdr_supported === 'boolean') {
+                            this.supportsHDR = messageObject && messageObject.is_hdr_supported;
+                        } else if (typeof messageObject.error === 'object' && messageObject.error.code) {
+                            const error = {code: messageObject.error.code, message: messageObject.error.message};
+                            this.onApiErrorListeners.forEach(listener => {
+                                listener(error, messageObject.playParams);
+                            });
+                        } else if (typeof messageObject.playConfig === 'object') {
+                            this.playConfig = messageObject.playConfig;
+                        }
+                    });
+                }
             } else {
                 this.supportsHDR = false;
             }
@@ -121,7 +123,13 @@ export class ChromecastSender {
                     if (customData) {
                         // @TODO extraInfo will be deprecated
                         if (customData.extraInfo) {
-                            info = JSON.parse(customData.extraInfo);
+                            const parsedInfo = JSON.parse(customData.extraInfo);
+                            if (parsedInfo.articleId && parsedInfo.assetId) {
+                                info = {articleId: parsedInfo.articleId, assetId: parsedInfo.assetId};
+                                if (customData.token) {
+                                    info.token = customData.token;
+                                }
+                            }
                         } else if (customData.articleId && customData.assetId) {
                             info = {articleId: customData.articleId, assetId: customData.assetId, token: customData.token};
                         }
@@ -387,7 +395,6 @@ export class ChromecastSender {
                         mediaSession.stop(
                             new chrome.cast.media.StopRequest(),
                             () => {
-                                console.log('stopMedia: stopped media session');
                                 resolve();
                             },
                             () => {

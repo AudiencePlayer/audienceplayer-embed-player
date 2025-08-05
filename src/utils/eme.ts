@@ -31,10 +31,10 @@ export function getEmeOptionsFromEntitlement(videojs: any, entitlement: PlayEnti
                             keySystems: {
                                 'com.apple.fps.1_0': {
                                     certificateUri: protectionInfo.certificateUrl,
-                                    getContentId: function() {
+                                    getContentId: function () {
                                         return getHostnameFromUri(protectionInfo.keyDeliveryUrl);
                                     },
-                                    getLicense: function(emeArg: any, contentId: string, keyMessage: any, callback: any) {
+                                    getLicense: function (emeArg: any, contentId: string, keyMessage: any, callback: any) {
                                         const payload = 'spc=' + binaryToBase64(keyMessage) + '&assetId=' + encodeURIComponent(contentId);
                                         videojs.xhr(
                                             {
@@ -47,7 +47,7 @@ export function getEmeOptionsFromEntitlement(videojs: any, entitlement: PlayEnti
                                                 body: payload,
                                                 responseType: 'arraybuffer',
                                             },
-                                            videojs.xhr.httpHandler(function(err: any, response: ArrayBuffer) {
+                                            videojs.xhr.httpHandler(function (err: any, response: ArrayBuffer) {
                                                 callback(null, parseLicenseResponse(response));
                                             }, true)
                                         );
@@ -60,10 +60,10 @@ export function getEmeOptionsFromEntitlement(videojs: any, entitlement: PlayEnti
                             keySystems: {
                                 'com.apple.fps.1_0': {
                                     certificateUri: protectionInfo.certificateUrl,
-                                    getContentId: function() {
+                                    getContentId: function () {
                                         return protectionInfo.contentKeyId.replace('skd://', '').replace(';', '');
                                     },
-                                    getLicense: function(emeArg: any, contentId: string, keyMessage: any, callback: any) {
+                                    getLicense: function (emeArg: any, contentId: string, keyMessage: any, callback: any) {
                                         const payload = keyMessage;
                                         videojs.xhr(
                                             {
@@ -75,7 +75,7 @@ export function getEmeOptionsFromEntitlement(videojs: any, entitlement: PlayEnti
                                                 body: payload,
                                                 responseType: 'arraybuffer',
                                             },
-                                            videojs.xhr.httpHandler(function(err: any, response: ArrayBuffer) {
+                                            videojs.xhr.httpHandler(function (err: any, response: ArrayBuffer) {
                                                 console.log('err', err, response);
                                                 callback(null, response);
                                             }, true)
@@ -98,7 +98,7 @@ export function binaryToBase64(a: Uint8Array) {
         c = [];
     for (let d = 0; d < a.byteLength; ) {
         let e = a[d++];
-        c.push(b.charAt(e >> 2)),
+        (c.push(b.charAt(e >> 2)),
             (e = (3 & e) << 4),
             d < a.byteLength
                 ? (c.push(b.charAt(e | (a[d] >> 4))),
@@ -106,7 +106,7 @@ export function binaryToBase64(a: Uint8Array) {
                   d < a.byteLength
                       ? (c.push(b.charAt(e | (a[d] >> 6))), c.push(b.charAt(63 & a[d++])))
                       : (c.push(b.charAt(e)), c.push('=')))
-                : (c.push(b.charAt(e)), c.push('=='));
+                : (c.push(b.charAt(e)), c.push('==')));
     }
     return c.join('');
 }

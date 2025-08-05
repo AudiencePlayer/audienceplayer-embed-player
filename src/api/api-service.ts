@@ -8,7 +8,7 @@ export class ApiService {
     private token: string;
 
     constructor(baseUrl: string, projectId: number) {
-        this.apiFetchUrl = `${baseUrl}/graphql/${projectId}`;
+        this.apiFetchUrl = `${baseUrl}/graphql/${projectId}/user`;
         this.token = null;
     }
 
@@ -26,7 +26,7 @@ export class ApiService {
         });
     }
 
-    getArticleAssetPlayConfig(playParams: PlayParams, deviceModelContext: DeviceModelContextEnum = null) {
+    getArticleAssetPlayConfig(playParams: PlayParams, deviceModelContext: DeviceModelContextEnum = null, supportsDRM = true) {
         return graphRequest(
             this.apiFetchUrl,
             articleAssetPlayMutation,
@@ -43,7 +43,7 @@ export class ApiService {
                 throw {message, code};
             }
 
-            return toPlayConfig(response.data.ArticleAssetPlay, playParams);
+            return toPlayConfig(response.data.ArticleAssetPlay, playParams, supportsDRM);
         });
     }
 }

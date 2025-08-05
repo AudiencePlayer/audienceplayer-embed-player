@@ -14,7 +14,7 @@ export function createHotKeysFunction(videojesInstance: any, options: {backward:
         component.currentTime(newTime);
     }
 
-    return function(event: KeyboardEvent) {
+    return function (event: KeyboardEvent) {
         switch (event.key) {
             case ' ':
                 PlayToggle.prototype.handleClick.call(this, event);

@@ -28,7 +28,7 @@ export function createSubtitlesButtonPlugin(videojsInstance: any) {
             player.on(['loadstart', 'texttrackchange'], changeHandler);
             tracks.addEventListener('change', changeHandler);
             tracks.addEventListener('selectedlanguagechange', selectedLanguageChangeHandler);
-            this.on('dispose', function() {
+            this.on('dispose', function () {
                 player.off(['loadstart', 'texttrackchange'], changeHandler);
                 tracks.removeEventListener('change', changeHandler);
                 tracks.removeEventListener('selectedlanguagechange', selectedLanguageChangeHandler);
@@ -42,7 +42,7 @@ export function createSubtitlesButtonPlugin(videojsInstance: any) {
             // change events whenever the controls modify the mode.
             if (tracks.onchange === undefined) {
                 let event: any;
-                this.on(['tap', 'click'], function() {
+                this.on(['tap', 'click'], function () {
                     if (typeof window.Event !== 'object') {
                         // Android 2.3 throws an Illegal Constructor error for window.Event
                         try {

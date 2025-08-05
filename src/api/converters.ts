@@ -3,12 +3,12 @@ import {Article} from '../models/article';
 import {FileData} from '../models/file-data';
 import {PlayParams} from '../models/play-params';
 
-export function toPlayConfig(config: any, playParams: PlayParams): PlayConfig {
+export function toPlayConfig(config: any, playParams: PlayParams, supportsDRM = true): PlayConfig {
     const timeStamp = Date.parse(config.issued_at);
     const entitlements: PlayEntitlement[] = [];
 
     // check if the entitlements contain FPS in order to know when to filter out aes
-    const filterAES = !!config.entitlements.find((entitlement: any) => entitlement.encryption_type === 'fps');
+    const filterAES = supportsDRM && !!config.entitlements.find((entitlement: any) => entitlement.encryption_type === 'fps');
     const configEntitlements = filterAES
         ? config.entitlements.filter((entitlement: any) => {
               return entitlement.encryption_type !== 'aes';
@@ -26,6 +26,9 @@ export function toPlayConfig(config: any, playParams: PlayParams): PlayConfig {
 
         if (entitlement.encryption_type) {
             if (entitlement.encryption_type === 'cenc' && entitlement.protocol.indexOf('dash') === 0) {
+                if (!supportsDRM) {
+                    return;
+                }
                 entitlementConfig.protectionInfo = [
                     {
                         type: 'Widevine',
@@ -36,6 +39,9 @@ export function toPlayConfig(config: any, playParams: PlayParams): PlayConfig {
                     },
                 ];
             } else if (entitlement.encryption_type === 'fps' && entitlement.protocol.indexOf('hls') === 0) {
+                if (!supportsDRM) {
+                    return;
+                }
                 entitlementConfig.protectionInfo = [
                     {
                         type: 'FairPlay',
