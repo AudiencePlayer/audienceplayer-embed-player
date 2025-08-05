@@ -324,7 +324,11 @@ export class ChromecastSender {
         }
 
         mediaInfo.customData = {
-            ...playParams,
+            articleId: playParams.articleId,
+            assetId: playParams.assetId,
+            token: playParams.token,
+            continueFromPreviousPosition: !!playParams.continueFromPreviousPosition,
+            continuePaused: !!playParams.continuePaused,
         };
 
         return mediaInfo;
@@ -369,9 +373,14 @@ export class ChromecastSender {
                 if (mediaInfo) {
                     this.playConfig = null;
                     const request = new chrome.cast.media.LoadRequest(mediaInfo);
-                    castSession.loadMedia(request).then(errorCode => {
-                        resolve();
-                    });
+                    castSession
+                        .loadMedia(request)
+                        .then(errorCode => {
+                            resolve();
+                        })
+                        .catch(ex => {
+                            reject(ex);
+                        });
                 } else {
                     reject('Could not create media info request');
                 }
