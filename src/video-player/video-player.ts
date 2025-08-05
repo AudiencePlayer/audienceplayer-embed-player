@@ -52,9 +52,8 @@ export class VideoPlayer {
         createSkipIntroPlugin(videojsInstance);
         createSubtitlesButtonPlugin(videojsInstance);
 
-        if (chromecastReceiverAppId) {
+        if (chromecastReceiverAppId && !supportsHLS(videojsInstance)) {
             this.castSender = new ChromecastSender(chromecastReceiverAppId);
-
             createChromecastTechPlugin(videojsInstance, this.castSender);
         }
     }
