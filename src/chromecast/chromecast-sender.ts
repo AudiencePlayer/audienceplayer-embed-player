@@ -323,6 +323,7 @@ export class ChromecastSender {
             this.addMediaInfoToMetaData(playParams.article, mediaInfo);
         }
 
+        // N.B. customData should not become too big to prevent a sender invalid_params error
         mediaInfo.customData = {
             articleId: playParams.articleId,
             assetId: playParams.assetId,
