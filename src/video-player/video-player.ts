@@ -52,6 +52,7 @@ export class VideoPlayer {
         createSkipIntroPlugin(videojsInstance);
         createSubtitlesButtonPlugin(videojsInstance);
 
+        // if HLS is supported, it's either Safari or iOS, which to not support Chromecast
         if (chromecastReceiverAppId && !supportsHLS(videojsInstance)) {
             this.castSender = new ChromecastSender(chromecastReceiverAppId);
             createChromecastTechPlugin(videojsInstance, this.castSender);
