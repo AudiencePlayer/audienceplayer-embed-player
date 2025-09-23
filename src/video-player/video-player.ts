@@ -118,6 +118,7 @@ export class VideoPlayer {
                     'customSubtitlesButton',
                     'customAudioTrackButton',
                     'volumePanel',
+                    'QualityMenuButton',
                     'chromecastButton',
                     'fullscreenToggle',
                 ],
@@ -138,6 +139,7 @@ export class VideoPlayer {
         this.player = this.videojsInstance(videoElement, playOptions);
         this.player.eme();
         this.player.eme.initLegacyFairplay();
+        this.player.qualityMenu();
 
         this.bindEvents();
     }
@@ -426,6 +428,12 @@ export class VideoPlayer {
                     }, 1000);
                 }
             }
+        });
+
+        let qualityLevels = this.player.qualityLevels();
+        qualityLevels.on('change', function () {
+            console.log('Quality Level changed!');
+            console.log('New level:', qualityLevels[qualityLevels.selectedIndex]);
         });
     }
 

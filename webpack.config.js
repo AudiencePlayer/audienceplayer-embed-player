@@ -34,6 +34,7 @@ export default {
                     src: [
                         './node_modules/video.js/dist/video.min.js',
                         './node_modules/videojs-contrib-eme/dist/videojs-contrib-eme.min.js',
+                        './node_modules/videojs-contrib-quality-menu/dist/videojs-contrib-quality-menu.min.js',
                     ],
                 },
                 {
