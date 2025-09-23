@@ -114,6 +114,7 @@ export class VideoPlayer {
                     'durationDisplay',
                     {name: 'spacer'},
                     'customPlaybackRateMenuButton',
+                    'chaptersButton',
                     'customSubtitlesButton',
                     'customAudioTrackButton',
                     'volumePanel',
@@ -397,6 +398,17 @@ export class VideoPlayer {
                 textTracks.forEach((track: any) => {
                     this.player.addRemoteTextTrack(track, false);
                 });
+
+                // test chapters
+                this.player.addRemoteTextTrack(
+                    {
+                        src: 'chapters.vtt',
+                        srclang: 'en',
+                        kind: 'chapters',
+                        label: 'Chapters',
+                    },
+                    true
+                );
 
                 const audioTrackList = this.player.audioTracks();
                 if (audioTrackList && audioTrackList.length > 0) {
