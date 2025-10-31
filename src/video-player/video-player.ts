@@ -114,7 +114,7 @@ export class VideoPlayer {
                     'durationDisplay',
                     {name: 'spacer'},
                     'customPlaybackRateMenuButton',
-                    'chaptersButton',
+                    // 'chaptersButton',
                     'customSubtitlesButton',
                     'customAudioTrackButton',
                     'volumePanel',
@@ -401,6 +401,15 @@ export class VideoPlayer {
                     this.player.addRemoteTextTrack(track, false);
                 });
 
+                this.player.textTracks().addEventListener('addtrack', (event: any) => {
+                    const track = event.track;
+                    if (track.kind === 'chapters') {
+                        track.on('loadeddata', (x: any) => {
+                            this.addChapterMarkers(track.cues);
+                        });
+                    }
+                });
+
                 // test chapters
                 this.player.addRemoteTextTrack(
                     {
@@ -529,6 +538,32 @@ export class VideoPlayer {
                     break;
                 }
             }
+        }
+    }
+
+    private addChapterMarkers(cues: any) {
+        const controlBar = this.player.controlBar;
+        const progressControl = controlBar.progressControl;
+        const progressHolder = progressControl.seekBar.el();
+
+        const duration = this.player.duration();
+
+        console.log('addChapt', cues);
+
+        for (let i = 0; i < cues.cues_.length; i++) {
+            const cue = cues.cues_[i];
+            console.log('add cue', cue);
+            const startTime = cue.startTime;
+            const positionPercent = (startTime / duration) * 100;
+
+            const marker = document.createElement('div');
+            marker.className = 'vjs-chapter-marker';
+            marker.style.left = `${positionPercent}%`;
+            marker.title = cue.text;
+
+            marker.addEventListener('click', () => this.player.currentTime(startTime));
+
+            progressHolder.appendChild(marker);
         }
     }
 

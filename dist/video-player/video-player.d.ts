@@ -32,6 +32,7 @@ export declare class VideoPlayer {
     private checkSelectedTracks;
     private setDefaultTextTrack;
     private setDefaultAudioTrack;
+    private addChapterMarkers;
     private onConnectedListener;
     private onPlayStateListener;
     private continueWithCurrentSources;

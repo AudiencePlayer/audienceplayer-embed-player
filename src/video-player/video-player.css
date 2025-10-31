@@ -169,3 +169,18 @@
     object-fit: cover;
     object-position: center;
 }
+
+/* chapter markers */
+.video-js .vjs-chapter-marker {
+    position: absolute;
+    bottom: 0;
+    width: 8px;
+    height: 100%;
+    background-color: #ffcc00;
+    cursor: pointer;
+    transform: translateX(-50%);
+}
+
+.video-js .vjs-chapter-marker:hover {
+    background-color: #ff8800;
+}
