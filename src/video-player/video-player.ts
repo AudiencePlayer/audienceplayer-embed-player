@@ -234,6 +234,9 @@ export class VideoPlayer {
             this.stopped = true;
             this.firstPlayingEvent = true;
             if (this.player) {
+                if (this.player.isFullscreen()) {
+                    this.player.exitFullscreen();
+                }
                 if (false === this.player.ended()) {
                     this.player.pause();
                     // only if we have not already caught the 'ended' event
