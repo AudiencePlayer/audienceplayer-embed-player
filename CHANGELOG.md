@@ -1,3 +1,7 @@
+# 4.0.4
+
+Bugfix: exit full screen when stop() is called.
+
 # 4.0.0
 
 Added chromecast functionality to the player. Internally this is done as a videojs `tech`.
