@@ -44,6 +44,27 @@ export class VideoPlayer {
         }
         this.playerLoggerService = new PlayerLoggerService(baseUrl, projectId);
 
+        console.log('Setting hook');
+        videojsInstance.hook('beforeerror', function (player: any, err: any) {
+            if (err === null) {
+                return null;
+            }
+
+            console.log('beforeerror', err);
+
+            // vjs-error-display vjs-modal-dialog
+            /*
+            "code": 3,
+               "message": "The media playback was aborted due to a corruption problem o...
+             */
+            // if (err.code === 4) {
+            //     console.log('Intercepting error');
+            //     return null;
+            // }
+
+            return err;
+        });
+
         createAudioTrackPlugin(videojsInstance);
         createChromecastButtonPlugin(videojsInstance);
         createCustomOverlaykPlugin(videojsInstance);
@@ -94,6 +115,7 @@ export class VideoPlayer {
             responsive: true,
             techOrder,
             controls: true,
+            errorDisplay: true,
             controlBar: {
                 pictureInPictureToggle: false,
                 skipButtons: initParams.skipButtons || false,
