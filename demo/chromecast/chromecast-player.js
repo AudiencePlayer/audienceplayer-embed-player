@@ -1,7 +1,7 @@
 import {VideoPlayer} from '../../dist/bundle.js';
 // or if you use `npm`: `import {EmbedPlayer, ChromecastControls} from 'audienceplayer-embed-player';`;
 
-(function() {
+(function () {
     const urlQueryString = window.location.search;
     const urlParams = new URLSearchParams(urlQueryString);
     const allProperties = [
@@ -57,9 +57,12 @@ import {VideoPlayer} from '../../dist/bundle.js';
     document.getElementById('setButton').addEventListener('click', () => storeValues(true));
     document.getElementById('stopButton').addEventListener('click', () => stopVideo());
     document.getElementById('resetButton').addEventListener('click', () => resetVideo());
+    document.getElementById('testButton').addEventListener('click', test);
 
     const videoPlayer = new VideoPlayer(videojs, apiBaseUrl, projectId, chromecastReceiverAppId);
     videoPlayer.init(initParam);
+
+    const videoJsPlayer = videoPlayer.getPlayer();
 
     function playVideo() {
         videoPlayer
@@ -74,6 +77,14 @@ import {VideoPlayer} from '../../dist/bundle.js';
             .catch(e => {
                 console.log('e', e);
             });
+    }
+
+    function test() {
+        videoJsPlayer.error({
+            code: 4,
+            message:
+                'The media playback was aborted due to a corruption problem or because the media used features your browser did not support.',
+        });
     }
 
     function stopVideo() {

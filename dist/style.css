@@ -170,6 +170,25 @@
     object-position: center;
 }
 
+.video-js .vjs-modal-dialog {
+    z-index: 3;
+}
+
+.video-js .vjs-error-display.vjs-modal-dialog {
+    display: flex;
+    align-items: center;
+}
+
+.video-js .vjs-error-display.vjs-modal-dialog .vjs-modal-dialog-content {
+    position: relative;
+    display: block;
+    top: unset;
+    left: unset;
+    width: 100%;
+    height: 5em;
+    padding: 0 5%;
+}
+
 .chromecast-controls.video-js {
     position: absolute;
     display: block;
