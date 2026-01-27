@@ -93,6 +93,13 @@ export class VideoPlayer {
             fill: true,
             responsive: true,
             techOrder,
+            languages: {
+                en: {
+                    // This is error 3. This can break in case of a videojs update that changes this text. But this is the way to override inside the player.
+                    'The media playback was aborted due to a corruption problem or because the media used features your browser did not support.':
+                        'The media playback was aborted due to a suspected network problem. Please close the player and try again.',
+                },
+            },
             controls: true,
             controlBar: {
                 pictureInPictureToggle: false,
