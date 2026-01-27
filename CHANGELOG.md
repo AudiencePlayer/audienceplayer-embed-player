@@ -1,3 +1,7 @@
+# 4.0.5
+
+Override the default translation of `Error code 3` in the videojs `languages` configuration.
+
 # 4.0.4
 
 Bugfix: exit full screen when stop() is called.
