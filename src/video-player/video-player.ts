@@ -17,6 +17,7 @@ import {ApiService} from '../api/api-service';
 import {createChromecastTechPlugin} from './plugins/chromecast-tech';
 import {ChromecastSender} from '../chromecast/chromecast-sender';
 import {ChromecastConnectionInfo, ChromecastPlayInfo} from '../models/cast-info';
+import {serializeError} from '../utils/serialize';
 
 export class VideoPlayer {
     private player: any = null;
@@ -212,6 +213,9 @@ export class VideoPlayer {
         this.stop();
         this.playerLoggerService.destroy();
 
+        window.removeEventListener('error', this.onGlobalErrorListener);
+        window.removeEventListener('unhandledrejection', this.onGlobalRejectionListener);
+
         if (this.castSender) {
             this.castSender.removeOnConnectedListener(this.onConnectedListener);
             this.castSender.removeOnPlayStateListener(this.onPlayStateListener);
@@ -313,13 +317,16 @@ export class VideoPlayer {
     }
 
     private bindEvents() {
+        window.addEventListener('error', this.onGlobalErrorListener);
+        window.addEventListener('unhandledrejection', this.onGlobalRejectionListener);
+
         if (this.castSender) {
             this.castSender.addOnConnectedListener(this.onConnectedListener);
             this.castSender.addOnPlayStateListener(this.onPlayStateListener);
         }
         this.player.on('error', () => {
             if (this.localPlayConfig) {
-                this.playerLoggerService.onError(JSON.stringify(this.player.error()));
+                this.playerLoggerService.onError(serializeError(this.player.error()));
             }
         });
 
@@ -560,6 +567,19 @@ export class VideoPlayer {
             }
         } else {
             this.player.addClass('vjs-chromecast-has-media');
+        }
+    };
+
+    private onGlobalErrorListener = (event: ErrorEvent) => {
+        const err = event.error || {};
+        if (!this.stopped && this.localPlayConfig) {
+            this.playerLoggerService.onError(serializeError(err));
+        }
+    };
+
+    private onGlobalRejectionListener = (event: PromiseRejectionEvent) => {
+        if (!this.stopped && this.localPlayConfig) {
+            this.playerLoggerService.onError(serializeError(event.reason));
         }
     };
 

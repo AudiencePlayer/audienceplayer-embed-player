@@ -34,6 +34,8 @@ export declare class VideoPlayer {
     private setDefaultAudioTrack;
     private onConnectedListener;
     private onPlayStateListener;
+    private onGlobalErrorListener;
+    private onGlobalRejectionListener;
     private continueWithCurrentSources;
     private getSkipIntroConfig;
 }
