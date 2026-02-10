@@ -33,6 +33,7 @@ export class VideoPlayer {
     private stopped = false; // to make sure that if stop() was called, no async playout methods can continue play
     private continueTimeout: any = null; // a timeout before continuing a play session when switching to or from chromecast
     private lastErrorTime = 0;
+    private retryCounter = 0;
 
     constructor(
         private videojsInstance: any,
@@ -225,6 +226,7 @@ export class VideoPlayer {
         this.currentTextTrack = null;
         this.currentTime = -1;
         this.lastErrorTime = 0;
+        this.retryCounter = 0;
     }
 
     getPlayer(): any {
@@ -531,7 +533,8 @@ export class VideoPlayer {
                 const now = Date.now();
 
                 // Error 3 handling: do a retry if previous error was more than 5 seconds ago.
-                if (error.code === 3 && now - this.lastErrorTime > 5000) {
+                if (error.code === 3 && now - this.lastErrorTime > 5000 && this.retryCounter < 5) {
+                    this.retryCounter++;
                     this.lastErrorTime = Date.now();
 
                     this.player.pause();
@@ -554,7 +557,7 @@ export class VideoPlayer {
                         setTimeout(() => {
                             this.player.off('loadedmetadata', onMeta);
                             resolve();
-                        }, 1500);
+                        }, 5000);
                     }).then(() => {
                         this.player.currentTime(resumeAt);
                     });
