@@ -559,7 +559,10 @@ export class VideoPlayer {
                             resolve();
                         }, 5000);
                     }).then(() => {
-                        this.player.currentTime(resumeAt);
+                        // check if the player got destroyed in the meantime
+                        if (this.player && !this.stopped) {
+                            this.player.currentTime(resumeAt);
+                        }
                     });
                 } else {
                     this.playerLoggerService.onError(JSON.stringify(error));
