@@ -32,6 +32,7 @@ export class VideoPlayer {
     private initParams: InitParams;
     private stopped = false; // to make sure that if stop() was called, no async playout methods can continue play
     private continueTimeout: any = null; // a timeout before continuing a play session when switching to or from chromecast
+    private lastErrorTime = 0;
 
     constructor(
         private videojsInstance: any,
@@ -223,6 +224,7 @@ export class VideoPlayer {
         this.currentAudioTrack = null;
         this.currentTextTrack = null;
         this.currentTime = -1;
+        this.lastErrorTime = 0;
     }
 
     getPlayer(): any {
@@ -317,11 +319,7 @@ export class VideoPlayer {
             this.castSender.addOnConnectedListener(this.onConnectedListener);
             this.castSender.addOnPlayStateListener(this.onPlayStateListener);
         }
-        this.player.on('error', () => {
-            if (this.localPlayConfig) {
-                this.playerLoggerService.onError(JSON.stringify(this.player.error()));
-            }
-        });
+        this.player.on('error', this.onErrorListener);
 
         this.player.on('playing', () => {
             if (this.localPlayConfig) {
@@ -521,6 +519,51 @@ export class VideoPlayer {
             }
         }
     }
+
+    private onErrorListener = () => {
+        if (this.localPlayConfig) {
+            const error = this.player.error();
+            if (error && error.code) {
+                // see if we can get the current time in the video
+                const currentTime = Math.floor(this.player.currentTime()) || 0;
+                // subtract 5 seconds from current time or start over
+                const resumeAt = Math.max(currentTime - 5, 0);
+                const now = Date.now();
+
+                // Error 3 handling: do a retry if previous error was more than 5 seconds ago.
+                if (error.code === 3 && now - this.lastErrorTime > 5000) {
+                    this.lastErrorTime = Date.now();
+
+                    this.player.pause();
+
+                    // Clear error state
+                    this.player.error(null);
+
+                    // load() forces rebuffering
+                    this.player.load();
+
+                    // after the metadata is available, resume play
+                    new Promise<void>(resolve => {
+                        const onMeta = () => {
+                            this.player.off('loadedmetadata', onMeta);
+                            resolve();
+                        };
+                        this.player.on('loadedmetadata', onMeta);
+
+                        // If loadedmetadata never fires, don't hang forever
+                        setTimeout(() => {
+                            this.player.off('loadedmetadata', onMeta);
+                            resolve();
+                        }, 1500);
+                    }).then(() => {
+                        this.player.currentTime(resumeAt);
+                    });
+                } else {
+                    this.playerLoggerService.onError(JSON.stringify(error));
+                }
+            }
+        }
+    };
 
     private onConnectedListener = (info: ChromecastConnectionInfo) => {
         if (!this.player) {

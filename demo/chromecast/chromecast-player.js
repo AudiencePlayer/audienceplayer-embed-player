@@ -81,7 +81,7 @@ import {VideoPlayer} from '../../dist/bundle.js';
 
     function test() {
         videoJsPlayer.error({
-            code: 4,
+            code: 3,
             message:
                 'The media playback was aborted due to a corruption problem or because the media used features your browser did not support.',
         });
