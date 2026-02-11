@@ -10,6 +10,7 @@ export interface InitParams {
         forward: number;
         backward: number;
     } | false;
+    retryConfig?: RetryConfig;
 }
 export interface PlayParams {
     articleId: number;
@@ -26,4 +27,8 @@ export declare enum DeviceModelContextEnum {
     lg_webos = "lg_webos",
     samsung_tizen = "samsung_tizen",
     tpvision_tva = "tpvision_tva"
+}
+export interface RetryConfig {
+    maxRetryNum: number;
+    retryWindowMs: number;
 }

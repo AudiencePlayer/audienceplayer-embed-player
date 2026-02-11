@@ -38,6 +38,10 @@ import {VideoPlayer} from '../../dist/bundle.js';
             skipIntro: {label: 'Skip intro'},
         },
         chromecastButton: true,
+        retryConfig: {
+            maxRetryNum: 5,
+            retryWindowMs: 5000,
+        },
     };
 
     const playParams = {

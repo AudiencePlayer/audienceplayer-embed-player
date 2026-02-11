@@ -3,7 +3,7 @@ import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
-import {InitParams, PlayParams} from '../models/play-params';
+import {InitParams, PlayParams, RetryConfig} from '../models/play-params';
 import {createHotKeysFunction} from './hotkeys';
 import {getISO2Locale} from '../utils/locale';
 import {createSkipIntroPlugin} from './plugins/skip-intro';
@@ -526,16 +526,21 @@ export class VideoPlayer {
         if (this.localPlayConfig) {
             const error = this.player.error();
             if (error && error.code) {
-                // see if we can get the current time in the video
-                const currentTime = Math.floor(this.player.currentTime()) || 0;
-                // subtract 5 seconds from current time or start over
-                const resumeAt = Math.max(currentTime - 5, 0);
+                const retryConfig: RetryConfig = this.initParams.retryConfig;
+                // determine resume time
+                const resumeAt = Math.floor(this.player.currentTime()) || 0;
                 const now = Date.now();
 
+                // maxRetryNum, retryWindowMs
                 // Error 3 handling: do a retry if previous error was more than 5 seconds ago.
-                if (error.code === 3 && now - this.lastErrorTime > 5000 && this.retryCounter < 5) {
-                    this.retryCounter++;
-                    this.lastErrorTime = Date.now();
+                if (retryConfig && error.code === 3 && this.retryCounter < retryConfig.maxRetryNum) {
+                    // if last error was more than retryWindow ago, reset the time and counter
+                    if (now - this.lastErrorTime > retryConfig.retryWindowMs) {
+                        this.retryCounter = 1;
+                        this.lastErrorTime = Date.now();
+                    } else {
+                        this.retryCounter++;
+                    }
 
                     this.player.pause();
 
