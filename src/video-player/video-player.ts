@@ -531,7 +531,6 @@ export class VideoPlayer {
                 const resumeAt = Math.floor(this.player.currentTime()) || 0;
                 const now = Date.now();
 
-                // maxRetryNum, retryWindowMs
                 // Error 3 handling: do a retry if previous error was more than 5 seconds ago.
                 if (retryConfig && error.code === 3 && this.retryCounter < retryConfig.maxRetryNum) {
                     // if last error was more than retryWindow ago, reset the time and counter

@@ -69,12 +69,18 @@ import {VideoPlayer} from '../../dist/bundle.js';
     const videoJsPlayer = videoPlayer.getPlayer();
 
     function playVideo() {
+        message('Start play');
         videoPlayer
             .playByParams(playParams)
             .then(() => {
                 const playerInstance = videoPlayer.getPlayer();
                 playerInstance.on('ended', () => {
                     resetVideo();
+                });
+                playerInstance.on('error', () => {
+                    const err = playerInstance.error();
+                    const dd = new Date();
+                    message(dd + '\n' + (err ? JSON.stringify(err, null, 4) : 'Retrying or no error'));
                 });
                 // containerEl.classList.add('media-player--video');
             })
@@ -91,12 +97,18 @@ import {VideoPlayer} from '../../dist/bundle.js';
         });
     }
 
+    function message(s) {
+        document.getElementById('output').innerText = s;
+    }
+
     function stopVideo() {
         videoPlayer.stop();
+        message('');
     }
 
     function resetVideo() {
         videoPlayer.init(initParam);
+        message('');
     }
 
     function storeProperty(name) {
