@@ -16,6 +16,8 @@ export declare class VideoPlayer {
     private initParams;
     private stopped;
     private continueTimeout;
+    private lastErrorTime;
+    private retryCounter;
     constructor(videojsInstance: any, baseUrl?: string, projectId?: number, chromecastReceiverAppId?: string);
     init(initParams: InitParams): void;
     playByParams(playParams: PlayParams): Promise<void>;
@@ -32,6 +34,7 @@ export declare class VideoPlayer {
     private checkSelectedTracks;
     private setDefaultTextTrack;
     private setDefaultAudioTrack;
+    private onErrorListener;
     private onConnectedListener;
     private onPlayStateListener;
     private continueWithCurrentSources;

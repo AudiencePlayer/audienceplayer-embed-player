@@ -1,3 +1,7 @@
+# 4.1.0
+
+Add optional `retryConfig` to `PlayParams` to handle CDN/network issues with error code 3.
+
 # 4.0.5
 
 Override the default translation of `Error code 3` in the videojs `languages` configuration.

@@ -3,7 +3,7 @@ import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
-import {InitParams, PlayParams} from '../models/play-params';
+import {InitParams, PlayParams, RetryConfig} from '../models/play-params';
 import {createHotKeysFunction} from './hotkeys';
 import {getISO2Locale} from '../utils/locale';
 import {createSkipIntroPlugin} from './plugins/skip-intro';
@@ -32,6 +32,8 @@ export class VideoPlayer {
     private initParams: InitParams;
     private stopped = false; // to make sure that if stop() was called, no async playout methods can continue play
     private continueTimeout: any = null; // a timeout before continuing a play session when switching to or from chromecast
+    private lastErrorTime = 0;
+    private retryCounter = 0;
 
     constructor(
         private videojsInstance: any,
@@ -223,6 +225,8 @@ export class VideoPlayer {
         this.currentAudioTrack = null;
         this.currentTextTrack = null;
         this.currentTime = -1;
+        this.lastErrorTime = 0;
+        this.retryCounter = 0;
     }
 
     getPlayer(): any {
@@ -317,11 +321,7 @@ export class VideoPlayer {
             this.castSender.addOnConnectedListener(this.onConnectedListener);
             this.castSender.addOnPlayStateListener(this.onPlayStateListener);
         }
-        this.player.on('error', () => {
-            if (this.localPlayConfig) {
-                this.playerLoggerService.onError(JSON.stringify(this.player.error()));
-            }
-        });
+        this.player.on('error', this.onErrorListener);
 
         this.player.on('playing', () => {
             if (this.localPlayConfig) {
@@ -521,6 +521,59 @@ export class VideoPlayer {
             }
         }
     }
+
+    private onErrorListener = () => {
+        if (this.localPlayConfig) {
+            const error = this.player.error();
+            if (error && error.code) {
+                const retryConfig: RetryConfig = this.initParams.retryConfig;
+                // determine resume time
+                const resumeAt = Math.floor(this.player.currentTime()) || 0;
+                const now = Date.now();
+
+                // Error 3 handling: limit to maxRetryNum
+                if (retryConfig && error.code === 3 && this.retryCounter < retryConfig.maxRetryNum) {
+                    // if last error was more than retryWindow milliseconds ago, reset the time and counter
+                    if (now - this.lastErrorTime > retryConfig.retryWindowMs) {
+                        this.retryCounter = 1;
+                        this.lastErrorTime = Date.now();
+                    } else {
+                        this.retryCounter++;
+                    }
+
+                    this.player.pause();
+
+                    // Clear error state
+                    this.player.error(null);
+
+                    // load() forces rebuffering
+                    this.player.load();
+
+                    // after the metadata is available, resume play
+                    new Promise<void>(resolve => {
+                        const onMeta = () => {
+                            this.player.off('loadedmetadata', onMeta);
+                            resolve();
+                        };
+                        this.player.on('loadedmetadata', onMeta);
+
+                        // If loadedmetadata never fires, don't hang forever
+                        setTimeout(() => {
+                            this.player.off('loadedmetadata', onMeta);
+                            resolve();
+                        }, 5000);
+                    }).then(() => {
+                        // check if the player got destroyed in the meantime
+                        if (this.player && !this.stopped) {
+                            this.player.currentTime(resumeAt);
+                        }
+                    });
+                } else {
+                    this.playerLoggerService.onError(JSON.stringify(error));
+                }
+            }
+        }
+    };
 
     private onConnectedListener = (info: ChromecastConnectionInfo) => {
         if (!this.player) {

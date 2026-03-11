@@ -38,6 +38,10 @@ import {VideoPlayer} from '../../dist/bundle.js';
             skipIntro: {label: 'Skip intro'},
         },
         chromecastButton: true,
+        retryConfig: {
+            maxRetryNum: 5,
+            retryWindowMs: 5000,
+        },
     };
 
     const playParams = {
@@ -65,12 +69,18 @@ import {VideoPlayer} from '../../dist/bundle.js';
     const videoJsPlayer = videoPlayer.getPlayer();
 
     function playVideo() {
+        message('Start play');
         videoPlayer
             .playByParams(playParams)
             .then(() => {
                 const playerInstance = videoPlayer.getPlayer();
                 playerInstance.on('ended', () => {
                     resetVideo();
+                });
+                playerInstance.on('error', () => {
+                    const err = playerInstance.error();
+                    const dd = new Date();
+                    message(dd + '\n' + (err ? JSON.stringify(err, null, 4) : 'Retrying or no error'));
                 });
                 // containerEl.classList.add('media-player--video');
             })
@@ -81,18 +91,24 @@ import {VideoPlayer} from '../../dist/bundle.js';
 
     function test() {
         videoJsPlayer.error({
-            code: 4,
+            code: 3,
             message:
                 'The media playback was aborted due to a corruption problem or because the media used features your browser did not support.',
         });
     }
 
+    function message(s) {
+        document.getElementById('output').innerText = s;
+    }
+
     function stopVideo() {
         videoPlayer.stop();
+        message('');
     }
 
     function resetVideo() {
         videoPlayer.init(initParam);
+        message('');
     }
 
     function storeProperty(name) {

@@ -8,6 +8,7 @@ export interface InitParams {
     chromecastButton?: boolean;
     defaultSkinClass?: string;
     skipButtons?: {forward: number; backward: number} | false;
+    retryConfig?: RetryConfig;
 }
 
 export interface PlayParams {
@@ -26,4 +27,9 @@ export enum DeviceModelContextEnum {
     lg_webos = 'lg_webos',
     samsung_tizen = 'samsung_tizen',
     tpvision_tva = 'tpvision_tva',
+}
+
+export interface RetryConfig {
+    maxRetryNum: number;
+    retryWindowMs: number;
 }
