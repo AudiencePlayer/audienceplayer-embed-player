@@ -70,9 +70,9 @@ This is typically used when playing the video in a modal dialog or from a differ
 
 ## Demo / examples
 
--   A hosted demo can be found here: https://static.audienceplayer.com/embed-demo/demo/
+- A hosted demo can be found here: https://static.audienceplayer.com/embed-demo/demo/
 
--   The manual example implementations can be found in the `demo` folder. Note the difference in `import` statement when used with `npm`, so these examples are applicable there as well.
+- The manual example implementations can be found in the `demo` folder. Note the difference in `import` statement when used with `npm`, so these examples are applicable there as well.
 
 ### Default usage with a video player
 
@@ -107,6 +107,11 @@ player
         token: 'some token', // optional; your authentication token (only necessary if you intend to embed
         fullscreen: true, // start play in fullscreen. this will work if play follows from a user event
         continueFromPreviousPosition: true, // indicates if your player supports nomadic watching. It is true by default.
+        retryConfig: {
+            // optional, to let the player retry for `Error 3` cases, usually due to CDN/network issues.
+            maxRetryNum: 5, // the number of retries
+            retryWindowMs: 5000, // for a given time window of 5 seconds
+        },
     })
     .then(config => {
         console.log('Config', config);
@@ -141,7 +146,7 @@ The demo projects will be expanded in the future, also showing a "Casting to dev
 
 The latest versions of the following browsers are supported:
 
--   Microsoft Edge
--   Chrome (supports Chromecast)
--   Firefox
--   Safari
+- Microsoft Edge
+- Chrome (supports Chromecast)
+- Firefox
+- Safari
