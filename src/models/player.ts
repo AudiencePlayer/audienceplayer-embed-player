@@ -4,6 +4,8 @@ export interface PlaySession {
     pulseToken: string;
     deviceType: PlayerDeviceTypes;
     isLive: boolean;
+    encryptionType: string;
+    protocol: string;
     onStopCallback?: (appr: number) => void;
 }
 
@@ -36,6 +38,8 @@ export class PlayerLogPayload {
     event_stack: PlayerEventPayload[];
     device_type: PlayerDeviceTypes;
     pulse_mode: PulseMode;
+    encryption_type: string;
+    protocol: string;
 }
 
 export interface PlayerEventPayload {

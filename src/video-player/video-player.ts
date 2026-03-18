@@ -268,7 +268,6 @@ export class VideoPlayer {
 
     private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig, playParams: PlayParams = null) {
         this.localPlayConfig = playConfig;
-        this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
         // simple assumption: either support FPS or Widevine
         const supportsFPS = supportsHLS(this.videojsInstance);
@@ -304,6 +303,8 @@ export class VideoPlayer {
                 return {
                     src: entitlement.src,
                     type: entitlement.type,
+                    protocol: entitlement.protocol,
+                    encryptionType: entitlement.encryptionType,
                     playParams,
                     ...emeOptions,
                     ...trackParam,
@@ -312,6 +313,8 @@ export class VideoPlayer {
             .filter(playOption => {
                 return (playOption.type === MimeTypeHls && configureHLSOnly) || !configureHLSOnly;
             });
+
+        this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, null, null, playConfig.localTimeDelta, true);
 
         return playSources;
     }
@@ -402,6 +405,7 @@ export class VideoPlayer {
         this.player.on('loadedmetadata', () => {
             if (this.localPlayConfig) {
                 const selectedSource = this.player.currentSource();
+                this.playerLoggerService.updatePlaySource(selectedSource.protocol, selectedSource.encryptionType);
                 const textTracks = selectedSource.textTracks || [];
 
                 textTracks.forEach((track: any) => {

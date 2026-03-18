@@ -7,7 +7,7 @@ export declare class PlayerLoggerService {
     constructor(baseUrl: string, projectId: number);
     init(): void;
     destroy(): void;
-    onStart(pulseToken: string, deviceType: PlayerDeviceTypes, localTimeDelta: number, isLive: boolean, onStopCallback?: (appr: number) => void): void;
+    onStart(pulseToken: string, deviceType: PlayerDeviceTypes, encryption_type: string, protocol: string, localTimeDelta: number, isLive: boolean, onStopCallback?: (appr: number) => void): void;
     onCurrentTimeUpdated(currentTime: number): void;
     onDurationUpdated(duration: number): void;
     onPlaying(): void;
@@ -17,6 +17,7 @@ export declare class PlayerLoggerService {
     onTextTrackChanged(textTrack: string): void;
     onAudioTrackChanged(audioTrack: string): void;
     updateProperties(playerProperties: Partial<PlayerProperties>): void;
+    updatePlaySource(protocol: string, encryptionType: string): void;
     protected startInterval(): void;
     protected stopInterval(): void;
     protected processPlaySession(): void;

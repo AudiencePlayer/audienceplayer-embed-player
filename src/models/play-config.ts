@@ -19,9 +19,11 @@ export interface PlayConfig {
 export interface PlayEntitlement {
     src: string;
     type: MimeType;
+    protocol: string;
     isLive: boolean;
     protectionInfo: PlayConfigProtection[] | null;
     mediaProvider: string;
+    encryptionType: string;
 }
 
 export interface PlayConfigSubtitle {
@@ -37,6 +39,7 @@ export interface PlayConfigProtection {
     certificateUrl?: string;
     keyDeliveryUrl: string;
     encryptionProvider: string;
+    encryptionType: string;
     contentKeyId?: string;
 }
 

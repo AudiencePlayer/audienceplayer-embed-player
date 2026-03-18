@@ -99,6 +99,8 @@ export class PlayerLogProcessor {
                     pulse_token: playSession.pulseToken,
                     pulse_mode: playSession.isLive ? PulseMode.live : PulseMode.offline,
                     device_type: playSession.deviceType,
+                    encryption_type: playSession.encryptionType,
+                    protocol: playSession.protocol,
                 };
                 this.playLogs.push(playLogPayload);
             }

@@ -19,9 +19,11 @@ export function toPlayConfig(config: any, playParams: PlayParams, supportsDRM = 
         const entitlementConfig: PlayEntitlement = {
             src: entitlement.manifest,
             type: toMimeType(entitlement.mime_type),
+            protocol: entitlement.protocol,
             isLive: entitlement.is_live,
             protectionInfo: null,
             mediaProvider: entitlement.media_provider,
+            encryptionType: entitlement.encryption_type,
         };
 
         if (entitlement.encryption_type) {
@@ -36,6 +38,7 @@ export function toPlayConfig(config: any, playParams: PlayParams, supportsDRM = 
                             entitlement.encryption_provider === 'azl' && !!entitlement.token ? 'Bearer ' + entitlement.token : '',
                         keyDeliveryUrl: entitlement.key_delivery_url,
                         encryptionProvider: entitlement.encryption_provider,
+                        encryptionType: entitlement.encryption_type,
                     },
                 ];
             } else if (entitlement.encryption_type === 'fps' && entitlement.protocol.indexOf('hls') === 0) {
@@ -50,6 +53,7 @@ export function toPlayConfig(config: any, playParams: PlayParams, supportsDRM = 
                         certificateUrl: config.fairplay_certificate_url,
                         keyDeliveryUrl: entitlement.key_delivery_url,
                         encryptionProvider: entitlement.encryption_provider,
+                        encryptionType: entitlement.encryption_type,
                         contentKeyId:
                             entitlement.encryption_provider === 'azl'
                                 ? entitlement.key_delivery_url.replace('https://', 'skd://')
