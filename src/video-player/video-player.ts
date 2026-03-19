@@ -1,4 +1,4 @@
-import {MimeTypeDash, MimeTypeHls, MimeTypeMp4, PlayConfig} from '../models/play-config';
+import {MimeTypeDash, MimeTypeHls, MimeTypeMp4, PlayConfig, PlayEntitlement} from '../models/play-config';
 import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
@@ -273,50 +273,66 @@ export class VideoPlayer {
         const supportsFPS = supportsHLS(this.videojsInstance);
         const supportsWidevine = !supportsFPS;
         // usable HLS sources are supported without DRM (protectionInfo) or when FPS is supported
-        const hlsSources = playConfig.entitlements.filter(
-            entitlement => entitlement.type === MimeTypeHls && (supportsFPS || entitlement.protectionInfo === null)
-        );
+        const hlsSource =
+            playConfig.entitlements.find(
+                entitlement => entitlement.type === MimeTypeHls && (supportsFPS || entitlement.protectionInfo === null)
+            ) || null;
         // usable Dash sources are supported without DRM or when Widevine is supported
-        const dashSources = playConfig.entitlements.filter(
-            entitlement => entitlement.type === MimeTypeDash && (supportsWidevine || entitlement.protectionInfo === null)
-        );
-        const mp4Sources = playConfig.entitlements.filter(entitlement => entitlement.type === MimeTypeMp4);
-        // configure HLS only in case of `supportsHLS` or when no other sources available.
-        const configureHLSOnly =
-            (supportsHLS(this.videojsInstance) || (dashSources.length === 0 && mp4Sources.length === 0)) && hlsSources.length > 0;
+        const dashSource =
+            playConfig.entitlements.find(
+                entitlement => entitlement.type === MimeTypeDash && (supportsWidevine || entitlement.protectionInfo === null)
+            ) || null;
+        const mp4Source = playConfig.entitlements.find(entitlement => entitlement.type === MimeTypeMp4) || null;
 
-        const trackParam = configureHLSOnly
-            ? {}
-            : {
-                  textTracks: playConfig.subtitles.map(track => ({
-                      kind: track.kind,
-                      src: track.src,
-                      srclang: track.srclang,
-                      label: track.label,
-                      enabled: track.srclang === playConfig.subtitleLocale,
-                  })),
-              };
+        const textTracks = playConfig.subtitles.map(track => ({
+            kind: track.kind,
+            src: track.src,
+            srclang: track.srclang,
+            label: track.label,
+            enabled: track.srclang === playConfig.subtitleLocale,
+        }));
+        let trackParam = null;
+        let pickedSource = null;
 
-        const playSources = playConfig.entitlements
-            .map(entitlement => {
-                const emeOptions = getEmeOptionsFromEntitlement(this.videojsInstance, entitlement);
-                return {
-                    src: entitlement.src,
-                    type: entitlement.type,
-                    protocol: entitlement.protocol,
-                    encryptionType: entitlement.encryptionType,
-                    playParams,
-                    ...emeOptions,
-                    ...trackParam,
-                };
-            })
-            .filter(playOption => {
-                return (playOption.type === MimeTypeHls && configureHLSOnly) || !configureHLSOnly;
-            });
+        if ((supportsFPS || (dashSource === null && mp4Source === null)) && hlsSource !== null) {
+            // when native HLS (indicated by support for FPS), or no other sources available; prefer HLS
+            // NO tracks for HLS, tracks are part of the HLS manifest
+            trackParam = {};
+            pickedSource = hlsSource;
+        } else if (dashSource !== null) {
+            trackParam = {textTracks};
+            pickedSource = dashSource;
+        } else if (mp4Source !== null) {
+            trackParam = {textTracks};
+            pickedSource = mp4Source;
+        }
 
-        this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, null, null, playConfig.localTimeDelta, true);
+        if (pickedSource !== null && trackParam !== null) {
+            this.playerLoggerService.onStart(
+                playConfig.pulseToken,
+                PlayerDeviceTypes.default,
+                pickedSource.protocol,
+                pickedSource.encryptionType,
+                playConfig.localTimeDelta,
+                true
+            );
+            return [this.getPlaySourceFromEntitlement(pickedSource, playParams, trackParam)];
+        }
+        console.error('No source was sound in the play config', playConfig);
+        return [];
+    }
 
-        return playSources;
+    private getPlaySourceFromEntitlement(entitlement: PlayEntitlement, playParams: PlayParams, trackParam: any) {
+        const emeOptions = getEmeOptionsFromEntitlement(this.videojsInstance, entitlement);
+        return {
+            src: entitlement.src,
+            type: entitlement.type,
+            protocol: entitlement.protocol,
+            encryptionType: entitlement.encryptionType,
+            playParams,
+            ...emeOptions,
+            ...trackParam,
+        };
     }
 
     private bindEvents() {
@@ -405,7 +421,6 @@ export class VideoPlayer {
         this.player.on('loadedmetadata', () => {
             if (this.localPlayConfig) {
                 const selectedSource = this.player.currentSource();
-                this.playerLoggerService.updatePlaySource(selectedSource.protocol, selectedSource.encryptionType);
                 const textTracks = selectedSource.textTracks || [];
 
                 textTracks.forEach((track: any) => {

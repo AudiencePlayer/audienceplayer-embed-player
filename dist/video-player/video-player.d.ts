@@ -29,6 +29,7 @@ export declare class VideoPlayer {
     stop(): void;
     isStopped(): boolean;
     private getAndInitPlaySourcesFromConfig;
+    private getPlaySourceFromEntitlement;
     private bindEvents;
     getCastSender(): ChromecastSender;
     private checkSelectedTracks;

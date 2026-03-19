@@ -23,8 +23,8 @@ export class PlayerLoggerService {
     onStart(
         pulseToken: string,
         deviceType: PlayerDeviceTypes,
-        encryption_type: string,
         protocol: string,
+        encryptionType: string,
         localTimeDelta: number,
         isLive: boolean,
         onStopCallback?: (appr: number) => void
@@ -34,7 +34,7 @@ export class PlayerLoggerService {
         this.playSession = {
             pulseToken,
             deviceType,
-            encryptionType: encryption_type,
+            encryptionType,
             protocol,
             eventStack: [],
             localTimeDelta,
@@ -115,11 +115,6 @@ export class PlayerLoggerService {
             ...this.playerProperties,
             ...playerProperties,
         };
-    }
-
-    updatePlaySource(protocol: string, encryptionType: string) {
-        this.playSession.protocol = protocol;
-        this.playSession.encryptionType = encryptionType;
     }
 
     protected startInterval() {
