@@ -27,17 +27,15 @@ export class ApiService {
     }
 
     getArticleAssetPlayConfig(playParams: PlayParams, deviceModelContext: DeviceModelContextEnum = null, supportsDRM = true) {
-        return graphRequest(
-            this.apiFetchUrl,
-            articleAssetPlayMutation,
-            {
-                articleId: playParams.articleId,
-                assetId: playParams.assetId,
-                protocols: ['dash', 'hls'],
-                device_model_context: deviceModelContext,
-            },
-            this.token
-        ).then((response: any) => {
+        let variables: any = {
+            articleId: playParams.articleId,
+            assetId: playParams.assetId,
+            protocols: ['dash', 'hls'],
+        };
+        if (deviceModelContext) {
+            variables.device_model_context = deviceModelContext;
+        }
+        return graphRequest(this.apiFetchUrl, articleAssetPlayMutation, variables, this.token).then((response: any) => {
             if (!response || !response.data || response.errors) {
                 const {message, code} = response.errors[0];
                 throw {message, code};

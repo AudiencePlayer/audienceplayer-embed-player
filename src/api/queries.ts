@@ -1,6 +1,6 @@
 export const articleAssetPlayMutation = `
-    mutation ArticleAssetPlay($articleId: Int, $assetId: Int, $protocols: [ArticlePlayProtocolEnum]) {
-        ArticleAssetPlay(article_id: $articleId, asset_id: $assetId, protocols: $protocols) {
+    mutation ArticleAssetPlay($articleId: Int, $assetId: Int, $protocols: [ArticlePlayProtocolEnum], $device_model_context: DeviceModelContextEnum) {
+        ArticleAssetPlay(article_id: $articleId, asset_id: $assetId, protocols: $protocols, device_model_context: $device_model_context) {
             article_id
             asset_id
             entitlements {
