@@ -26,14 +26,14 @@ export class ApiService {
         });
     }
 
-    getArticleAssetPlayConfig(playParams: PlayParams, deviceModelContext: DeviceModelContextEnum = null, supportsDRM = true) {
+    getArticleAssetPlayConfig(playParams: PlayParams, supportsDRM = true) {
         let variables: any = {
             articleId: playParams.articleId,
             assetId: playParams.assetId,
             protocols: ['dash', 'hls'],
         };
-        if (deviceModelContext) {
-            variables.device_model_context = deviceModelContext;
+        if (playParams.deviceModelContext) {
+            variables.device_model_context = playParams.deviceModelContext;
         }
         return graphRequest(this.apiFetchUrl, articleAssetPlayMutation, variables, this.token).then((response: any) => {
             if (!response || !response.data || response.errors) {

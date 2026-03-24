@@ -3,7 +3,7 @@ import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
-import {InitParams, PlayParams, RetryConfig} from '../models/play-params';
+import {DeviceModelContextEnum, InitParams, PlayParams, RetryConfig} from '../models/play-params';
 import {createHotKeysFunction} from './hotkeys';
 import {getISO2Locale} from '../utils/locale';
 import {createSkipIntroPlugin} from './plugins/skip-intro';
@@ -54,7 +54,7 @@ export class VideoPlayer {
         createSkipIntroPlugin(videojsInstance);
         createSubtitlesButtonPlugin(videojsInstance);
 
-        // if HLS is supported, it's either Safari or iOS, which to not support Chromecast
+        // if HLS is supported, it's either Safari or iOS, which do not support Chromecast
         if (chromecastReceiverAppId && !supportsHLS(videojsInstance)) {
             this.castSender = new ChromecastSender(chromecastReceiverAppId);
             createChromecastTechPlugin(videojsInstance, this.castSender);
@@ -162,6 +162,11 @@ export class VideoPlayer {
             if (this.apiService) {
                 this.player.addClass('vjs-waiting');
                 this.apiService.setToken(playParams.token ? playParams.token : null);
+
+                // in case playParams does not already contain `deviceModelContext`, add it if needed
+                if (!playParams.deviceModelContext && supportsHLS(this.videojsInstance)) {
+                    playParams.deviceModelContext = DeviceModelContextEnum.apple_native;
+                }
 
                 return this.apiService
                     .getArticleAssetPlayConfig(playParams)
