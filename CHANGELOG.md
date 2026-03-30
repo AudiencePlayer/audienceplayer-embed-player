@@ -1,3 +1,10 @@
+# 5.0.0
+
+- Added optional `deviceModelContext` to `PlayParams`. This is used in certain cases where you want to override what the player library set's here. For regular use, this property should be omitted.
+
+- Added `protocol` and `deviceType` to `PlayEntitlement`.
+  If you handle the `ArticleAssetPlay` mutation yourself and then call `VideoPlayer.play`, make sure to also request `protocol` and `encryption_type` on the `entitlements` as part of the `GraphQL` mutation and pass them inside the `PlayConfig.entitlements`, using `protocol` for `protocol` and `encryption_type` for `encryptionType`.
+
 # 4.1.0
 
 Add optional `retryConfig` to `PlayParams` to handle CDN/network issues with error code 3.
