@@ -19,6 +19,7 @@ export interface PlayParams {
     continueFromPreviousPosition: boolean;
     continuePaused?: boolean;
     article?: Article;
+    deviceModelContext?: DeviceModelContextEnum;
 }
 export declare enum DeviceModelContextEnum {
     chromecast_legacy = "chromecast_legacy",
@@ -26,7 +27,8 @@ export declare enum DeviceModelContextEnum {
     lg_legacy = "lg_legacy",
     lg_webos = "lg_webos",
     samsung_tizen = "samsung_tizen",
-    tpvision_tva = "tpvision_tva"
+    tpvision_tva = "tpvision_tva",
+    apple_native = "apple_native"
 }
 export interface RetryConfig {
     maxRetryNum: number;

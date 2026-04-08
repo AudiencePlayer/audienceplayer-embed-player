@@ -1,9 +1,9 @@
-import {MimeTypeDash, MimeTypeHls, MimeTypeMp4, PlayConfig} from '../models/play-config';
+import {MimeTypeDash, MimeTypeHls, MimeTypeMp4, PlayConfig, PlayEntitlement} from '../models/play-config';
 import {supportsHLS, supportsNativeHLS} from '../utils/platform';
 import {PlayerLoggerService} from '../logging/player-logger-service';
 import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
-import {InitParams, PlayParams, RetryConfig} from '../models/play-params';
+import {DeviceModelContextEnum, InitParams, PlayParams, RetryConfig} from '../models/play-params';
 import {createHotKeysFunction} from './hotkeys';
 import {getISO2Locale} from '../utils/locale';
 import {createSkipIntroPlugin} from './plugins/skip-intro';
@@ -54,7 +54,7 @@ export class VideoPlayer {
         createSkipIntroPlugin(videojsInstance);
         createSubtitlesButtonPlugin(videojsInstance);
 
-        // if HLS is supported, it's either Safari or iOS, which to not support Chromecast
+        // if HLS is supported, it's either Safari or iOS, which do not support Chromecast
         if (chromecastReceiverAppId && !supportsHLS(videojsInstance)) {
             this.castSender = new ChromecastSender(chromecastReceiverAppId);
             createChromecastTechPlugin(videojsInstance, this.castSender);
@@ -163,6 +163,11 @@ export class VideoPlayer {
                 this.player.addClass('vjs-waiting');
                 this.apiService.setToken(playParams.token ? playParams.token : null);
 
+                // in case playParams does not already contain `deviceModelContext`, add it if needed
+                if (!playParams.deviceModelContext && supportsHLS(this.videojsInstance)) {
+                    playParams.deviceModelContext = DeviceModelContextEnum.apple_native;
+                }
+
                 return this.apiService
                     .getArticleAssetPlayConfig(playParams)
                     .then(config => {
@@ -268,52 +273,71 @@ export class VideoPlayer {
 
     private getAndInitPlaySourcesFromConfig(playConfig: PlayConfig, playParams: PlayParams = null) {
         this.localPlayConfig = playConfig;
-        this.playerLoggerService.onStart(playConfig.pulseToken, PlayerDeviceTypes.default, playConfig.localTimeDelta, true);
 
         // simple assumption: either support FPS or Widevine
         const supportsFPS = supportsHLS(this.videojsInstance);
         const supportsWidevine = !supportsFPS;
         // usable HLS sources are supported without DRM (protectionInfo) or when FPS is supported
-        const hlsSources = playConfig.entitlements.filter(
-            entitlement => entitlement.type === MimeTypeHls && (supportsFPS || entitlement.protectionInfo === null)
-        );
+        const hlsSource =
+            playConfig.entitlements.find(
+                entitlement => entitlement.type === MimeTypeHls && (supportsFPS || entitlement.protectionInfo === null)
+            ) || null;
         // usable Dash sources are supported without DRM or when Widevine is supported
-        const dashSources = playConfig.entitlements.filter(
-            entitlement => entitlement.type === MimeTypeDash && (supportsWidevine || entitlement.protectionInfo === null)
-        );
-        const mp4Sources = playConfig.entitlements.filter(entitlement => entitlement.type === MimeTypeMp4);
-        // configure HLS only in case of `supportsHLS` or when no other sources available.
-        const configureHLSOnly =
-            (supportsHLS(this.videojsInstance) || (dashSources.length === 0 && mp4Sources.length === 0)) && hlsSources.length > 0;
+        const dashSource =
+            playConfig.entitlements.find(
+                entitlement => entitlement.type === MimeTypeDash && (supportsWidevine || entitlement.protectionInfo === null)
+            ) || null;
+        const mp4Source = playConfig.entitlements.find(entitlement => entitlement.type === MimeTypeMp4) || null;
 
-        const trackParam = configureHLSOnly
-            ? {}
-            : {
-                  textTracks: playConfig.subtitles.map(track => ({
-                      kind: track.kind,
-                      src: track.src,
-                      srclang: track.srclang,
-                      label: track.label,
-                      enabled: track.srclang === playConfig.subtitleLocale,
-                  })),
-              };
+        const textTracks = playConfig.subtitles.map(track => ({
+            kind: track.kind,
+            src: track.src,
+            srclang: track.srclang,
+            label: track.label,
+            enabled: track.srclang === playConfig.subtitleLocale,
+        }));
+        let trackParam = null;
+        let pickedSource = null;
 
-        const playSources = playConfig.entitlements
-            .map(entitlement => {
-                const emeOptions = getEmeOptionsFromEntitlement(this.videojsInstance, entitlement);
-                return {
-                    src: entitlement.src,
-                    type: entitlement.type,
-                    playParams,
-                    ...emeOptions,
-                    ...trackParam,
-                };
-            })
-            .filter(playOption => {
-                return (playOption.type === MimeTypeHls && configureHLSOnly) || !configureHLSOnly;
-            });
+        if ((supportsFPS || (dashSource === null && mp4Source === null)) && hlsSource !== null) {
+            // when native HLS (indicated by support for FPS), or no other sources available; prefer HLS
+            // NO tracks for HLS, tracks are part of the HLS manifest
+            trackParam = {};
+            pickedSource = hlsSource;
+        } else if (dashSource !== null) {
+            trackParam = {textTracks};
+            pickedSource = dashSource;
+        } else if (mp4Source !== null) {
+            trackParam = {textTracks};
+            pickedSource = mp4Source;
+        }
 
-        return playSources;
+        if (pickedSource !== null && trackParam !== null) {
+            this.playerLoggerService.onStart(
+                playConfig.pulseToken,
+                PlayerDeviceTypes.default,
+                pickedSource.protocol,
+                pickedSource.encryptionType,
+                playConfig.localTimeDelta,
+                true
+            );
+            return [this.getPlaySourceFromEntitlement(pickedSource, playParams, trackParam)];
+        }
+        console.error('No source was sound in the play config', playConfig);
+        return [];
+    }
+
+    private getPlaySourceFromEntitlement(entitlement: PlayEntitlement, playParams: PlayParams, trackParam: any) {
+        const emeOptions = getEmeOptionsFromEntitlement(this.videojsInstance, entitlement);
+        return {
+            src: entitlement.src,
+            type: entitlement.type,
+            protocol: entitlement.protocol,
+            encryptionType: entitlement.encryptionType,
+            playParams,
+            ...emeOptions,
+            ...trackParam,
+        };
     }
 
     private bindEvents() {

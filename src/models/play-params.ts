@@ -18,6 +18,7 @@ export interface PlayParams {
     continueFromPreviousPosition: boolean;
     continuePaused?: boolean;
     article?: Article;
+    deviceModelContext?: DeviceModelContextEnum;
 }
 
 export enum DeviceModelContextEnum {
@@ -27,6 +28,7 @@ export enum DeviceModelContextEnum {
     lg_webos = 'lg_webos',
     samsung_tizen = 'samsung_tizen',
     tpvision_tva = 'tpvision_tva',
+    apple_native = 'apple_native',
 }
 
 export interface RetryConfig {
