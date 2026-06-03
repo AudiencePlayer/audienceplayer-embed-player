@@ -43,7 +43,7 @@ The javascript part: import the pre-packaged videojs in your html from
 
 Then you can import `embed-player` in your javascript code:
 
-`import {EmbedPlayer} from 'bundle.js';`
+`import {EmbedPlayer} from 'dist/bundle.js';`
 
 The styling/css part:
 
