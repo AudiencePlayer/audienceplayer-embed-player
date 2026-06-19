@@ -72,7 +72,13 @@ export class ChromecastSender {
                 const castSession = this.getCastSession();
                 if (castSession) {
                     castSession.addMessageListener('urn:x-cast:com.audienceplayer.messagebus', (namespace, message) => {
-                        const messageObject = JSON.parse(message);
+                        let messageObject: any;
+                        try {
+                            messageObject = JSON.parse(message);
+                        } catch (e) {
+                            console.error('ChromecastSender: could not parse message bus payload', message, e);
+                            return;
+                        }
                         if (typeof messageObject.is_hdr_supported === 'boolean') {
                             this.supportsHDR = messageObject && messageObject.is_hdr_supported;
                         } else if (typeof messageObject.error === 'object' && messageObject.error.code) {
@@ -123,8 +129,14 @@ export class ChromecastSender {
                     if (customData) {
                         // @TODO extraInfo will be deprecated
                         if (customData.extraInfo) {
-                            const parsedInfo = JSON.parse(customData.extraInfo);
-                            if (parsedInfo.articleId && parsedInfo.assetId) {
+                            let parsedInfo: any;
+                            try {
+                                parsedInfo = JSON.parse(customData.extraInfo);
+                            } catch (e) {
+                                console.error('ChromecastSender: could not parse mediaInfo.customData.extraInfo', customData.extraInfo, e);
+                                parsedInfo = null;
+                            }
+                            if (parsedInfo && parsedInfo.articleId && parsedInfo.assetId) {
                                 info = {articleId: parsedInfo.articleId, assetId: parsedInfo.assetId};
                                 if (customData.token) {
                                     info.token = customData.token;
