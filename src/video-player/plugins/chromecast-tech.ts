@@ -11,6 +11,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         private myPlayer: cast.framework.RemotePlayer = null;
         private lastCurrentTime = 0;
         private didEnd = false;
+        private hasLoadedMetadata = false;
 
         public featuresVolumeControl = false;
         public featuresMuteControl = false;
@@ -82,6 +83,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
         setSource(source: any) {
             this.source = source;
             this.didEnd = false;
+            this.hasLoadedMetadata = false;
 
             if (!this.source) {
                 return;
@@ -254,9 +256,10 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 if (state === chrome.cast.media.PlayerState.IDLE || state === null) {
                     return;
                 }
-                // @TODO do we also need a loadedmetadata in regular case
                 this.source = {src: 'restore', type: 'application/vnd.chromecast', playParams: {...info}};
                 this.didEnd = false;
+                this.hasLoadedMetadata = false;
+
                 this.triggerSourceset(this.source);
                 /// this.src({src: 'restore', type: 'application/vnd.chromecast'});
                 this.trigger('loadstart');
@@ -298,6 +301,10 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
 
         private onDurationListener = (duration: number) => {
             this.trigger('durationchange');
+            if (!this.hasLoadedMetadata) {
+                this.hasLoadedMetadata = true;
+                this.trigger('loadedmetadata');
+            }
         };
 
         private onMediaTracksListener = (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => {
