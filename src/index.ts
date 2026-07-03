@@ -4,8 +4,9 @@ import {ChromecastControls} from './chromecast/chromecast-controls';
 import {ChromecastSender} from './chromecast/chromecast-sender';
 import {InitParams} from './models/play-params';
 import {ChromecastConnectionInfo, ChromecastPlayInfo} from './models/cast-info';
-import {PlayConfig, MimeTypeHls, MimeType, MimeTypeDash} from './models/play-config';
-import {toMimeType} from './api/converters';
+import {PlayConfig, MimeTypeHls, MimeType, MimeTypeDash, PlayEntitlement} from './models/play-config';
+import {Article} from './models/article';
+import {toMimeType, getArticleTitle, getResizedUrl} from './api/converters';
 import {supportsNativeHLS} from './utils/platform';
 
 export {
@@ -15,6 +16,7 @@ export {
     ChromecastSender,
     InitParams,
     PlayConfig,
+    PlayEntitlement,
     ChromecastConnectionInfo,
     ChromecastPlayInfo,
     supportsNativeHLS,
@@ -22,4 +24,7 @@ export {
     MimeTypeDash,
     MimeType,
     toMimeType,
+    Article,
+    getArticleTitle,
+    getResizedUrl
 };
