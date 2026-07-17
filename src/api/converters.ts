@@ -9,11 +9,12 @@ export function toPlayConfig(config: any, playParams: PlayParams, supportsDRM = 
 
     // check if the entitlements contain FPS in order to know when to filter out aes
     const filterAES = supportsDRM && !!config.entitlements.find((entitlement: any) => entitlement.encryption_type === 'fps');
-    const configEntitlements = filterAES
+    const configEntitlements = (filterAES
         ? config.entitlements.filter((entitlement: any) => {
               return entitlement.encryption_type !== 'aes';
           })
-        : config.entitlements;
+        : config.entitlements
+    ).filter((entitlement: any) => toMimeType(entitlement.mime_type) !== null); // filter unknown mime types!
 
     configEntitlements.forEach((entitlement: any) => {
         const entitlementConfig: PlayEntitlement = {
@@ -182,7 +183,7 @@ export function toMimeType(mimeType: string): MimeType {
         case 'application/vnd.apple.mpegurl': // convert legacy HLS mime-type
             return MimeTypeHls;
         default:
-            console.warn(`Unknown mime-type ${mimeType}, defaulting to mp4`);
-            return MimeTypeMp4;
+            console.warn(`Unknown mime-type ${mimeType}!`);
+            return null;
     }
 }
