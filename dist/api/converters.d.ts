@@ -1,11 +1,12 @@
 import { PlayConfig, ArticlePlayErrors, MimeType } from '../models/play-config';
-import { Article } from '../models/article';
+import { Article, Asset } from '../models/article';
 import { FileData } from '../models/file-data';
 import { PlayParams } from '../models/play-params';
 export declare function toPlayConfig(config: any, playParams: PlayParams, supportsDRM?: boolean): PlayConfig;
 export declare function toArticleMetas(metas: any): any;
 export declare function toArticle(article: any): Article;
 export declare function toFile(file: any): FileData;
+export declare function toAsset(asset: any): Asset;
 export declare function getMetaValue(metas: any, key: string): any;
 export declare function getResizedUrl(fileData: FileData, size: {
     width: number;

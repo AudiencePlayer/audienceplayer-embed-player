@@ -1,5 +1,5 @@
 import {PlayConfig, PlayEntitlement, ArticlePlayErrors, MimeType, MimeTypeHls, MimeTypeDash, MimeTypeMp4} from '../models/play-config';
-import {Article} from '../models/article';
+import {Article, Asset} from '../models/article';
 import {FileData} from '../models/file-data';
 import {PlayParams} from '../models/play-params';
 
@@ -116,6 +116,7 @@ export function toArticle(article: any): Article {
         metas: toArticleMetas(article.metas),
         posters: article.posters.map(toFile),
         images: article.images.map(toFile),
+        assets: article.assets.map(toAsset),
     } as Article;
 }
 
@@ -126,6 +127,17 @@ export function toFile(file: any): FileData {
         baseUrl: file.base_url,
         fileName: file.file_name,
     } as FileData;
+}
+
+export function toAsset(asset: any): Asset {
+    return {
+        id: asset.id,
+        name: asset.name,
+        accessibility: asset.accessibility,
+        duration: asset.duration,
+        linkedType: asset.linked_type,
+        type: asset.type,
+    } as Asset;
 }
 
 export function getMetaValue(metas: any, key: string) {

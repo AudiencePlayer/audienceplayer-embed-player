@@ -49,6 +49,7 @@ export const articleQuery = `
                 duration
                 linked_type
                 accessibility
+                type
             }
             posters {
                 type
