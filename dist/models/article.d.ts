@@ -15,4 +15,5 @@ export interface Asset {
     linkedType: 'episode' | 'film' | 'preview' | 'trailer';
     accessibility: 'everyone' | 'non_authenticated_only' | 'authenticated_only' | 'authorized_only';
     type: 'audio' | 'video' | 'live_video' | 'mock';
+    screenshots: FileData[];
 }

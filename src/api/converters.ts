@@ -137,6 +137,7 @@ export function toAsset(asset: any): Asset {
         duration: asset.duration,
         linkedType: asset.linked_type,
         type: asset.type,
+        screenshots: asset.screenshots.map(toFile),
     } as Asset;
 }
 

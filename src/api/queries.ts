@@ -50,6 +50,13 @@ export const articleQuery = `
                 linked_type
                 accessibility
                 type
+                screenshots {
+                    type
+                    url
+                    title
+                    base_url
+                    file_name
+                }
             }
             posters {
                 type

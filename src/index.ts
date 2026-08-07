@@ -6,6 +6,7 @@ import {InitParams} from './models/play-params';
 import {ChromecastConnectionInfo, ChromecastPlayInfo} from './models/cast-info';
 import {PlayConfig, MimeTypeHls, MimeType, MimeTypeDash, PlayEntitlement} from './models/play-config';
 import {Article, Asset} from './models/article';
+import {FileData} from './models/file-data';
 import {toMimeType, getArticleTitle, getResizedUrl} from './api/converters';
 import {supportsNativeHLS} from './utils/platform';
 
@@ -26,6 +27,7 @@ export {
     toMimeType,
     Article,
     Asset,
+    FileData,
     getArticleTitle,
     getResizedUrl
 };
