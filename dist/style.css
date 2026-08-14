@@ -60,6 +60,24 @@
     fill: #ffffff;
 }
 
+/* custom skip backward/forward icons (replace VideoJS font glyphs) */
+.video-js .vjs-skip-backward-10 .vjs-icon-placeholder:before,
+.video-js .vjs-skip-forward-10 .vjs-icon-placeholder:before {
+    content: '';
+    background-color: #ffffff;
+    -webkit-mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z'/%3E%3C/svg%3E")
+        no-repeat center;
+    -webkit-mask-size: 1em;
+    mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z'/%3E%3C/svg%3E")
+        no-repeat center;
+    mask-size: 1em;
+}
+
+/* forward uses the same icon, mirrored horizontally */
+.video-js .vjs-skip-forward-10 .vjs-icon-placeholder:before {
+    transform: scaleX(-1);
+}
+
 .video-js .vjs-playback-rate-svg {
     position: absolute;
     top: 0.5em;
