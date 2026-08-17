@@ -1,3 +1,13 @@
+# 5.0.2
+
+- Fix play config that contains unknown mime type
+- override skip forward/backward icons
+- Fetch Article and Asset for fallback images. 
+
+# 5.0.1
+
+- edited README, changed examples
+
 # 5.0.0
 
 - Added optional `deviceModelContext` to `PlayParams`. This is used in certain cases where you want to override what the player library set's here. For regular use, this property should be omitted.
