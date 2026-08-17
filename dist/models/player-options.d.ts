@@ -1,5 +1,7 @@
 export declare class PlayerOptions {
     autoplay: boolean;
+    preferFullWindow?: boolean;
+    playsinline?: boolean;
     poster?: string;
     playbackRates?: number[];
     overlay?: {

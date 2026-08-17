@@ -1,5 +1,5 @@
 import {PlayConfig, PlayEntitlement, ArticlePlayErrors, MimeType, MimeTypeHls, MimeTypeDash, MimeTypeMp4} from '../models/play-config';
-import {Article} from '../models/article';
+import {Article, Asset} from '../models/article';
 import {FileData} from '../models/file-data';
 import {PlayParams} from '../models/play-params';
 
@@ -9,11 +9,12 @@ export function toPlayConfig(config: any, playParams: PlayParams, supportsDRM = 
 
     // check if the entitlements contain FPS in order to know when to filter out aes
     const filterAES = supportsDRM && !!config.entitlements.find((entitlement: any) => entitlement.encryption_type === 'fps');
-    const configEntitlements = filterAES
+    const configEntitlements = (filterAES
         ? config.entitlements.filter((entitlement: any) => {
               return entitlement.encryption_type !== 'aes';
           })
-        : config.entitlements;
+        : config.entitlements
+    ).filter((entitlement: any) => toMimeType(entitlement.mime_type) !== null); // filter unknown mime types!
 
     configEntitlements.forEach((entitlement: any) => {
         const entitlementConfig: PlayEntitlement = {
@@ -115,6 +116,7 @@ export function toArticle(article: any): Article {
         metas: toArticleMetas(article.metas),
         posters: article.posters.map(toFile),
         images: article.images.map(toFile),
+        assets: article.assets.map(toAsset),
     } as Article;
 }
 
@@ -125,6 +127,18 @@ export function toFile(file: any): FileData {
         baseUrl: file.base_url,
         fileName: file.file_name,
     } as FileData;
+}
+
+export function toAsset(asset: any): Asset {
+    return {
+        id: asset.id,
+        name: asset.name,
+        accessibility: asset.accessibility,
+        duration: asset.duration,
+        linkedType: asset.linked_type,
+        type: asset.type,
+        screenshots: asset.screenshots.map(toFile),
+    } as Asset;
 }
 
 export function getMetaValue(metas: any, key: string) {
@@ -182,7 +196,7 @@ export function toMimeType(mimeType: string): MimeType {
         case 'application/vnd.apple.mpegurl': // convert legacy HLS mime-type
             return MimeTypeHls;
         default:
-            console.warn(`Unknown mime-type ${mimeType}, defaulting to mp4`);
-            return MimeTypeMp4;
+            console.warn(`Unknown mime-type ${mimeType}!`);
+            return null;
     }
 }
