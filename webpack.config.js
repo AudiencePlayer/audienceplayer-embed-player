@@ -1,6 +1,9 @@
 import path from 'path';
+import {createRequire} from 'module';
 import {fileURLToPath} from 'url';
 import WebpackConcatPlugin from 'webpack-concat-files-plugin';
+
+const require = createRequire(import.meta.url);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -32,17 +35,21 @@ export default {
                 {
                     dest: './dist/videojs-packaged.js',
                     src: [
-                        './node_modules/video.js/dist/video.min.js',
-                        './node_modules/videojs-contrib-eme/dist/videojs-contrib-eme.min.js',
+                        require.resolve('video.js/dist/video.min.js'),
+                        require.resolve('videojs-contrib-eme/dist/videojs-contrib-eme.min.js'),
                     ],
                 },
                 {
                     dest: './dist/style.css',
-                    src: ['./src/video-player/video-player.css', './src/chromecast/chromecast-controls.css'],
+                    src: [
+                        './src/video-player/video-player.css',
+                        './src/chromecast/chromecast-controls.css',
+                        './src/video-player/responsive-skin.css',
+                    ],
                 },
                 {
                     dest: './dist/videojs-packaged.css',
-                    src: ['./node_modules/video.js/dist/video-js.css'],
+                    src: [require.resolve('video.js/dist/video-js.css')],
                 },
             ],
         }),
