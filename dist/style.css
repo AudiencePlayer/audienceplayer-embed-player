@@ -776,6 +776,19 @@
         width: var(--ap-control-size) !important;
         height: var(--ap-play-size) !important;
     }
+
+    /* The vertical volume popup carries the base .vjs-control class, so it's position:
+       relative (not absolute) by default and stays a normal flex child of .vjs-volume-panel.
+       Expanding it on hover would grow the panel past the fixed 44px slot above (flex items'
+       default min-width: auto lets content override an explicit width) and shove every
+       control after it to the right — worse, .vjs-volume-panel's own `transition: width 1s`
+       keeps it wide for a full second after the hover ends. Pull it out of flow so it
+       overlays above the bar instead, like the other popup menus already do. */
+    .video-js.ap-skin-responsive .vjs-volume-panel .vjs-volume-control {
+        position: absolute !important;
+        right: 0 !important;
+        left: auto !important;
+    }
 }
 
 @container (max-height: 200px) and (min-width: 700px) {
