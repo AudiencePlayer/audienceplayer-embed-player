@@ -384,6 +384,56 @@
     }
 }
 
+/* As the single-row bar gets wider, progressively bring back controls the base single-row
+   block above hides — skip buttons first (core transport), then volume/fullscreen, then the
+   more niche controls last — while it's still too short for the full multi-row layout. Each
+   tier keeps the same max-height condition and only adds a min-width, so a short-AND-narrow
+   bar still gets just the bare four controls. Thresholds are each control's ~44px + gap added
+   to the previous tier's running width, with headroom so the scrub bar never gets squeezed to
+   nothing before a tier's controls fit. */
+@container (max-height: 200px) and (min-width: 360px) {
+    .video-js.ap-skin-responsive .vjs-control-bar > [class*='vjs-skip-backward-'],
+    .video-js.ap-skin-responsive .vjs-control-bar > [class*='vjs-skip-forward-'] {
+        display: flex !important;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+        margin: 0 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 var(--ap-control-size) !important;
+        width: var(--ap-control-size) !important;
+        height: var(--ap-play-size) !important;
+    }
+}
+
+@container (max-height: 200px) and (min-width: 480px) {
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-volume-panel,
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-fullscreen-control {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 var(--ap-control-size) !important;
+        width: var(--ap-control-size) !important;
+        height: var(--ap-play-size) !important;
+    }
+}
+
+@container (max-height: 200px) and (min-width: 700px) {
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-playback-rate,
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-subtitles-button,
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-audio-button,
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-chromecast-button {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 var(--ap-control-size) !important;
+        width: var(--ap-control-size) !important;
+        height: var(--ap-play-size) !important;
+    }
+}
+
 .video-js.ap-skin-responsive:not(.vjs-has-started) .vjs-control-bar,
 .video-js.ap-skin-responsive.vjs-controls-disabled .vjs-control-bar,
 .video-js.ap-skin-responsive.vjs-using-native-controls .vjs-control-bar {
