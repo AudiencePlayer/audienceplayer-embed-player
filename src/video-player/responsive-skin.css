@@ -318,6 +318,72 @@
     }
 }
 
+/* Once the container is only tall enough for one row of controls, collapse to a single row:
+   play/pause, scrub bar, and the two time labels only (e.g. an audio-only listening view).
+   Plain, unqualified selectors + !important so this applies identically under vjs-layout-*
+   narrow or wide, overriding both the absolute-positioned narrow layout and the flex wide
+   layout above. Threshold = one row's own content height (44px play button + 2×8px padding
+   = 60px) plus headroom, NOT tied to any specific consumer's current container size. */
+@container (max-height: 200px) {
+    .video-js.ap-skin-responsive .vjs-control-bar {
+        --ap-play-size: 44px;
+        --ap-panel-padding: 8px;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 8px;
+        padding: var(--ap-panel-padding) !important;
+        padding-bottom: max(var(--ap-panel-padding), env(safe-area-inset-bottom)) !important;
+    }
+
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-play-control {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+        margin: 0 !important;
+        flex: 0 0 var(--ap-play-size) !important;
+        width: var(--ap-play-size) !important;
+        height: var(--ap-play-size) !important;
+    }
+
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-current-time,
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-duration {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        flex: 0 0 auto !important;
+        width: auto !important;
+        padding: 0 4px !important;
+    }
+
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-progress-control {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        flex: 1 1 0 !important;
+        width: auto !important;
+    }
+
+    .video-js.ap-skin-responsive .vjs-control-bar > [class*='vjs-skip-backward-'],
+    .video-js.ap-skin-responsive .vjs-control-bar > [class*='vjs-skip-forward-'],
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-playback-rate,
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-subtitles-button,
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-audio-button,
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-volume-panel,
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-chromecast-button,
+    .video-js.ap-skin-responsive .vjs-control-bar > .vjs-fullscreen-control,
+    .video-js.ap-skin-responsive .vjs-skip-intro-button {
+        display: none !important;
+    }
+
+    .video-js.ap-skin-responsive .vjs-text-track-display {
+        bottom: calc(var(--ap-play-size) + 2 * var(--ap-panel-padding) + env(safe-area-inset-bottom));
+    }
+}
+
 .video-js.ap-skin-responsive:not(.vjs-has-started) .vjs-control-bar,
 .video-js.ap-skin-responsive.vjs-controls-disabled .vjs-control-bar,
 .video-js.ap-skin-responsive.vjs-using-native-controls .vjs-control-bar {
