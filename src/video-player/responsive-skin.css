@@ -386,42 +386,40 @@
 
 /* As the minimized bar gets wider, progressively bring back controls the block above hides —
    but do not show the skip buttons for design reasons of the maximize button and meta-image
-   above. Still gated on container width alone (no height/class condition needed here beyond
-   the --minimized ancestor selector) since "how much horizontal room is there" is a real,
-   independent question once we're already in the minimized state. */
-@container (min-width: 480px) {
-    .video-js.ap-skin-responsive.ap-skin-responsive--minimized .vjs-control-bar > .vjs-volume-panel,
-    .video-js.ap-skin-responsive.ap-skin-responsive--minimized .vjs-control-bar > .vjs-fullscreen-control {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex: 0 0 var(--ap-control-size) !important;
-        width: var(--ap-control-size) !important;
-        height: var(--ap-play-size) !important;
-    }
-
-    /* The vertical volume popup carries the base .vjs-control class, so it's position:
-       relative (not absolute) by default and stays a normal flex child of .vjs-volume-panel.
-       Pull it out of flow so it overlays above the bar instead, like the other popup menus already do. */
-    .video-js.ap-skin-responsive.ap-skin-responsive--minimized .vjs-volume-panel .vjs-volume-control {
-        position: absolute !important;
-        right: 0 !important;
-        left: auto !important;
-    }
+   above. Reuses video.js's own JS-driven vjs-layout-* width classes (the same narrow/wide
+   grouping the rest of this file already uses) rather than a second, parallel @container
+   min-width system — the exact boundaries don't matter, only that each tier's controls have
+   room to fit, and medium (>425px) / large (>768px) both land with plenty of headroom over
+   the ~310px / ~520px these tiers actually need. */
+.video-js.ap-skin-responsive.ap-skin-responsive--minimized:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar > .vjs-volume-panel,
+.video-js.ap-skin-responsive.ap-skin-responsive--minimized:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar > .vjs-fullscreen-control {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 var(--ap-control-size) !important;
+    width: var(--ap-control-size) !important;
+    height: var(--ap-play-size) !important;
 }
 
-@container (min-width: 700px) {
-    .video-js.ap-skin-responsive.ap-skin-responsive--minimized .vjs-control-bar > .vjs-playback-rate,
-    .video-js.ap-skin-responsive.ap-skin-responsive--minimized .vjs-control-bar > .vjs-subtitles-button,
-    .video-js.ap-skin-responsive.ap-skin-responsive--minimized .vjs-control-bar > .vjs-audio-button,
-    .video-js.ap-skin-responsive.ap-skin-responsive--minimized .vjs-control-bar > .vjs-chromecast-button {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex: 0 0 var(--ap-control-size) !important;
-        width: var(--ap-control-size) !important;
-        height: var(--ap-play-size) !important;
-    }
+/* The vertical volume popup carries the base .vjs-control class, so it's position:
+   relative (not absolute) by default and stays a normal flex child of .vjs-volume-panel.
+   Pull it out of flow so it overlays above the bar instead, like the other popup menus already do. */
+.video-js.ap-skin-responsive.ap-skin-responsive--minimized:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-volume-panel .vjs-volume-control {
+    position: absolute !important;
+    right: 0 !important;
+    left: auto !important;
+}
+
+.video-js.ap-skin-responsive.ap-skin-responsive--minimized:is(.vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar > .vjs-playback-rate,
+.video-js.ap-skin-responsive.ap-skin-responsive--minimized:is(.vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar > .vjs-subtitles-button,
+.video-js.ap-skin-responsive.ap-skin-responsive--minimized:is(.vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar > .vjs-audio-button,
+.video-js.ap-skin-responsive.ap-skin-responsive--minimized:is(.vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar > .vjs-chromecast-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 var(--ap-control-size) !important;
+    width: var(--ap-control-size) !important;
+    height: var(--ap-play-size) !important;
 }
 
 .video-js.ap-skin-responsive:not(.vjs-has-started) .vjs-control-bar,
