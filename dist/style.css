@@ -379,9 +379,7 @@
     gap: 0.3333em 0;
 }
 
-/* Grid is the default (non-minimized) layout mode. Excluding minimized here — rather than
-   letting the minimized rule "win" a specificity/!important fight — means the two states'
-   rules for the same properties simply never apply to the same element. */
+/* Grid is the default (non-minimized) layout mode. */
 .video-js.ap-skin-responsive:not(.ap-skin-responsive--minimized) .vjs-control-bar {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -713,11 +711,15 @@
 
 /* The vertical volume popup carries the base .vjs-control class, so it's position:
    relative (not absolute) by default and stays a normal flex child of .vjs-volume-panel.
-   Pull it out of flow so it overlays above the bar instead, like the other popup menus already do. */
+   Pull it out of flow so it overlays above the bar instead, like the other popup menus already do.
+   video.js core's own bottom: 8em (.vjs-volume-vertical) assumes the default skin's taller
+   control bar; .vjs-volume-panel here is only --ap-control-height tall, so without an explicit
+   bottom the popup floats way above the button instead of sitting flush above it. */
 .video-js.ap-skin-responsive.ap-skin-responsive--minimized:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-volume-panel .vjs-volume-control {
     position: absolute;
-    right: 0;
-    left: auto;
+    right: 0.5em;
+    left: 0.5em;
+    bottom: var(--ap-control-height);
 }
 
 .video-js.ap-skin-responsive.ap-skin-responsive--minimized:is(.vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar > .vjs-playback-rate,
