@@ -1,26 +1,29 @@
 /* Opt in with defaultSkinClass: 'vjs-default-skin ap-skin-responsive'. */
 .video-js.ap-skin-responsive {
-    --ap-control-size: 44px;
-    --ap-play-size: 56px;
-    --ap-panel-padding: 12px;
-    --ap-panel-height: 168px;
+    /* Matches vanilla video.js's own .vjs-control { width: 4em; } convention, so control sizing
+       scales with font-size like the rest of video.js's design system instead of being a fixed,
+       independent constant. At this skin's font-size: 12px, that resolves to 48px. */
+    --ap-control-size: 4em;
+    --ap-play-size: 5em;
+    --ap-panel-padding: 1em;
+    --ap-panel-height: 14em;
     --ap-timeline-row: 1;
     --ap-transport-row: 2;
     --ap-control-gradient: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
     container-type: size;
-    font-size: 12px;
+    /*font-size: 12px;*/
 }
 
 .video-js.ap-skin-responsive .vjs-control-bar {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    grid-template-rows: 36px var(--ap-play-size) var(--ap-control-size);
+    grid-template-rows: 3em var(--ap-play-size) var(--ap-control-size);
     align-items: center;
     padding: var(--ap-panel-padding);
     padding-bottom: max(var(--ap-panel-padding), env(safe-area-inset-bottom));
     height: auto;
     background: var(--ap-control-gradient);
-    gap: 4px 0;
+    gap: 0.3333em 0;
 }
 
 .video-js.ap-skin-responsive .vjs-control-bar > .vjs-control {
@@ -36,7 +39,6 @@
     grid-column: 1 / 3;
     grid-row: var(--ap-timeline-row);
     padding: 0;
-    font-size: 10px;
     line-height: var(--ap-control-size);
 }
 
@@ -50,7 +52,6 @@
     grid-column: 11 / 13;
     grid-row: var(--ap-timeline-row);
     padding: 0;
-    font-size: 10px;
     text-align: right;
     line-height: var(--ap-control-size);
 }
@@ -81,14 +82,14 @@
 
 .video-js.ap-skin-responsive .vjs-button > .vjs-icon-placeholder::before {
     line-height: var(--ap-control-size);
-    font-size: 26px;
+    font-size: 1.8em;
 }
 
 .video-js.ap-skin-responsive .vjs-play-control > .vjs-icon-placeholder::before,
 .video-js.ap-skin-responsive [class*='vjs-skip-backward-'] > .vjs-icon-placeholder::before,
 .video-js.ap-skin-responsive [class*='vjs-skip-forward-'] > .vjs-icon-placeholder::before {
     line-height: var(--ap-play-size);
-    font-size: 36px;
+    font-size: 3em;
 }
 
 .video-js.ap-skin-responsive .vjs-control-bar > .vjs-spacer,
@@ -103,18 +104,18 @@
 
 .video-js.ap-skin-responsive .vjs-chromecast-button {
     margin: 0;
-    padding: 10px;
+    padding: 0.8333em;
 }
 
 .video-js.ap-skin-responsive .vjs-playback-rate-svg {
-    width: 26px;
-    height: 26px;
-    top: 9px;
-    left: calc(50% - 13px);
+    /*width: 26px;*/
+    /*height: 26px;*/
+    /*top: 9px;*/
+    /*left: calc(50% - 13px);*/
 }
 
 .video-js.ap-skin-responsive .vjs-menu-button-popup .vjs-menu {
-    bottom: calc(var(--ap-control-size) - 12px);
+    bottom: calc(var(--ap-control-size) - 1em);
 }
 
 .video-js.ap-skin-responsive .vjs-volume-panel .vjs-volume-control.vjs-volume-vertical {
@@ -146,8 +147,8 @@
     display: flex;
     justify-content: center;
     --ap-timeline-top: var(--ap-panel-padding);
-    --ap-transport-top: calc(var(--ap-panel-padding) + 40px);
-    padding-top: calc(var(--ap-panel-padding) + 44px + var(--ap-play-size));
+    --ap-transport-top: calc(var(--ap-panel-padding) + 3.3333em);
+    padding-top: calc(var(--ap-panel-padding) + 3.6667em + var(--ap-play-size));
 }
 
 .video-js.ap-skin-responsive:not(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge)
@@ -210,25 +211,25 @@
 .video-js.ap-skin-responsive:not(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge)
     .vjs-control-bar
     > [class*='vjs-skip-backward-'] {
-    margin-left: calc(-1 * (var(--ap-play-size) + 12px));
+    margin-left: calc(-1 * (var(--ap-play-size) + 1em));
 }
 
 .video-js.ap-skin-responsive:not(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge)
     .vjs-control-bar
     > [class*='vjs-skip-forward-'] {
-    margin-left: calc(var(--ap-play-size) + 12px);
+    margin-left: calc(var(--ap-play-size) + 1em);
 }
 
 /* Wide players: transport above one flexible timeline/control row.
    Flex removes space for unavailable controls and gives it back to the scrubber. */
 .video-js.ap-skin-responsive:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) {
-    --ap-panel-height: 128px;
+    --ap-panel-height: 10.6667em;
 }
 
 .video-js.ap-skin-responsive:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar {
     display: flex;
     flex-wrap: nowrap;
-    padding-top: calc(var(--ap-panel-padding) + var(--ap-play-size) + 4px);
+    padding-top: calc(var(--ap-panel-padding) + var(--ap-play-size) + 0.3333em);
 }
 
 .video-js.ap-skin-responsive:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge)
@@ -253,7 +254,7 @@
     > .vjs-duration {
     flex-basis: auto;
     width: auto;
-    padding: 0 4px;
+    padding: 0 0.3333em;
 }
 
 .video-js.ap-skin-responsive:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge)
@@ -275,13 +276,13 @@
 .video-js.ap-skin-responsive:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge)
     .vjs-control-bar
     > [class*='vjs-skip-backward-'] {
-    margin-left: calc(-1 * (var(--ap-play-size) + 20px));
+    margin-left: calc(-1 * (var(--ap-play-size) + 1.6667em));
 }
 
 .video-js.ap-skin-responsive:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge)
     .vjs-control-bar
     > [class*='vjs-skip-forward-'] {
-    margin-left: calc(var(--ap-play-size) + 20px);
+    margin-left: calc(var(--ap-play-size) + 1.6667em);
 }
 
 /* Short players retain touch targets while reducing decorative spacing. */
@@ -289,20 +290,20 @@
     .video-js.ap-skin-responsive:not(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar {
         --ap-timeline-top: calc(var(--ap-panel-padding) + var(--ap-play-size));
         --ap-transport-top: var(--ap-panel-padding);
-        padding-top: calc(var(--ap-panel-padding) + var(--ap-play-size) + 28px);
+        padding-top: calc(var(--ap-panel-padding) + var(--ap-play-size) + 2.3333em);
     }
 
     .video-js.ap-skin-responsive .vjs-control-bar {
-        --ap-play-size: 44px;
-        --ap-panel-padding: 4px;
+        --ap-play-size: 3.6667em;
+        --ap-panel-padding: 0.3333em;
         --ap-timeline-row: 2;
         --ap-transport-row: 1;
-        grid-template-rows: 44px 28px 44px;
+        grid-template-rows: 3.6667em 2.3333em 3.6667em;
         gap: 0;
     }
 
     .video-js.ap-skin-responsive .vjs-text-track-display {
-        bottom: calc(124px + env(safe-area-inset-bottom));
+        bottom: calc(10.3333em + env(safe-area-inset-bottom));
     }
 
     /*.video-js.ap-skin-responsive .vjs-skip-intro-button {*/
@@ -310,7 +311,7 @@
     /*}*/
 
     .video-js.ap-skin-responsive:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-text-track-display {
-        bottom: calc(100px + env(safe-area-inset-bottom));
+        bottom: calc(8.3333em + env(safe-area-inset-bottom));
     }
 
     /*.video-js.ap-skin-responsive:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-skip-intro-button {*/
@@ -327,13 +328,13 @@
    vjs-layout-* narrow or wide, overriding both the absolute-positioned narrow layout and the
    flex wide layout above. */
 .video-js.ap-skin-responsive.ap-skin-responsive--minimized .vjs-control-bar {
-    --ap-play-size: 44px;
-    --ap-panel-padding: 8px;
+    --ap-play-size: 3.6667em;
+    --ap-panel-padding: 0.6667em;
     display: flex !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: flex-start !important;
-    gap: 8px;
+    gap: 0.6667em;
     padding: var(--ap-panel-padding) !important;
     padding-bottom: max(var(--ap-panel-padding), env(safe-area-inset-bottom)) !important;
 }
@@ -357,7 +358,7 @@
     right: auto !important;
     flex: 0 0 auto !important;
     width: auto !important;
-    padding: 0 4px !important;
+    padding: 0 0.3333em !important;
 }
 
 .video-js.ap-skin-responsive.ap-skin-responsive--minimized .vjs-control-bar > .vjs-progress-control {
