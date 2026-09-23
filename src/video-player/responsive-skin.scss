@@ -265,7 +265,7 @@
         /* As the minimized bar gets wider, progressively bring back controls the block above hides —
            but do not show the skip buttons for design reasons of the maximize button and meta-image
            above. Reuses video.js's own JS-driven vjs-layout-* width classes */
-        &:is(.vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar {
+        &:is(.vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar {
             > [class*='vjs-skip-backward-'],
             > [class*='vjs-skip-forward-'] {
                 display: flex;
@@ -342,7 +342,7 @@
         bottom: 8rem;
     }
 
-    &:is(.vjs-layout-tiny, .vjs-layout-x-small, .vjs-layout-small) {
+    &:is(.vjs-layout-tiny, .vjs-layout-x-small, .vjs-layout-small):not(.ap-skin-responsive--minimized) {
         .vjs-skip-intro-button {
             bottom: 10rem;
         }
