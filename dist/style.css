@@ -71,6 +71,9 @@
   left: 1em;
   width: 2em;
   height: 2em;
+  /* Purely decorative; must never intercept pointer events. Video.js's own
+     .vjs-playback-rate-value carries the same pointer-events: none  */
+  pointer-events: none;
 }
 .video-js {
   /* chromecast button plugin */
@@ -629,6 +632,6 @@
   width: 100%;
   height: var(--ap-control-height);
 }
-.video-js.ap-skin-responsive.ap-skin-responsive--minimized .vjs-skip-intro-button {
+.video-js.ap-skin-responsive .vjs-skip-intro-button {
   bottom: 8rem;
 }

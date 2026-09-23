@@ -87,6 +87,9 @@
         left: 1em;
         width: 2em;
         height: 2em;
+        /* Purely decorative; must never intercept pointer events. Video.js's own
+           .vjs-playback-rate-value carries the same pointer-events: none  */
+        pointer-events: none;
     }
 
     /* chromecast button plugin */
