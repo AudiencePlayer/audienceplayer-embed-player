@@ -2,10 +2,19 @@ import path from 'path';
 import {createRequire} from 'module';
 import {fileURLToPath} from 'url';
 import WebpackConcatPlugin from 'webpack-concat-files-plugin';
+import {compile} from 'sass';
 
 const require = createRequire(import.meta.url);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Compiles each .scss source file to CSS before it's concatenated into the bundle.
+const compileScss = (content, filepath) => {
+    if (!filepath.endsWith('.scss')) {
+        return content;
+    }
+    return compile(filepath, {style: 'expanded', charset: false}).css;
+};
 
 export default {
     entry: {
@@ -42,10 +51,13 @@ export default {
                 {
                     dest: './dist/style.css',
                     src: [
-                        './src/video-player/video-player.css',
-                        './src/chromecast/chromecast-controls.css',
-                        './src/video-player/responsive-skin.css',
+                        './src/video-player/video-player.scss',
+                        './src/chromecast/chromecast-controls.scss',
+                        './src/video-player/responsive-skin.scss',
                     ],
+                    transforms: {
+                        before: compileScss,
+                    },
                 },
                 {
                     dest: './dist/videojs-packaged.css',
