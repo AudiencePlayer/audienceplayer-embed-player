@@ -607,3 +607,6 @@
 .video-js.ap-skin-responsive .vjs-skip-intro-button {
   bottom: 8rem;
 }
+.video-js.ap-skin-responsive:is(.vjs-layout-tiny, .vjs-layout-x-small, .vjs-layout-small) .vjs-skip-intro-button {
+  bottom: 10rem;
+}

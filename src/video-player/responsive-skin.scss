@@ -341,4 +341,10 @@
     .vjs-skip-intro-button {
         bottom: 8rem;
     }
+
+    &:is(.vjs-layout-tiny, .vjs-layout-x-small, .vjs-layout-small) {
+        .vjs-skip-intro-button {
+            bottom: 10rem;
+        }
+    }
 }
