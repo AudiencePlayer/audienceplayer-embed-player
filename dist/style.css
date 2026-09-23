@@ -3,10 +3,7 @@
   width: 100%;
   height: 100%;
 }
-.video-js.vjs-layout-tiny, .video-js.vjs-layout-x-small, .video-js.vjs-layout-small {
-  font-size: 10px;
-}
-.video-js.vjs-layout-medium {
+.video-js.vjs-layout-tiny, .video-js.vjs-layout-x-small, .video-js.vjs-layout-small, .video-js.vjs-layout-medium {
   font-size: 12px;
 }
 .video-js .vjs-time-divider {
@@ -189,6 +186,9 @@
   height: 5em;
   padding: 0 5%;
 }
+.video-js.vjs-layout-tiny .vjs-menu-button-popup .vjs-menu .vjs-menu-content, .video-js.vjs-layout-x-small .vjs-menu-button-popup .vjs-menu .vjs-menu-content, .video-js.vjs-layout-small .vjs-menu-button-popup .vjs-menu .vjs-menu-content, .video-js.vjs-layout-medium .vjs-menu-button-popup .vjs-menu .vjs-menu-content {
+  max-height: 15rem;
+}
 .chromecast-controls.video-js {
   position: absolute;
   display: block;
@@ -321,9 +321,6 @@
   --ap-control-height: 3em;
   --ap-play-size: 5em;
   --ap-panel-padding: 1em;
-  --ap-panel-height: 14em;
-  --ap-timeline-row: 1;
-  --ap-transport-row: 2;
   --ap-control-gradient: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
   container-type: size;
 }
@@ -334,36 +331,20 @@
   background: var(--ap-control-gradient);
   gap: 0.3333em 0;
 }
-.video-js.ap-skin-responsive {
-  /* Grid is the default (non-minimized) layout mode. */
-}
-.video-js.ap-skin-responsive:not(.ap-skin-responsive--minimized) .vjs-control-bar {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-rows: 3em var(--ap-play-size) var(--ap-control-height);
-}
 .video-js.ap-skin-responsive .vjs-control-bar > .vjs-control {
   width: 100%;
   min-width: 0;
   height: var(--ap-control-height);
-  grid-column: span 2;
-  grid-row: 3;
 }
 .video-js.ap-skin-responsive .vjs-control-bar > .vjs-current-time {
   display: block;
-  grid-column: 1/3;
-  grid-row: var(--ap-timeline-row);
   padding: 0;
   line-height: var(--ap-control-height);
 }
 .video-js.ap-skin-responsive .vjs-control-bar > .vjs-progress-control {
   display: flex;
-  grid-column: 3/11;
-  grid-row: var(--ap-timeline-row);
 }
 .video-js.ap-skin-responsive .vjs-control-bar > .vjs-duration {
-  grid-column: 11/13;
-  grid-row: var(--ap-timeline-row);
   padding: 0;
   text-align: right;
   line-height: var(--ap-control-height);
@@ -371,22 +352,13 @@
 .video-js.ap-skin-responsive .vjs-control-bar > [class*=vjs-skip-backward-],
 .video-js.ap-skin-responsive .vjs-control-bar > [class*=vjs-skip-forward-],
 .video-js.ap-skin-responsive .vjs-control-bar > .vjs-play-control {
-  grid-row: var(--ap-transport-row);
-  justify-self: center;
   width: var(--ap-play-size);
   height: var(--ap-play-size);
 }
-.video-js.ap-skin-responsive .vjs-control-bar > [class*=vjs-skip-backward-] {
-  grid-column: 3/5;
-}
 .video-js.ap-skin-responsive .vjs-control-bar > .vjs-play-control {
-  grid-column: 6/8;
   border: 1px solid rgba(255, 255, 255, 0.65);
   border-radius: 50%;
   background: rgba(70, 80, 87, 0.65);
-}
-.video-js.ap-skin-responsive .vjs-control-bar > [class*=vjs-skip-forward-] {
-  grid-column: 9/11;
 }
 .video-js.ap-skin-responsive .vjs-button > .vjs-icon-placeholder {
   line-height: var(--ap-control-height);
@@ -428,8 +400,8 @@
 .video-js.ap-skin-responsive {
   /* Portrait keeps secondary controls in a centered flex row. Hidden controls
      leave no empty slots; timeline and transport retain their own rows above.
-     Excludes minimized (see comment on the grid rule above) so its rules never
-     have to out-specificity or out-!important these. */
+     Excludes minimized so its rules never have to out-specificity or
+     out-!important the minimized block below (see its own comment). */
 }
 .video-js.ap-skin-responsive:not(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge):not(.ap-skin-responsive--minimized) .vjs-control-bar {
   display: flex;
@@ -479,9 +451,6 @@
   /* Wide players: transport above one flexible timeline/control row.
      Flex removes space for unavailable controls and gives it back to the scrubber.
      Excludes minimized for the same reason as the narrow block above. */
-}
-.video-js.ap-skin-responsive:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge):not(.ap-skin-responsive--minimized) {
-  --ap-panel-height: 10.6667em;
 }
 .video-js.ap-skin-responsive:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge):not(.ap-skin-responsive--minimized) .vjs-control-bar {
   display: flex;
@@ -626,7 +595,10 @@
      minimized+wide "bring back" rules above handle showing it while minimized. */
 }
 .video-js.ap-skin-responsive:not(.ap-skin-responsive--minimized) .vjs-control-bar > .vjs-playback-rate:not(.vjs-hidden) {
-  display: block;
+  display: flex;
+}
+.video-js.ap-skin-responsive:not(.ap-skin-responsive--minimized) .vjs-control-bar > .vjs-playback-rate:not(.vjs-hidden) .vjs-playback-rate {
+  display: inline-block;
 }
 .video-js.ap-skin-responsive .vjs-volume-panel > .vjs-mute-control {
   width: 100%;
