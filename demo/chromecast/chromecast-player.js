@@ -31,6 +31,7 @@ import {VideoPlayer} from '../../dist/bundle.js';
 
     const initParam = {
         selector: '.media-player__video-player',
+        defaultSkinClass: 'vjs-default-skin ap-skin-responsive',
         options: {
             autoplay: true,
             overlay: {element: metaEl},
