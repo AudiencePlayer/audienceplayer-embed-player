@@ -1,8 +1,13 @@
+# 5.1.0
+
+- Responsive skin `ap-skin-responsive` that can be used on top of the `vjs-default-skin`.
+- Fixed 3-letter ISO 639-2 language code to 2-letter ISO 639-1 issue with certain locales like 'esp', 'ukr'.
+
 # 5.0.2
 
 - Fix play config that contains unknown mime type
 - override skip forward/backward icons
-- Fetch Article and Asset for fallback images. 
+- Fetch Article and Asset for fallback images.
 
 # 5.0.1
 
