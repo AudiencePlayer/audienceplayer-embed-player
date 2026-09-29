@@ -101,6 +101,7 @@ player.setVideoPlayerPosterFromArticle(articleId, {width: 1280, height: 720});
 player
     .play({
         selector: '.video-wrapper', // query selector for an element where you would like to embed your player
+        defaultSkinClass: 'vjs-default-skin ap-skin-responsive', // or just `vjs-default-skin` or your own skin.
         options: {
             poster: 'https://posterImageUrl', // url of image that will be used as the initial player background image
             autoplay: true, // start playing automatically. this will work if play follows a user event

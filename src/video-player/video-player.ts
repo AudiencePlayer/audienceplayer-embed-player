@@ -5,7 +5,7 @@ import {PlayerDeviceTypes} from '../models/player';
 import {getEmeOptionsFromEntitlement} from '../utils/eme';
 import {DeviceModelContextEnum, InitParams, PlayParams, RetryConfig} from '../models/play-params';
 import {createHotKeysFunction} from './hotkeys';
-import {getISO2Locale} from '../utils/locale';
+import {getISO6391Locale} from '../utils/locale';
 import {createSkipIntroPlugin} from './plugins/skip-intro';
 import {createAudioTrackPlugin} from './plugins/audio-track-button';
 import {createChromecastButtonPlugin} from './plugins/chromecast-button';
@@ -521,7 +521,7 @@ export class VideoPlayer {
             }
             // it must be split up in to two loops, because two 'showing' items will break
             for (let i = 0; i < tracks.length; i++) {
-                const trackLocale = getISO2Locale(tracks[i].language);
+                const trackLocale = getISO6391Locale(tracks[i].language);
                 if (trackLocale === this.localPlayConfig.subtitleLocale.toLowerCase() && tracks[i].kind === 'subtitles') {
                     tracks[i].mode = 'showing';
                     break;
@@ -534,7 +534,7 @@ export class VideoPlayer {
         if (this.localPlayConfig && this.localPlayConfig.audioLocale) {
             const audioTracks = this.player.audioTracks();
             for (let i = 0; i < audioTracks.length; i++) {
-                const trackLocale = getISO2Locale(audioTracks[i].language);
+                const trackLocale = getISO6391Locale(audioTracks[i].language);
                 if (
                     (this.localPlayConfig.audioLocale && trackLocale === this.localPlayConfig.audioLocale.toLowerCase()) ||
                     (this.localPlayConfig.audioLocale === '' && i === 0)

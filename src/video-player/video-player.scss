@@ -1,0 +1,225 @@
+.video-js {
+    font-size: 1rem;
+    width: 100%;
+    height: 100%;
+
+    &.vjs-layout-tiny,
+    &.vjs-layout-x-small,
+    &.vjs-layout-small,
+    &.vjs-layout-medium {
+        font-size: 12px;
+    }
+
+    .vjs-time-divider {
+        display: block !important;
+    }
+
+    .vjs-duration {
+        display: block !important;
+    }
+
+    &.vjs-live {
+        .vjs-control-bar {
+            .vjs-spacer {
+                flex-grow: 1;
+            }
+
+            .vjs-duration {
+                display: none !important;
+            }
+        }
+    }
+
+    /* removing background from subtitles */
+    .vjs-text-track-display > div > div > div {
+        background-color: transparent !important;
+        text-shadow: 0.1rem 0.1rem 0.05rem #000;
+    }
+
+    .vjs-tech {
+        outline: none !important;
+    }
+
+    .vjs-button-tooltip {
+        display: none !important;
+    }
+
+    .vjs-big-play-button {
+        border: none;
+
+        .vjs-icon-placeholder:before {
+            top: 2px;
+            font-size: 3.5rem;
+        }
+    }
+
+    .vjs-control-bar {
+        background: linear-gradient(#0000, #000000bf);
+    }
+
+    .vjs-custom-svg-color {
+        fill: #ffffff;
+    }
+
+    /* custom skip backward/forward icons (replace VideoJS font glyphs) */
+    .vjs-skip-backward-10 .vjs-icon-placeholder:before,
+    .vjs-skip-forward-10 .vjs-icon-placeholder:before {
+        content: '';
+        background-color: #ffffff;
+        -webkit-mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z'/%3E%3C/svg%3E")
+            no-repeat center;
+        -webkit-mask-size: 1em;
+        mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z'/%3E%3C/svg%3E")
+            no-repeat center;
+        mask-size: 1em;
+    }
+
+    /* forward uses the same icon, mirrored horizontally */
+    .vjs-skip-forward-10 .vjs-icon-placeholder:before {
+        transform: scaleX(-1);
+    }
+
+    .vjs-playback-rate-svg {
+        position: absolute;
+        top: 0.5em;
+        left: 1em;
+        width: 2em;
+        height: 2em;
+        /* Purely decorative; must never intercept pointer events. Video.js's own
+           .vjs-playback-rate-value carries the same pointer-events: none  */
+        pointer-events: none;
+    }
+
+    /* chromecast button plugin */
+    .vjs-chromecast-button {
+        display: inline-block;
+        margin: 0.5em;
+        padding: 0;
+        cursor: pointer;
+        width: 2em;
+        height: 2em;
+    }
+
+    /* overlay plugin */
+    .vjs-overlay,
+    .vjs-custom-overlay {
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        visibility: visible;
+        transition:
+            visibility 0.3s,
+            opacity 0.3s;
+    }
+
+    .vjs-overlay {
+        pointer-events: none;
+        bottom: 0;
+        right: 0;
+        opacity: 0;
+    }
+
+    &.vjs-user-active .vjs-overlay {
+        opacity: 1;
+    }
+
+    /* skip intro button */
+    .vjs-skip-intro-button {
+        position: absolute;
+        display: flex;
+        z-index: 2;
+        opacity: 1;
+        transition:
+            visibility 0.3s,
+            opacity 0.3s;
+        bottom: 6.5em;
+        left: 1.75em;
+        height: 3em;
+        line-height: 3em;
+        padding: 0 1em;
+        border: 2px solid #fff;
+        border-radius: 0.5em;
+        cursor: pointer;
+        background-color: rgba(0, 0, 0, 0.5);
+
+        &.vjs-skip-intro-button--hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    }
+
+    .vjs-skip-intro-button-text {
+        line-height: inherit;
+    }
+
+    .vjs-skip-intro-button .vjs-icon-placeholder {
+        padding-right: 0.5em;
+
+        &:before {
+            content: '\f123';
+            font-family: VideoJS;
+            font-size: 1.8em;
+            line-height: inherit;
+            text-align: center;
+        }
+    }
+
+    &.vjs-chromecast-connected {
+        /* when chromecast is connected, show the overlay */
+        .vjs-overlay {
+            opacity: 1;
+        }
+
+        /* when chromecast is connected, show the control bar, even when user is inactive and playing */
+        &.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-control-bar {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: unset;
+        }
+
+        /* poster remains visible */
+        &.vjs-has-started .vjs-poster,
+        &.vjs-using-native-controls .vjs-poster {
+            display: inline-block !important;
+        }
+    }
+
+    /* poster */
+    .vjs-poster {
+        cursor: unset;
+
+        img {
+            object-fit: cover;
+            object-position: center;
+        }
+    }
+
+    .vjs-modal-dialog {
+        z-index: 3;
+    }
+
+    .vjs-error-display.vjs-modal-dialog {
+        display: flex;
+        align-items: center;
+
+        .vjs-modal-dialog-content {
+            position: relative;
+            display: block;
+            top: unset;
+            left: unset;
+            width: 100%;
+            height: 5em;
+            padding: 0 5%;
+        }
+    }
+
+    &.vjs-layout-tiny,
+    &.vjs-layout-x-small,
+    &.vjs-layout-small,
+    &.vjs-layout-medium {
+        .vjs-menu-button-popup .vjs-menu .vjs-menu-content {
+            max-height: 15rem;
+        }
+    }
+}

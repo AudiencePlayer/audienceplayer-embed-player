@@ -1,0 +1,365 @@
+/* Opt in with defaultSkinClass: 'vjs-default-skin ap-skin-responsive'. */
+.video-js.ap-skin-responsive {
+    /* Matches vanilla video.js's own .vjs-control { width: 4em; } convention, so control sizing
+       scales with font-size like the rest of video.js's design system */
+    --ap-control-width: 4em;
+    --ap-control-height: 3em;
+    --ap-play-size: 5em;
+    --ap-panel-padding: 1em;
+    --ap-control-gradient: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+    /* Wide-layout flex floors: how far optional controls may shrink, and how far
+       the scrubber may be squeezed, before either stops giving up space. */
+    --ap-control-min-width: var(--ap-control-height);
+    --ap-progress-min-width: 6em;
+    container-type: size;
+
+    .vjs-control-bar {
+        align-items: center;
+        padding: var(--ap-panel-padding);
+        height: auto;
+        background: var(--ap-control-gradient);
+        gap: 0.3333em 0;
+    }
+
+    .vjs-control-bar > .vjs-control {
+        width: 100%;
+        min-width: 0;
+        height: var(--ap-control-height);
+    }
+
+    .vjs-control-bar > .vjs-current-time {
+        display: block;
+        padding: 0;
+        line-height: var(--ap-control-height);
+    }
+
+    .vjs-control-bar > .vjs-progress-control {
+        display: flex;
+    }
+
+    .vjs-control-bar > .vjs-duration {
+        padding: 0;
+        text-align: right;
+        line-height: var(--ap-control-height);
+    }
+
+    .vjs-control-bar > [class*='vjs-skip-backward-'],
+    .vjs-control-bar > [class*='vjs-skip-forward-'],
+    .vjs-control-bar > .vjs-play-control {
+        width: var(--ap-play-size);
+        height: var(--ap-play-size);
+    }
+
+    .vjs-control-bar > .vjs-play-control {
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        border-radius: 50%;
+        background: rgba(70, 80, 87, 0.65);
+    }
+
+    .vjs-button > .vjs-icon-placeholder {
+        line-height: var(--ap-control-height);
+
+        &::before {
+            line-height: inherit;
+            font-size: 1.8em;
+        }
+    }
+
+    &:not(.ap-skin-responsive--minimized) {
+        .vjs-play-control > .vjs-icon-placeholder,
+        [class*='vjs-skip-backward-'] > .vjs-icon-placeholder,
+        [class*='vjs-skip-forward-'] > .vjs-icon-placeholder {
+            line-height: var(--ap-play-size);
+
+            &::before {
+                line-height: inherit;
+                font-size: 3em;
+            }
+        }
+    }
+
+    .vjs-control-bar > .vjs-spacer,
+    .vjs-control-bar > .vjs-custom-control-spacer,
+    .vjs-control-bar > .vjs-time-divider {
+        display: none !important;
+    }
+
+    .vjs-control-bar > .vjs-hidden {
+        display: none !important;
+    }
+
+    .vjs-chromecast-button {
+        width: var(--ap-control-width);
+    }
+
+    .vjs-control:focus-visible,
+    button:focus-visible {
+        outline: 2px solid white;
+        outline-offset: -2px;
+    }
+
+    &.vjs-user-inactive.vjs-playing:not(.vjs-chromecast-connected) .vjs-text-track-display,
+    &.vjs-controls-disabled .vjs-text-track-display {
+        bottom: 1em;
+    }
+
+    /* Portrait keeps secondary controls in a centered flex row. Hidden controls
+       leave no empty slots; timeline and transport retain their own rows above.
+       Excludes minimized so its rules never have to out-specificity or
+       out-!important the minimized block below (see its own comment). */
+    &:not(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge):not(.ap-skin-responsive--minimized) {
+        .vjs-control-bar {
+            display: flex;
+            justify-content: center;
+            --ap-timeline-top: var(--ap-panel-padding);
+            --ap-transport-top: calc(var(--ap-panel-padding) + 3.3333em);
+            padding-top: calc(var(--ap-panel-padding) + 3.6667em + var(--ap-play-size));
+
+            > .vjs-control {
+                flex: 0 1 var(--ap-control-width);
+                width: var(--ap-control-width);
+            }
+
+            > .vjs-current-time,
+            > .vjs-progress-control,
+            > .vjs-duration {
+                position: absolute;
+                top: var(--ap-timeline-top);
+            }
+
+            > .vjs-current-time {
+                left: var(--ap-panel-padding);
+                width: calc((100% - 2 * var(--ap-panel-padding)) / 6);
+            }
+
+            > .vjs-progress-control {
+                left: calc(var(--ap-panel-padding) + (100% - 2 * var(--ap-panel-padding)) / 6);
+                width: calc((100% - 2 * var(--ap-panel-padding)) * 2 / 3);
+            }
+
+            > .vjs-duration {
+                right: var(--ap-panel-padding);
+                width: calc((100% - 2 * var(--ap-panel-padding)) / 6);
+            }
+
+            > [class*='vjs-skip-backward-'],
+            > .vjs-play-control,
+            > [class*='vjs-skip-forward-'] {
+                position: absolute;
+                top: var(--ap-transport-top);
+                left: 50%;
+                width: var(--ap-play-size);
+                transform: translateX(-50%);
+            }
+
+            > [class*='vjs-skip-backward-'] {
+                margin-left: calc(-1 * (var(--ap-play-size) + 1em));
+            }
+
+            > [class*='vjs-skip-forward-'] {
+                margin-left: calc(var(--ap-play-size) + 1em);
+            }
+        }
+    }
+
+    /* Wide players: transport above one flexible timeline/control row.
+       Flex removes space for unavailable controls and gives it back to the scrubber.
+       Excludes minimized for the same reason as the narrow block above. */
+    &:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge):not(.ap-skin-responsive--minimized) {
+        .vjs-control-bar {
+            display: flex;
+            flex-wrap: nowrap;
+            padding-top: calc(var(--ap-panel-padding) + var(--ap-play-size) + 0.3333em);
+
+            > .vjs-control {
+                flex: 0 1 var(--ap-control-width);
+                width: var(--ap-control-width);
+                min-width: var(--ap-control-min-width);
+            }
+
+            > .vjs-progress-control {
+                flex: 1 1 0;
+                width: auto;
+                min-width: var(--ap-progress-min-width);
+            }
+
+            > .vjs-current-time,
+            > .vjs-duration {
+                flex: 0 1 auto;
+                width: auto;
+                min-width: 2.5em;
+                padding: 0 0.3333em;
+            }
+
+            > [class*='vjs-skip-backward-'],
+            > .vjs-play-control,
+            > [class*='vjs-skip-forward-'] {
+                position: absolute;
+                top: var(--ap-panel-padding);
+                left: 50%;
+                width: var(--ap-play-size);
+                transform: translateX(-50%);
+            }
+
+            > [class*='vjs-skip-backward-'] {
+                margin-left: calc(-1 * (var(--ap-play-size) + 1.6667em));
+            }
+
+            > [class*='vjs-skip-forward-'] {
+                margin-left: calc(var(--ap-play-size) + 1.6667em);
+            }
+        }
+    }
+
+    /* Minimized player: collapse to a single row. The narrow/wide layout blocks above
+       exclude .ap-skin-responsive--minimized, so nothing there competes with these rules
+       for the same element — no !important needed to win a cascade fight that no longer
+       exists. (The remaining !important's in this file guard against video.js's own core
+       skin CSS, an unrelated stylesheet we don't control, not against the rules above.) */
+    &.ap-skin-responsive--minimized {
+        .vjs-control-bar {
+            --ap-play-size: 3em;
+            --ap-panel-padding: 0.6667em;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.6667em;
+            padding: var(--ap-panel-padding);
+
+            > .vjs-play-control {
+                position: relative;
+                top: auto;
+                left: auto;
+                transform: none;
+                margin: 0;
+                flex: 0 0 var(--ap-play-size);
+                width: var(--ap-play-size);
+                height: var(--ap-play-size);
+            }
+
+            > .vjs-current-time,
+            > .vjs-duration {
+                position: relative;
+                top: auto;
+                left: auto;
+                right: auto;
+                flex: 0 1 auto;
+                width: auto;
+                min-width: 2.5em;
+                padding: 0 0.3333em;
+            }
+
+            > .vjs-progress-control {
+                position: relative;
+                top: auto;
+                left: auto;
+                flex: 1 1 0;
+                width: auto;
+                min-width: var(--ap-progress-min-width);
+            }
+
+            > [class*='vjs-skip-backward-'],
+            > [class*='vjs-skip-forward-'],
+            > .vjs-playback-rate,
+            > .vjs-subtitles-button,
+            > .vjs-audio-button,
+            > .vjs-volume-panel,
+            > .vjs-chromecast-button,
+            > .vjs-fullscreen-control {
+                display: none;
+            }
+        }
+
+        /* As the minimized bar gets wider, progressively bring back controls the block above hides —
+           but do not show the skip buttons for design reasons of the maximize button and meta-image
+           above. Reuses video.js's own JS-driven vjs-layout-* width classes.
+           Note: with every optional control brought back simultaneously, the narrow edge of this
+           tier is a tight fit for .vjs-progress-control's min-width floor — see the sizing comment
+           at --ap-progress-min-width's definition near the top of this file. */
+        &:is(.vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar {
+            > [class*='vjs-skip-backward-'],
+            > [class*='vjs-skip-forward-'] {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 1 var(--ap-control-width);
+                width: var(--ap-control-width);
+                min-width: var(--ap-control-min-width);
+                height: var(--ap-control-height);
+            }
+        }
+
+        &:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar {
+            > .vjs-volume-panel,
+            > .vjs-fullscreen-control {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 1 var(--ap-control-width);
+                width: var(--ap-control-width);
+                min-width: var(--ap-control-min-width);
+                height: var(--ap-control-height);
+            }
+        }
+
+        /* The vertical volume popup carries the base .vjs-control class, so it's position:
+           relative (not absolute) by default and stays a normal flex child of .vjs-volume-panel.
+           Pull it out of flow so it overlays above the bar instead, like the other popup menus already do.
+           video.js core's own bottom: 8em (.vjs-volume-vertical) assumes the default skin's taller
+           control bar; .vjs-volume-panel here is only --ap-control-height tall, so without an explicit
+           bottom the popup floats way above the button instead of sitting flush above it. */
+        &:is(.vjs-layout-medium, .vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-volume-panel .vjs-volume-control {
+            position: absolute;
+            right: 0.5em;
+            left: 0.5em;
+            bottom: var(--ap-control-height);
+        }
+
+        &:is(.vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar > .vjs-playback-rate,
+        &:is(.vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar > .vjs-subtitles-button,
+        &:is(.vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar > .vjs-audio-button,
+        &:is(.vjs-layout-large, .vjs-layout-x-large, .vjs-layout-huge) .vjs-control-bar > .vjs-chromecast-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 1 var(--ap-control-width);
+            width: var(--ap-control-width);
+            min-width: var(--ap-control-min-width);
+            height: var(--ap-control-height);
+        }
+    }
+
+    &:not(.vjs-has-started) .vjs-control-bar,
+    &.vjs-controls-disabled .vjs-control-bar,
+    &.vjs-using-native-controls .vjs-control-bar {
+        display: none !important;
+    }
+
+    /* Video.js hides playback speed on small players; the extra row has room.
+       Excludes minimized so this tied-specificity rule can't flip back on top of the
+       minimized hide-list above merely because it's declared later in the file; the
+       minimized+wide "bring back" rules above handle showing it while minimized. */
+    &:not(.ap-skin-responsive--minimized) .vjs-control-bar > .vjs-playback-rate:not(.vjs-hidden) {
+        display: flex;
+
+        .vjs-playback-rate {
+            display: inline-block;
+        }
+    }
+
+    .vjs-volume-panel > .vjs-mute-control {
+        width: 100%;
+        height: var(--ap-control-height);
+    }
+
+    .vjs-skip-intro-button {
+        bottom: 8rem;
+    }
+
+    &:is(.vjs-layout-tiny, .vjs-layout-x-small, .vjs-layout-small):not(.ap-skin-responsive--minimized) {
+        .vjs-skip-intro-button {
+            bottom: 10rem;
+        }
+    }
+}
