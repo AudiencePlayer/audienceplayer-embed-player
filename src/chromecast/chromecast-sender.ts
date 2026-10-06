@@ -336,10 +336,10 @@ export class ChromecastSender {
         }
 
         // N.B. customData should not become too big to prevent a sender invalid_params error
+        // The token is deliberately not added here, see castVideoByParams.
         mediaInfo.customData = {
             articleId: playParams.articleId,
             assetId: playParams.assetId,
-            token: playParams.token,
             continueFromPreviousPosition: !!playParams.continueFromPreviousPosition,
             continuePaused: !!playParams.continuePaused,
         };
@@ -386,6 +386,10 @@ export class ChromecastSender {
                 if (mediaInfo) {
                     this.playConfig = null;
                     const request = new chrome.cast.media.LoadRequest(mediaInfo);
+                    // Pass the token as request-level credentials instead of in media.customData: the receiver echoes
+                    // MediaInformation (incl. customData) to every connected sender in media status updates.
+                    // @ts-ignore credentials is missing from @types/chrome
+                    request.credentials = playParams.token;
                     castSession
                         .loadMedia(request)
                         .then(errorCode => {
