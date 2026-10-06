@@ -37,7 +37,8 @@ export class ApiService {
         }
         return graphRequest(this.apiFetchUrl, articleAssetPlayMutation, variables, this.token).then((response: any) => {
             if (!response || !response.data || response.errors) {
-                const {message, code} = response.errors[0];
+                const {message, code} =
+                    response && response.errors && response.errors.length > 0 ? response.errors[0] : {message: 'Unknown error', code: -1};
                 throw {message, code};
             }
 
