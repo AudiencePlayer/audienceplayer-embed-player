@@ -98,7 +98,14 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                     .then(() => {
                         this.trigger('waiting');
                     })
-                    .catch(err => console.log(err));
+                    .catch(err => {
+                        console.log(err);
+                        this.error({
+                            code: 4, // MEDIA_ERR_SRC_NOT_SUPPORTED
+                            message: 'The video could not be loaded on the Chromecast. Please try again.',
+                            metadata: {castErrorCode: err && err.code ? err.code : err},
+                        });
+                    });
             }
         }
 
