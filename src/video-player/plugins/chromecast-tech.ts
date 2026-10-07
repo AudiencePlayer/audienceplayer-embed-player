@@ -28,6 +28,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 castSender.addOnCurrentTimeListener(this.onCurrentTimeListener);
                 castSender.addOnDurationListener(this.onDurationListener);
                 castSender.addOnMediaTracksListener(this.onMediaTracksListener);
+                castSender.addOnPlaybackErrorListener(this.onPlaybackErrorListener);
 
                 this.textTracks().addEventListener('change', () => this.handleTextTrackChange());
                 this.audioTracks().addEventListener('change', () => this.handleAudioTrackChange());
@@ -245,6 +246,7 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             castSender.removeOnCurrentTimeListener(this.onCurrentTimeListener);
             castSender.removeOnDurationListener(this.onDurationListener);
             castSender.removeOnMediaTracksListener(this.onMediaTracksListener);
+            castSender.removeOnPlaybackErrorListener(this.onPlaybackErrorListener);
 
             this.textTracks().removeEventListener('change');
             this.audioTracks().removeEventListener('change');
@@ -312,6 +314,19 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
                 this.hasLoadedMetadata = true;
                 this.trigger('loadedmetadata');
             }
+        };
+
+        private onPlaybackErrorListener = () => {
+            if (!this.source) {
+                return;
+            }
+            // Not MEDIA_ERR_DECODE (3): with a retryConfig that triggers a local reload, which
+            // is a no-op for this tech. Same code as a failed cast load in setSource.
+            this.error({
+                code: 4, // MEDIA_ERR_SRC_NOT_SUPPORTED
+                message: 'The video could not be played on the Chromecast. Please try again.',
+                metadata: {castIdleReason: 'ERROR'},
+            });
         };
 
         private onMediaTracksListener = (audioTracks: TrackInfo[], textTracks: TrackInfo[]) => {
