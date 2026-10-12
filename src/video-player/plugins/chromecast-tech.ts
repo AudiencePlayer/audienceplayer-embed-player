@@ -325,7 +325,6 @@ export function createChromecastTechPlugin(videojsInstance: any, castSender: Chr
             this.error({
                 code: 4, // MEDIA_ERR_SRC_NOT_SUPPORTED
                 message: 'The video could not be played on the Chromecast. Please try again.',
-                metadata: {castIdleReason: 'ERROR'},
             });
         };
 
