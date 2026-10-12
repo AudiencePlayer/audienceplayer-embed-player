@@ -21,6 +21,9 @@ export declare class ChromecastSender {
     private onMediaTracksListeners;
     private onDurationListeners;
     private onApiErrorListeners;
+    private onPlaybackErrorListeners;
+    private observedMediaSession;
+    private mediaSessionWasActive;
     constructor(chromecastReceiverAppId: string);
     init(): Promise<void>;
     initializeCastApi(chromecastReceiverAppId: string): void;
@@ -42,6 +45,8 @@ export declare class ChromecastSender {
         code: number;
         message: string;
     }, playParams: PlayParams) => void): void;
+    addOnPlaybackErrorListener(callback: () => void): void;
+    removeOnPlaybackErrorListener(callback: () => void): void;
     getSupportsHDR(): boolean;
     getPlayConfig(): PlayConfig;
     getCastMediaInfo(articlePlayConfig: PlayConfig, article: Article): chrome.cast.media.MediaInfo;
@@ -66,5 +71,8 @@ export declare class ChromecastSender {
     setActiveTracks(trackIds: number[], type: string): void;
     setActiveTrackById(selectedTrackId: number, type: string): void;
     private dispatchConnectionInfo;
+    private observeMediaSession;
+    private stopObservingMediaSession;
+    private onMediaSessionUpdate;
     private dispatchPlayState;
 }

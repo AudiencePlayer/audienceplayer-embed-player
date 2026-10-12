@@ -20,6 +20,9 @@ export class ChromecastSender {
     private onMediaTracksListeners: Array<(audioTracks: TrackInfo[], textTracks: TrackInfo[]) => void> = [];
     private onDurationListeners: Array<(duration: number) => void> = [];
     private onApiErrorListeners: Array<(error: {code: number; message: string}, playParams: PlayParams) => void> = [];
+    private onPlaybackErrorListeners: Array<() => void> = [];
+    private observedMediaSession: chrome.cast.media.Media = null;
+    private mediaSessionWasActive = false;
 
     constructor(private chromecastReceiverAppId: string) {
         if (ChromecastSender.initPromise) {
@@ -111,6 +114,9 @@ export class ChromecastSender {
                     }
                 }
             }
+            if (!this.castPlayer.isConnected) {
+                this.stopObservingMediaSession();
+            }
             if (!this.castPlayer.isConnected && this.lastPlayStateInfo !== null) {
                 this.lastPlayStateInfo = null;
                 this.dispatchPlayState(null, null);
@@ -121,6 +127,8 @@ export class ChromecastSender {
         this.castPlayerController.addEventListener(cast.framework.RemotePlayerEventType.PLAYER_STATE_CHANGED, () => {
             const state = this.castPlayer.playerState;
             let info: any = null;
+
+            this.observeMediaSession();
 
             // only when media is loaded, otherwise IDLE state will cause issues
             if (this.castPlayer.isMediaLoaded) {
@@ -257,6 +265,20 @@ export class ChromecastSender {
         }
     }
 
+    // Called when the receiver's player stopped with idleReason ERROR after playback had
+    // started (e.g. manifest, DRM or decode failure). Unlike the API error listener there
+    // is no API error code.
+    addOnPlaybackErrorListener(callback: () => void) {
+        this.onPlaybackErrorListeners.push(callback);
+    }
+
+    removeOnPlaybackErrorListener(callback: () => void) {
+        const index = this.onPlaybackErrorListeners.indexOf(callback);
+        if (index >= 0) {
+            this.onPlaybackErrorListeners.splice(index, 1);
+        }
+    }
+
     getSupportsHDR() {
         return this.supportsHDR;
     }
@@ -336,10 +358,10 @@ export class ChromecastSender {
         }
 
         // N.B. customData should not become too big to prevent a sender invalid_params error
+        // The token is deliberately not added here, see castVideoByParams.
         mediaInfo.customData = {
             articleId: playParams.articleId,
             assetId: playParams.assetId,
-            token: playParams.token,
             continueFromPreviousPosition: !!playParams.continueFromPreviousPosition,
             continuePaused: !!playParams.continuePaused,
         };
@@ -386,6 +408,10 @@ export class ChromecastSender {
                 if (mediaInfo) {
                     this.playConfig = null;
                     const request = new chrome.cast.media.LoadRequest(mediaInfo);
+                    // Pass the token as request-level credentials instead of in media.customData: the receiver echoes
+                    // MediaInformation (incl. customData) to every connected sender in media status updates.
+                    // @ts-ignore credentials is missing from @types/chrome
+                    request.credentials = playParams.token;
                     castSession
                         .loadMedia(request)
                         .then(errorCode => {
@@ -515,6 +541,49 @@ export class ChromecastSender {
         this.lastConnectionInfo = info;
         this.onConnectedListeners.forEach(listener => listener(info));
     }
+
+    // RemotePlayer exposes no idleReason and drops the media (isMediaLoaded false) once the
+    // receiver errors, so the idle reason is read from the media session's own update
+    // listener, which still receives that final status.
+    private observeMediaSession() {
+        const mediaSession = this.getCastMediaSession();
+        if (!mediaSession || mediaSession === this.observedMediaSession) {
+            return;
+        }
+        this.stopObservingMediaSession();
+        this.observedMediaSession = mediaSession;
+        mediaSession.addUpdateListener(this.onMediaSessionUpdate);
+        this.onMediaSessionUpdate(true);
+    }
+
+    private stopObservingMediaSession() {
+        if (this.observedMediaSession) {
+            this.observedMediaSession.removeUpdateListener(this.onMediaSessionUpdate);
+            this.observedMediaSession = null;
+        }
+        this.mediaSessionWasActive = false;
+    }
+
+    // Edge-triggered: only reports IDLE/ERROR after the media was active, so a stale errored
+    // status seen when joining a session is not reported. A load that fails before playback
+    // started is reported by the castVideoByParams rejection.
+    private onMediaSessionUpdate = (isAlive: boolean) => {
+        const mediaSession = this.observedMediaSession;
+        if (!mediaSession) {
+            return;
+        }
+        if (mediaSession.playerState === chrome.cast.media.PlayerState.IDLE) {
+            if (mediaSession.idleReason === chrome.cast.media.IdleReason.ERROR && this.mediaSessionWasActive) {
+                this.onPlaybackErrorListeners.forEach(listener => listener());
+            }
+            this.mediaSessionWasActive = false;
+        } else if (mediaSession.playerState) {
+            this.mediaSessionWasActive = true;
+        }
+        if (!isAlive) {
+            this.stopObservingMediaSession();
+        }
+    };
 
     private dispatchPlayState(state: chrome.cast.media.PlayerState, info: ChromecastPlayInfo) {
         this.lastPlayStateInfo = {state, info};
