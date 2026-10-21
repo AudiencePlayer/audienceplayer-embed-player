@@ -1,3 +1,7 @@
+# 5.1.1
+
+- Chromecast error events propagate to the player.
+
 # 5.1.0
 
 - Responsive skin `ap-skin-responsive` that can be used on top of the `vjs-default-skin`.
