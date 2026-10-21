@@ -7,7 +7,8 @@ export interface ChromecastConnectionInfo {
 export interface ChromecastPlayInfo {
     articleId: number;
     assetId: number;
-    token: string;
+    // Legacy: only set when an older sender put the token in media.customData and an older receiver did not strip it.
+    token?: string;
 }
 
 export interface TrackInfo {
