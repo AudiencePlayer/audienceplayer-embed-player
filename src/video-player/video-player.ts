@@ -34,6 +34,7 @@ export class VideoPlayer {
     private continueTimeout: any = null; // a timeout before continuing a play session when switching to or from chromecast
     private lastErrorTime = 0;
     private retryCounter = 0;
+    private emeVideoElement: HTMLVideoElement = null; // the tech video element that has the eme 'encrypted' listeners
 
     constructor(
         private videojsInstance: any,
@@ -146,6 +147,7 @@ export class VideoPlayer {
         this.player = this.videojsInstance(videoElement, playOptions);
         this.player.eme();
         this.player.eme.initLegacyFairplay();
+        this.bindEmeToVideoTech();
 
         this.bindEvents();
     }
@@ -227,6 +229,7 @@ export class VideoPlayer {
             this.player.dispose();
         }
         this.player = null;
+        this.emeVideoElement = null;
         this.currentAudioTrack = null;
         this.currentTextTrack = null;
         this.currentTime = -1;
@@ -338,6 +341,25 @@ export class VideoPlayer {
             ...emeOptions,
             ...trackParam,
         };
+    }
+
+    // videojs-contrib-eme only adds its 'encrypted' listener to the tech that is active when the player is first ready.
+    // With the chromecast tech first in the techOrder, that is a div, and the html5 tech loaded later never gets the listener.
+    // Without it, DASH streams that only carry their PSSH in the init segment (not in the MPD) never request a license.
+    // Each newly loaded tech triggers 'ready' on the player, so (re)attach the listeners to every new video element.
+    private bindEmeToVideoTech() {
+        // the plugin's own ready callback runs first and handles the initial tech, if it's a video element
+        this.player.ready(() => {
+            const el = this.player.tech(true).el();
+            this.emeVideoElement = el instanceof HTMLVideoElement ? el : null;
+        });
+        this.player.on('ready', () => {
+            const el = this.player.tech(true).el();
+            if (el instanceof HTMLVideoElement && el !== this.emeVideoElement) {
+                this.emeVideoElement = el;
+                this.player.eme.setupEmeListeners();
+            }
+        });
     }
 
     private bindEvents() {
