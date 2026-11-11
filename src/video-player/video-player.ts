@@ -35,13 +35,9 @@ export class VideoPlayer {
     private lastErrorTime = 0;
     private retryCounter = 0;
     private emeVideoElement: HTMLVideoElement = null; // the tech video element that has the eme 'encrypted' listeners
+    private legacyFairplayElements = new WeakSet<HTMLVideoElement>(); // the tech video elements that have the 'webkitneedkey' listener
 
-    constructor(
-        private videojsInstance: any,
-        baseUrl: string = null,
-        projectId: number = 0,
-        chromecastReceiverAppId: string = null
-    ) {
+    constructor(private videojsInstance: any, baseUrl: string = null, projectId: number = 0, chromecastReceiverAppId: string = null) {
         if (baseUrl && typeof baseUrl === 'string' && projectId > 0) {
             this.apiService = new ApiService(baseUrl.replace(/\/*$/, ''), projectId);
         }
@@ -147,6 +143,10 @@ export class VideoPlayer {
         this.player = this.videojsInstance(videoElement, playOptions);
         this.player.eme();
         this.player.eme.initLegacyFairplay();
+        const initialTechElement = this.player.tech(true).el();
+        if (initialTechElement instanceof HTMLVideoElement) {
+            this.legacyFairplayElements.add(initialTechElement);
+        }
         this.bindEmeToVideoTech();
 
         this.bindEvents();
@@ -358,8 +358,20 @@ export class VideoPlayer {
             if (el instanceof HTMLVideoElement && el !== this.emeVideoElement) {
                 this.emeVideoElement = el;
                 this.player.eme.setupEmeListeners();
+                this.bindLegacyFairplay(el);
             }
         });
+    }
+
+    // setupEmeListeners() only adds the 'encrypted' listener when the browser has MediaKeys, which Safari does. Safari's
+    // HLS FairPlay still announces keys with the legacy 'webkitneedkey' event, and the plugin adds that listener only
+    // when initLegacyFairplay() is called, for the tech element at that moment. After player.reset() the tech gets a new
+    // video element, which would otherwise never request the certificate or license.
+    private bindLegacyFairplay(el: HTMLVideoElement) {
+        if ((window as any).WebKitMediaKeys && !this.legacyFairplayElements.has(el)) {
+            this.player.eme.initLegacyFairplay();
+            this.legacyFairplayElements.add(el);
+        }
     }
 
     private bindEvents() {
