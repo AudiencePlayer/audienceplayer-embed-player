@@ -1,7 +1,11 @@
+# 5.1.5
+
+- Fix consecutive playouts on Safari with FPS failed
+
 # 5.1.3
 
 - DRM fix for specific use case where chromecast tech stack initializes before html player: EME re-init after tech change
- 
+
 # 5.1.1
 
 - Chromecast error events propagate to the player.
