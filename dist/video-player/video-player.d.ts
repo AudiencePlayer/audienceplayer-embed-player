@@ -19,6 +19,7 @@ export declare class VideoPlayer {
     private lastErrorTime;
     private retryCounter;
     private emeVideoElement;
+    private legacyFairplayElements;
     constructor(videojsInstance: any, baseUrl?: string, projectId?: number, chromecastReceiverAppId?: string);
     init(initParams: InitParams): void;
     playByParams(playParams: PlayParams): Promise<void>;
@@ -32,6 +33,7 @@ export declare class VideoPlayer {
     private getAndInitPlaySourcesFromConfig;
     private getPlaySourceFromEntitlement;
     private bindEmeToVideoTech;
+    private bindLegacyFairplay;
     private bindEvents;
     getCastSender(): ChromecastSender;
     private checkSelectedTracks;
