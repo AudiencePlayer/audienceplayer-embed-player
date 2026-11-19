@@ -1,5 +1,3 @@
-/// <reference types="chrome/chrome-cast" />
-/// <reference types="chromecast-caf-sender" />
 import { PlayConfig } from '../models/play-config';
 import { Article } from '../models/article';
 import { PlayParams } from '../models/play-params';

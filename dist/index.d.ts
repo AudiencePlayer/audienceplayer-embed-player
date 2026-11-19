@@ -8,5 +8,5 @@ import { PlayConfig, MimeTypeHls, MimeType, MimeTypeDash, PlayEntitlement } from
 import { Article, Asset } from './models/article';
 import { FileData } from './models/file-data';
 import { toMimeType, getArticleTitle, getResizedUrl } from './api/converters';
-import { supportsNativeHLS } from './utils/platform';
-export { EmbedPlayer, VideoPlayer, ChromecastControls, ChromecastSender, InitParams, PlayConfig, PlayEntitlement, ChromecastConnectionInfo, ChromecastPlayInfo, supportsNativeHLS, MimeTypeHls, MimeTypeDash, MimeType, toMimeType, Article, Asset, FileData, getArticleTitle, getResizedUrl };
+import { supportsNativeHLS, supportsHLS } from './utils/platform';
+export { EmbedPlayer, VideoPlayer, ChromecastControls, ChromecastSender, InitParams, PlayConfig, PlayEntitlement, ChromecastConnectionInfo, ChromecastPlayInfo, supportsNativeHLS, supportsHLS, MimeTypeHls, MimeTypeDash, MimeType, toMimeType, Article, Asset, FileData, getArticleTitle, getResizedUrl };

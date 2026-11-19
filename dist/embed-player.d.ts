@@ -1,4 +1,3 @@
-/// <reference types="chromecast-caf-sender" />
 import { ChromecastSender } from './chromecast/chromecast-sender';
 import { PlayConfig } from './models/play-config';
 import { InitParams, PlayParams } from './models/play-params';
