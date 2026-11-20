@@ -1,3 +1,7 @@
+# 5.1.6
+
+- Export supportsHLS method
+
 # 5.1.5
 
 - Fix consecutive playouts on Safari with FPS failed
